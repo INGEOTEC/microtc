@@ -1,0 +1,51 @@
+
+
+
+
+
+
+
+
+
+
+
+from microtc.utils import tweet_iterator
+from sklearn.preprocessing import LabelEncoder
+from sklearn.metrics import f1_score, accuracy_score, precision_score
+import json
+import os
+import sys
+
+gold = sys.argv[1]
+predicted = sys.argv[2]
+
+
+y = [tweet['klass'] for tweet in tweet_iterator(gold)]
+le = LabelEncoder().fit(y)
+y = le.transform(y)
+
+hy = [tweet['klass'] for tweet in tweet_iterator(predicted)]
+hy = le.transform(hy)
+#with open(fname.replace('_output.json', '.params')) as fpt:
+#    a = json.load(fpt)
+f1 = {le.inverse_transform([klass])[0]: f1 for klass, f1 in enumerate(f1_score(y, hy, average=None))}
+precision = {le.inverse_transform([klass])[0]: p for klass, p in enumerate(precision_score(y, hy, average=None))}
+
+report = {
+    'avg_f1_POS_NEG': (f1.get('NEG', f1.get('negative', 0.0)) + f1.get('POS', f1.get('positive', 0.0))) / 2.0,
+    'macrof1': f1_score(y, hy, average='macro'),
+    'microf1': f1_score(y, hy, average='micro'),
+    'accuracy': accuracy_score(y, hy),
+    'filename': predicted,
+}
+
+for key, value in f1.items():
+    report["f1_{0}".format(key)] = value
+    # report["precision_{0}".format(key)] = precision[key]
+
+f0f1_neg = (precision.get("NEG", precision.get("negative", 0.0)) + f1.get("NEG", precision.get("negative", 0.0))) / 2
+f0f1_pos = (precision.get("POS", precision.get("positive", 0.0)) + f1.get("POS", precision.get("positive", 0.0))) / 2
+
+report["avg_f1_f0_POS_NEG"] = (f0f1_neg + f0f1_pos) / 2
+    
+print(json.dumps(report, sort_keys=1))
