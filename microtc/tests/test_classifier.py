@@ -13,58 +13,23 @@
 # limitations under the License.
 
 
-def test_SVC_predict_from_file():
-    from microtc.classifier import SVC
+def test_predict_from_file():
+    from microtc.classifier import ClassifierWrapper
     from microtc.textmodel import TextModel
     from microtc.utils import read_data_labels
+    from sklearn.preprocessing import LabelEncoder
+
     import os
     fname = os.path.dirname(__file__) + '/text.json'
-    X, y = read_data_labels(fname)
-    t = TextModel(X)
-    c = SVC(t)
-    c.fit_file(fname)
-    y = c.predict_file(fname)
-    for i in y:
+    corpus, labels = read_data_labels(fname)
+    t = TextModel(corpus)
+    le = LabelEncoder()
+    le.fit(labels)
+    y = le.transform(labels)
+    c = ClassifierWrapper()
+    X = [t[x] for x in corpus]
+    c.fit(X, y)
+    hy = le.inverse_transform(c.predict(X))
+    for i in hy:
         assert i in ['POS', 'NEU', 'NEG']
 
-
-def test_SVC_predict():
-    from microtc.classifier import SVC
-    from microtc.textmodel import TextModel
-    from microtc.utils import read_data_labels
-    import os
-    fname = os.path.dirname(__file__) + '/text.json'
-    X, y = read_data_labels(fname)
-    t = TextModel(X)
-    c = SVC(t)
-    c.fit_file(fname)
-    y = c.predict_text('Excelente dia microtc')
-    assert y == 'POS'
-
-
-def test_kfold():
-    import os
-    from microtc.classifier import SVC
-    from microtc.utils import read_data_labels
-    fname = os.path.dirname(__file__) + '/text.json'
-    X, y = read_data_labels(fname, get_klass='klass',
-                            get_tweet='text')
-    hy = SVC.predict_kfold(X, y, n_folds=2)
-    for x in hy:
-        assert x in ['POS', 'NEU', 'NEG']
-
-
-def test_kfold_pool():
-    import os
-    from microtc.classifier import SVC
-    from microtc.utils import read_data_labels
-    from multiprocessing import Pool
-    fname = os.path.dirname(__file__) + '/text.json'
-    X, y = read_data_labels(fname, get_klass='klass',
-                            get_tweet='text')
-    pool = Pool(2)
-    hy = SVC.predict_kfold(X, y, n_folds=2, pool=pool)
-    for x in hy:
-        assert x in ['POS', 'NEU', 'NEG']
-    pool.close()
-    

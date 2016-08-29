@@ -3,11 +3,8 @@
 
 import numpy as np
 import logging
-from time import time
-from sklearn.metrics import f1_score, accuracy_score, recall_score, precision_score
 from itertools import combinations
-from sklearn import preprocessing
-from sklearn import cross_validation
+
 
 try:
     from tqdm import tqdm
@@ -112,7 +109,7 @@ class ParameterSelection:
 
         self.params = params
 
-    def sample_param_space(self, n, q=3):
+    def sample_param_space(self, n):
         for i in range(n):
             kwargs = {}
             for k, v in self.params.items():
@@ -198,58 +195,6 @@ class ParameterSelection:
             _hill_climbing(ks, "optimizing the rest of params")
 
         return best_list
-
-
-class Wrapper(object):
-    def __init__(self, X, y, score, n_folds, cls, seed=0, pool=None):
-        self.n_folds = n_folds
-        self.score = score
-        self.X = X
-        self.le = le = preprocessing.LabelEncoder().fit(y)
-        self.y = np.array(le.transform(y))
-        self.cls = cls
-        self.pool = pool
-        np.random.seed(seed)
-        self.kfolds = [
-            x for x in cross_validation.StratifiedKFold(
-                y,
-                n_folds=n_folds,
-                shuffle=True,
-                random_state=seed
-            )
-        ]
-
-    def f(self, conf_code):
-        conf, code = conf_code
-        st = time()
-        hy = self.cls.predict_kfold(self.X, self.y, self.n_folds,
-                                    textModel_params=conf,
-                                    kfolds=self.kfolds,
-                                    pool=self.pool,
-                                    use_tqdm=False)
-        self.compute_score(conf, hy)
-        conf['_time'] = (time() - st) / self.n_folds
-        return conf
-
-    def compute_score(self, conf, hy):
-        conf['_all_f1'] = M = {self.le.inverse_transform([klass])[0]: f1 for klass, f1 in enumerate(f1_score(self.y, hy, average=None))}
-        conf['_all_recall'] = {self.le.inverse_transform([klass])[0]: f1 for klass, f1 in enumerate(recall_score(self.y, hy, average=None))}
-        conf['_all_precision'] = {self.le.inverse_transform([klass])[0]: f1 for klass, f1 in enumerate(precision_score(self.y, hy, average=None))}
-
-        if len(self.le.classes_) == 2:
-            conf['_macrof1'] = np.mean(np.array([v for v in conf['_all_f1'].values()]))
-            conf['_weightedf1'] = conf['_microf1'] = f1_score(self.y, hy, average='binary')
-        else:
-            conf['_macrof1'] = f1_score(self.y, hy, average='macro')
-            conf['_microf1'] = f1_score(self.y, hy, average='micro')
-            conf['_weightedf1'] = f1_score(self.y, hy, average='weighted')
-
-        conf['_accuracy'] = accuracy_score(self.y, hy)
-        if self.score.startswith('avgf1:'):
-            _, k1, k2 = self.score.split(':')
-            conf['_' + self.score] = (M[k1] + M[k2]) / 2
-
-        conf['_score'] = conf['_' + self.score]
 
 
 def get_filename(kwargs, basename=None):

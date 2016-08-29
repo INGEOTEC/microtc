@@ -14,10 +14,16 @@
 import argparse
 import logging
 import microtc
-from microtc.classifier import SVC
+from microtc.classifier import ClassifierWrapper
 from microtc.utils import read_data, tweet_iterator
 # from microtc.params import OPTION_DELETE
-from multiprocessing import cpu_count
+from multiprocessing import cpu_count, Pool
+from .params import ParameterSelection
+from .scorewrapper import ScoreKFoldWrapper
+from .utils import read_data_labels
+from .textmodel import TextModel
+from sklearn.preprocessing import LabelEncoder
+import numpy as np
 import json
 import pickle
 
@@ -40,7 +46,7 @@ class CommandLine(object):
 
     def predict_kfold(self):
         pa = self.parser.add_argument
-        pa('-k', '--kfolds', dest='n_folds',
+        pa('-k', '--kfolds', dest='nfolds',
            help='Predict the training set using stratified k-fold',
            type=int)
 
@@ -81,30 +87,31 @@ class CommandLine(object):
 
     def main(self):
         self.data = self.parser.parse_args()
+        np.random.seed(self.data.seed)
         logging.basicConfig(level=self.data.verbose)
-
         if self.data.numprocs == 1:
-            numprocs = None
+            pool = None
         elif self.data.numprocs == 0:
-            numprocs = cpu_count()
+            pool = Pool(cpu_count())
         else:
-            numprocs = self.data.numprocs
+            pool = Pool(self.data.numprocs)
 
-        n_folds = self.data.n_folds
-        n_folds = n_folds if n_folds is not None else 5
-        assert self.data.score.split(":")[0] in ('macrof1', 'microf1', 'weightedf1', 'accuracy', 'avgf1', 'avgf1f0'), "Unknown score {0}".format(self.data.score)
+        nfolds = self.data.nfolds if self.data.nfolds is not None else 5
+        assert self.data.score.split(":")[0] in ('macrof1', 'microf1', 'weightedf1', 'accuracy', 'avgf1'), "Unknown score {0}".format(self.data.score)
 
-        best_list = SVC.predict_kfold_params(
-            self.data.training_set,
-            n_folds=n_folds,
-            score=self.data.score,
-            numprocs=numprocs,
-            seed=self.data.seed,
-            param_kwargs=dict(
-                bsize=self.data.samplesize,
-                hill_climbing=self.data.hill_climbing,
-            )
+        sel = ParameterSelection(params=None)
+
+        X, y = read_data_labels(self.data.training_set)
+        fun_score = ScoreKFoldWrapper(X, y, nfolds=nfolds, score=self.data.score, random_state=self.data.seed)
+
+        best_list = sel.search(
+            fun_score,
+            bsize=self.data.samplesize,
+            hill_climbing=self.data.hill_climbing,
+            pool=pool,
+            best_list=None
         )
+
         with open(self.get_output(), 'w') as fpt:
             fpt.write(json.dumps(best_list, indent=2, sort_keys=True))
 
@@ -129,11 +136,18 @@ class CommandLineTrain(CommandLine):
         with open(self.data.params_fname) as fpt:
             param_list = json.loads(fpt.read())
 
+        corpus, labels = read_data_labels(self.data.training_set)
         best = param_list[0]
-        svc = SVC.fit_from_file(self.data.training_set, best)
+        t = TextModel(corpus, **best)
+        le = LabelEncoder()
+        le.fit(labels)
+        y = le.transform(labels)
+        c = ClassifierWrapper()
+        X = [t[x] for x in corpus]
+        c.fit(X, y)
         
         with open(self.get_output(), 'wb') as fpt:
-            pickle.dump(svc, fpt)
+            pickle.dump([t, c, le], fpt)
 
 
 class CommandLineTest(CommandLine):
@@ -167,13 +181,12 @@ class CommandLineTest(CommandLine):
         self.data = self.parser.parse_args()
         logging.basicConfig(level=self.data.verbose)
         with open(self.data.model, 'rb') as fpt:
-            svc = pickle.load(fpt)
-        X = [svc.model[x] for x in read_data(self.data.test_set)]
+            model, svc, le = pickle.load(fpt)
+        X = [model[x] for x in read_data(self.data.test_set)]
 
         with open(self.get_output(), 'w') as fpt:
-
             if not self.data.decision_function:
-                hy = svc.predict(X)
+                hy = le.inverse_transform(svc.predict(X))
                 for tweet, klass in zip(tweet_iterator(self.data.test_set), hy):
                     tweet['klass'] = klass
                     fpt.write(json.dumps(tweet)+"\n")
@@ -193,10 +206,11 @@ class CommandLineTextModel(CommandLineTest):
         self.data = self.parser.parse_args()
         logging.basicConfig(level=self.data.verbose)
         with open(self.data.model, 'rb') as fpt:
-            svc = pickle.load(fpt)
+            textmodel, svc, le = pickle.load(fpt)
+
         with open(self.get_output(), 'w') as fpt:
             for tw in tweet_iterator(self.data.test_set):
-                extra = dict(svc.model[tw['text']] + [('num_terms', svc.num_terms)])
+                extra = dict(textmodel[tw['text']] + [('num_terms', svc.num_terms)])
                 tw.update(extra)
                 fpt.write(json.dumps(tw) + "\n")
 
@@ -219,3 +233,4 @@ def test():
 def textmodel():
     c = CommandLineTextModel()
     c.main()
+

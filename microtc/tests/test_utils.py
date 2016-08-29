@@ -23,13 +23,13 @@ def test_read_data_labels():
 
 
 def test_wrapper_score():
-    from microtc.params import Wrapper
+    from microtc.scorewrapper import ScoreKFoldWrapper
     from sklearn.metrics import f1_score
     import numpy as np
     np.random.seed(0)
     y = np.random.randint(3, size=100).astype(np.str)
     hy = np.random.randint(3, size=100)
-    w = Wrapper(None, y, 'avgf1:0:2', 10, None)
+    w = ScoreKFoldWrapper(None, y, score='avgf1:0:2', nfolds=10)
     conf = {}
     w.compute_score(conf, hy)
     f1 = f1_score(y.astype(np.int), hy, average=None)
