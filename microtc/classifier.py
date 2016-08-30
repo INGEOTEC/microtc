@@ -14,9 +14,7 @@
 # limitations under the License.
 
 from sklearn.svm import LinearSVC
-from b4msa.utils import read_data_labels
 from gensim.matutils import corpus2csc
-from b4msa.textmodel import TextModel
 import logging
 logging.basicConfig(format='%(asctime)s : %(levelname)s :%(message)s')
 

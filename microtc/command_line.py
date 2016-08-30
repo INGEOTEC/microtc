@@ -20,7 +20,7 @@ from microtc.utils import read_data, tweet_iterator
 # from microtc.params import OPTION_DELETE
 from multiprocessing import cpu_count, Pool
 from .params import ParameterSelection
-from .scorewrapper import ScoreKFoldWrapper
+from .scorewrapper import ScoreKFoldWrapper, ScoreSampleWrapper
 from .utils import read_data_labels
 from .textmodel import TextModel
 from sklearn.preprocessing import LabelEncoder
@@ -47,9 +47,10 @@ class CommandLine(object):
 
     def predict_kfold(self):
         pa = self.parser.add_argument
-        pa('-k', '--kfolds', dest='nfolds',
-           help='Predict the training set using stratified k-fold',
-           type=int)
+        pa('-k', '--kratio', dest='kratio',
+           help='Predict the training set using stratified k-fold (k > 1) or a sampling ratio (when 0 < k < 1)',
+           default=0.8,
+           type=float)
 
     def training_set(self):
         cdn = 'File containing the training set'
@@ -65,7 +66,7 @@ class CommandLine(object):
     def param_search(self):
         pa = self.parser.add_argument
         pa('-s', '--sample', dest='samplesize', type=int,
-           default=8,
+           default=32,
            help="The sample size of the parameter")
         pa('-H', '--hillclimbing', dest='hill_climbing', default=False,
            action='store_true',
@@ -99,13 +100,15 @@ class CommandLine(object):
         else:
             pool = Pool(self.data.numprocs)
 
-        nfolds = self.data.nfolds if self.data.nfolds is not None else 5
         assert self.data.score.split(":")[0] in ('macrof1', 'microf1', 'weightedf1', 'accuracy', 'avgf1'), "Unknown score {0}".format(self.data.score)
 
         sel = ParameterSelection(params=None)
 
         X, y = read_data_labels(self.data.training_set)
-        fun_score = ScoreKFoldWrapper(X, y, nfolds=nfolds, score=self.data.score, random_state=self.data.seed)
+        if self.data.kratio > 1:
+            fun_score = ScoreKFoldWrapper(X, y, nfolds=int(self.data.kratio), score=self.data.score, random_state=self.data.seed)
+        else:
+            fun_score = ScoreSampleWrapper(X, y, ratio=self.data.kratio, score=self.data.score, random_state=self.data.seed)
 
         if self.data.best_list:
             with open(self.data.best_list) as f:
