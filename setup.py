@@ -38,7 +38,10 @@ setup(
     packages=['microtc', 'microtc/tests', 'microtc/tools'],
     include_package_data=True,
     zip_safe=False,
-    package_data={'microtc/tests': ['text.json']},
+    package_data={
+        'microtc/tests': ['text.json'],
+        'microtc/resources': ['emoticons.json']
+    },
     scripts=[
         'microtc/tools/microtc-train',
         'microtc/tools/microtc-test',
