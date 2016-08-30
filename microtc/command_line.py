@@ -159,7 +159,7 @@ class CommandLineTrain(CommandLine):
             pickle.dump([t, c, le], fpt)
 
 
-class CommandLineTest(CommandLine):
+class CommandLinePredict(CommandLine):
     def __init__(self):
         self.parser = argparse.ArgumentParser(description='microtc')
         self.param_set()
@@ -210,7 +210,7 @@ class CommandLineTest(CommandLine):
                     fpt.write(json.dumps(tweet)+"\n")
 
 
-class CommandLineTextModel(CommandLineTest):
+class CommandLineTextModel(CommandLinePredict):
     def main(self):
         self.data = self.parser.parse_args()
         logging.basicConfig(level=self.data.verbose)
@@ -235,7 +235,7 @@ def train():
 
 
 def test():
-    c = CommandLineTest()
+    c = CommandLinePredict()
     c.main()
 
 
