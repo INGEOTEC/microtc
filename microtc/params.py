@@ -37,11 +37,15 @@ class SetVariable:
         return self.valid_values[i]
 
 class PowersetVariable:
-    def __init__(self, initial_set):
+    def __init__(self, initial_set, max_size=None):
         self.valid_values = []
+        if max_size is None:
+            max_size = len(initial_set)
 
         for i in range(1, len(initial_set)+1):
-            self.valid_values.extend(combinations(initial_set, i))
+            for l in combinations(initial_set, i):
+                if len(l) <= max_size:
+                    self.valid_values.append(l)
 
     def mismatches(self, value):
         lvalue = len(value)
@@ -93,12 +97,12 @@ DefaultParams = dict(
     lc=Boolean(),
     del_dup=Boolean(),
     del_punc=Boolean(),
-    token_list=PowersetVariable([(2, 2), (2, 1), -2, -1, 2, 3, 5, 7]),
+    token_list=PowersetVariable([(3, 1), (2, 2), (2, 1), -3, -2, -1, 2, 3, 5, 7, 9], max_size=4),
     # token_list=PowersetVariable([-3, -2, -1, 3, 5, 7]),
-    negation=Fixed(False),
-    stemming=Fixed(False),
-    stopwords=Fixed(OPTION_NONE),
-    lang=Fixed(None),
+    # negation=Fixed(False),
+    # stemming=Fixed(False),
+    # stopwords=Fixed(OPTION_NONE),
+    # lang=Fixed(None),
 )
 
 
