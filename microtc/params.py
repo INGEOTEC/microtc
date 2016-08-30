@@ -85,16 +85,16 @@ def Boolean():
 
 
 DefaultParams = dict(
-    strip_diac=Boolean(),
+    strip_diac=Option(),
     num_option=Option(),
     usr_option=Fixed(OPTION_NONE),
     url_option=Fixed(OPTION_NONE),
-    emo_option=Option(),
+    emo_option=Fixed(OPTION_NONE),
     lc=Boolean(),
-    del_dup1=Boolean(),
+    del_dup=Boolean(),
     del_punc=Boolean(),
-    token_list=PowersetVariable([(2, 2), (2, 1), -3, -2, -1, 1, 2, 3, 5, 7]),
-    # token_list=PowersetVariable([-3, -2, -1, 1, 2, 3, 5, 7]),
+    token_list=PowersetVariable([(2, 2), (2, 1), -2, -1, 2, 3, 5, 7]),
+    # token_list=PowersetVariable([-3, -2, -1, 3, 5, 7]),
     negation=Fixed(False),
     stemming=Fixed(False),
     stopwords=Fixed(OPTION_NONE),

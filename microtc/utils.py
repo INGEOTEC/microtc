@@ -15,60 +15,39 @@
 import json
 import gzip
 import logging
-from sklearn.metrics import f1_score
 logging.basicConfig(format='%(asctime)s : %(levelname)s :%(message)s')
 
 
-def tweet_iterator(filename):
-
-    # The file is a gz file...
+def line_iterator(filename):
     if filename.endswith(".gz"):
-        # Uncompress the file and open it...
         f = gzip.GzipFile(filename)
     else:
-        # Not JSON extension, show warning...
-        if not filename.endswith(".json"):
-            # Print warning to user...
-            print("WARNING! File extension not supported (" + filename.split(".")[-1] + ")")
-            print("Assuming JSON format: {\"text\":, \"klass\":}")
-        # Open the file...
         f = open(filename, encoding='utf8')
 
-    # Start the iterator...
     while True:
-        # Get the nex line...
         line = f.readline()
         # Test the type of the line and encode it if neccesary...
         if type(line) is bytes:
             line = str(line, encoding='utf8')
+
         # If the line is empty, we are done...
         if len(line) == 0:
             break
-        # Remove whitespaces from the beginning and the end...
+
         line = line.strip()
         # If line is empty, jump to next...
         if len(line) == 0:
             continue
-        # Clean var to yield...
-        t = None
 
-        try:
-            # Try to get data from JSON format...
-            t = get_tweet(line)
-            # Return the generator...
-            yield t
-        # Catch the JSON Decode Error...
-        except (json.decoder.JSONDecodeError, ValueError):
-            # Print warning to user...
-            print("WARNING! we found and error while parsing file:", str(f))
-            print("most of these errors occur due to concurrent writes")
+        yield line
 
     # Close the file...
     f.close()
 
 
-def get_tweet(line):
-    return json.loads(line)
+def tweet_iterator(filename):
+    for line in line_iterator(filename):
+        yield json.loads(line)
 
 
 def read_data_labels(filename, get_tweet='text',

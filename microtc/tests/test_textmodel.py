@@ -87,73 +87,24 @@ def test_lang():
         "del_dup1": True,
         "emo_option": "group",
         "lc": True,
-        "negation": True,
         "num_option": "group",
-        "stemming": True,
-        "stopwords": "group",
         "strip_diac": False,
         "token_list": [
+            (2, 1),
+            (2, 2),
             -1,
             # 5,
         ],
         "url_option": "group",
         "usr_option": "group",
-        "lang": "spanish",
     })
     text = "El alma de la fiesta :) conociendo la maquinaria @user bebiendo nunca manches que onda"
     a = model.tokenize(text)
-    b = ['_sw', 'alma', '_sw', '_sw', 'fiest', '_pos', 'conoc', '_sw', 'maquinari', '_usr', 'beb', 'no_manch', '_sw', 'onda']
+    b = ['el~de', 'alma~la', 'de~fiesta', 'la~_pos', 'fiesta~conociendo', '_pos~la', 'conociendo~maquinaria', 'la~_usr', 'maquinaria~bebiendo', '_usr~nunca',
+         'bebiendo~manches', 'nunca~que', 'manches~onda', 'el~la', 'alma~fiesta', 'de~_pos', 'la~conociendo', 'fiesta~la', '_pos~maquinaria', 'conociendo~_usr',
+         'la~bebiendo', 'maquinaria~nunca', '_usr~manches', 'bebiendo~que', 'nunca~onda', 'el', 'alma', 'de', 'la', 'fiesta', '_pos',
+         'conociendo', 'la', 'maquinaria', '_usr', 'bebiendo', 'nunca', 'manches', 'que', 'onda']
     print(text)
     assert a == b, "got: {0}, expected: {1}".format(a, b)
 
 
-def test_negations():
-    from microtc.textmodel import TextModel
-
-    text = [
-        "el alma de la fiesta XD"
-    ]
-    model = TextModel(text, **{
-        'num_option': 'group',
-        'strip_diac': False,
-        'stopwords': 'delete',
-        'negation': True,
-        'stemming': True,
-        'lc': False, 'token_list': [-1],
-        'usr_option': 'group', 'del_dup1': False, 'emo_option': 'group', 'lang': 'spanish', 'url_option': 'delete'
-    })
-
-    text = """@usuario los pollos y las vacas nunca hubiesen permitido que no se hubiese hecho nada al respecto"""
-    a = model.tokenize(text)
-    b = ['_usr', 'poll', 'vac', 'hub', 'no_permit', 'hub', 'no_hech', 'no_respect']
-
-    assert a == b
-
-
-def test_negations_italian():
-    from microtc.textmodel import TextModel
-
-    text = [
-        "XD"
-    ]
-
-    model = TextModel(text, **{
-        'num_option': 'group',
-        'strip_diac': False,
-        'stopwords': 'delete',
-        'negation': True,
-        'stemming': True,
-        'lc': False, 'token_list': [-1],
-        'usr_option': 'group',
-        'del_dup1': False,
-        'emo_option': 'group',
-        'lang': 'italian',
-        'url_option': 'delete'
-    })
-
-    text = """@User Come non condividere; me ne frega niente"""
-    a = model.tokenize(text)
-    print("Input:", text)
-    print("Output:", a)
-    b = ['_usr', 'com', 'no_condividere', 'me', 'no_freg', 'nient']
-    assert a == b

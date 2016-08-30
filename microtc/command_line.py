@@ -1,4 +1,5 @@
 # Copyright 2016 Mario Graff (https://github.com/mgraffg)
+# with contributions of Eric S. Tellez <eric.tellez@infotec.mx>
 
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -69,6 +70,8 @@ class CommandLine(object):
         pa('-H', '--hillclimbing', dest='hill_climbing', default=False,
            action='store_true',
            help="Determines if hillclimbing search is also perfomed to improve the selection of parameters")
+        pa('-r', '--resume', dest='best_list', default=None,
+           help="Loads the given file and resumes the search process")
         pa('-n', '--numprocs', dest='numprocs', type=int, default=1,
            help="Number of processes to compute the best setup")
         pa('-S', '--score', dest='score', type=str, default='macrof1',
@@ -104,12 +107,18 @@ class CommandLine(object):
         X, y = read_data_labels(self.data.training_set)
         fun_score = ScoreKFoldWrapper(X, y, nfolds=nfolds, score=self.data.score, random_state=self.data.seed)
 
+        if self.data.best_list:
+            with open(self.data.best_list) as f:
+                best_list = json.load(f)
+        else:
+            best_list = None
+
         best_list = sel.search(
             fun_score,
             bsize=self.data.samplesize,
             hill_climbing=self.data.hill_climbing,
             pool=pool,
-            best_list=None
+            best_list=best_list
         )
 
         with open(self.get_output(), 'w') as fpt:

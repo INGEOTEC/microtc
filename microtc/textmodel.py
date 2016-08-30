@@ -17,7 +17,6 @@ import unicodedata
 from gensim import corpora
 from gensim.models.tfidfmodel import TfidfModel
 from .params import OPTION_DELETE, OPTION_GROUP, OPTION_NONE
-from .lang_dependency import LangDependency
 from .utils import tweet_iterator
 from collections import defaultdict
 import logging
@@ -155,7 +154,7 @@ def expand_skipgrams_word_list(wlist, qsize, output, sep='~'):
     """Expands a list of words into a list of skipgrams. It uses `sep` to join words"""
     n = len(wlist)
     qsize, skip = qsize
-    for start in range(n - (qsize+skip) + 1):
+    for start in range(n - (qsize + (qsize - 1) * skip) + 1):
         if qsize == 2:
             t = wlist[start] + sep + wlist[start+1+skip]
         else:
@@ -179,7 +178,6 @@ class TextModel:
             del_dup1=True,
             del_punc=False,
             token_list=[-1],
-            lang=None,
             **kwargs
     ):
         self.strip_diac = strip_diac
@@ -193,11 +191,6 @@ class TextModel:
         self.del_punc = del_punc
         self.token_list = token_list
 
-        if lang:
-            self.lang = LangDependency(lang)
-        else:
-            self.lang = None
-            
         self.kwargs = {k: v for k, v in kwargs.items() if k[0] != '_'}
 
         docs = [self.tokenize(d) for d in docs]
@@ -216,7 +209,6 @@ class TextModel:
             del_dup1=self.del_dup1,
             del_punc=self.del_punc,
             token_list=self.token_list,
-            lang=self.lang,
             kwargs=self.kwargs
         ))
 
@@ -251,9 +243,6 @@ class TextModel:
 
         text = norm_chars(text, strip_diac=self.strip_diac, del_dup1=self.del_dup1, del_punc=self.del_punc)
 
-        if self.lang:
-            text = self.lang.transform(text, **self.kwargs)
-            
         L = []
         textlist = None
 
