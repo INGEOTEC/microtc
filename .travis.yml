@@ -15,7 +15,7 @@ before_install:
   - pip install gensim
   - pip install nose
 
-script: nosetests --with-coverage --cover-package=microTC
+script: nosetests --with-coverage --cover-package=microtc
 
 after_success: coveralls || echo "Coveralls upload failed"
 
