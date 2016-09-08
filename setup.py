@@ -40,7 +40,7 @@ setup(
     zip_safe=False,
     package_data={
         'microtc/tests': ['text.json'],
-        'microtc/resources': ['emoticons.json']
+        'microtc/resources': ['emoticons.json'],
     },
     scripts=[
         'microtc/tools/microtc-train',

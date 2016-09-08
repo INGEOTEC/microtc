@@ -89,14 +89,14 @@ def Boolean():
 
 
 DefaultParams = dict(
-    strip_diac=Option(),
     num_option=Option(),
-    usr_option=Fixed(OPTION_NONE),
-    url_option=Fixed(OPTION_NONE),
-    emo_option=Fixed(OPTION_NONE),
+    usr_option=Option(),
+    url_option=Option(),
+
     lc=Boolean(),
     del_dup=Boolean(),
     del_punc=Boolean(),
+    del_diac=Option(),
     token_list=PowersetVariable([(3, 1), (2, 2), (2, 1), -3, -2, -1, 2, 3, 5, 7, 9], max_size=4),
     # token_list=PowersetVariable([-3, -2, -1, 3, 5, 7]),
     # negation=Fixed(False),

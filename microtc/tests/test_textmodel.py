@@ -61,19 +61,6 @@ def test_params():
         ins = TextModel(text, **args)
         assert isinstance(ins[text[0]], list)
 
-def test_emoticons():
-    from microtc.textmodel import EmoticonClassifier, norm_chars
-    emo = EmoticonClassifier()
-    for a, b in [
-            ("Hi :) :P XD", "~Hi~_pos~_pos~_pos~"),
-            ("excelente dia xc", "~excelente~dia~_neg~")
-    ]:
-        _a = norm_chars(a)
-        assert ' ' not in _a, "norm_chars normalizes spaces {0} ==> {1}".format(a, _a)
-        _b = emo.replace(_a)
-        print("[{0}] => [{1}]; should be [{2}]".format(a, _b, b))
-        assert _b == b
-
 
 def test_lang():
     from microtc.textmodel import TextModel
