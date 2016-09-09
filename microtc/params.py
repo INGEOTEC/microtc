@@ -92,7 +92,7 @@ DefaultParams = dict(
     num_option=Option(),
     usr_option=Option(),
     url_option=Option(),
-
+    emo_option=Option(),
     lc=Boolean(),
     del_dup=Boolean(),
     del_punc=Boolean(),

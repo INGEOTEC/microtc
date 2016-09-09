@@ -17,7 +17,7 @@ import unicodedata
 from gensim import corpora
 from gensim.models.tfidfmodel import TfidfModel
 from .params import OPTION_DELETE, OPTION_GROUP, OPTION_NONE
-from .emoticons import get_compiled_map, transform_del, transform_replace_by_klass
+from .emoticons import get_compiled_map, transform_del, transform_replace_by_klass, EmoticonClassifier
 import logging
 
 logging.basicConfig(format='%(asctime)s : %(levelname)s :%(message)s')
@@ -134,7 +134,8 @@ class TextModel:
         if emo_option == OPTION_NONE:
             self.emo_map = None
         else:
-            self.emo_map = get_compiled_map(os.path.join(os.path.dirname(__file__), 'resources', 'emoticons.json'))
+            # self.emo_map = get_compiled_map(os.path.join(os.path.dirname(__file__), 'resources', 'emoticons.json'))
+            self.emo_map = EmoticonClassifier()
 
         docs = [self.tokenize(d) for d in docs]
         self.dictionary = corpora.Dictionary(docs)
@@ -163,10 +164,12 @@ class TextModel:
         if text is None:
             text = ''
 
-        if self.emo_option == OPTION_DELETE:
-            text = transform_del(text, self.emo_map)
-        elif self.emo_option == OPTION_GROUP:
-            text = transform_replace_by_klass(text, self.emo_map)
+        # if self.emo_option == OPTION_DELETE:
+        #     text = transform_del(text, self.emo_map)
+        # elif self.emo_option == OPTION_GROUP:
+        #     text = transform_replace_by_klass(text, self.emo_map)
+        if self.emo_map:
+            text = self.emo_map.replace(text, option=self.emo_option)
 
         if self.lc:
             text = text.lower()
