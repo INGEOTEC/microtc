@@ -17,7 +17,8 @@ import unicodedata
 from gensim import corpora
 from gensim.models.tfidfmodel import TfidfModel
 from .params import OPTION_DELETE, OPTION_GROUP, OPTION_NONE
-from .emoticons import get_compiled_map, transform_del, transform_replace_by_klass, EmoticonClassifier
+# from .emoticons import get_compiled_map, transform_del, transform_replace_by_klass, EmoticonClassifier
+from .emoticons import EmoticonClassifier
 import logging
 
 logging.basicConfig(format='%(asctime)s : %(levelname)s :%(message)s')
@@ -117,6 +118,8 @@ class TextModel:
             del_punc=False,
             del_diac=True,
             token_list=[-1],
+            token_min_freq=1,
+            token_max_ratio=1.0,
             **kwargs
     ):
         self.del_diac = del_diac
@@ -128,6 +131,8 @@ class TextModel:
         self.del_dup1 = del_dup1
         self.del_punc = del_punc
         self.token_list = token_list
+        self.token_min_freq = token_min_freq
+        self.token_max_ratio = token_max_ratio
 
         self.kwargs = {k: v for k, v in kwargs.items() if k[0] != '_'}
 
@@ -140,6 +145,9 @@ class TextModel:
         docs = [self.tokenize(d) for d in docs]
         self.dictionary = corpora.Dictionary(docs)
         corpus = [self.dictionary.doc2bow(d) for d in docs]
+        if self.token_min_freq != 1 or self.token_max_ratio != 1.0:
+            self.dictionary.filter_extremes(no_below=self.token_min_freq, no_above=self.token_max_ratio, keep_n=None)
+
         self.model = TfidfModel(corpus)
 
     def __str__(self):
@@ -153,6 +161,8 @@ class TextModel:
             del_punc=self.del_punc,
             del_diac=self.del_diac,
             token_list=self.token_list,
+            token_min_freq=self.token_min_freq,
+            token_max_ratio=self.token_max_ratio,
             kwargs=self.kwargs
         ))
 

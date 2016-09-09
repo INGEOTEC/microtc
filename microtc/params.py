@@ -14,6 +14,7 @@ except ImportError:
 
 logging.basicConfig(format='%(asctime)s : %(levelname)s :%(message)s')
 
+
 class Fixed:
     def __init__(self, value):
         self.value = value
@@ -36,11 +37,12 @@ class SetVariable:
         i = np.random.randint(len(self.valid_values))
         return self.valid_values[i]
 
+
 class PowersetVariable:
     def __init__(self, initial_set, max_size=None):
         self.valid_values = []
         if max_size is None:
-            max_size = len(initial_set)
+            max_size = len(initial_set) // 2 + 1
 
         for i in range(1, len(initial_set)+1):
             for l in combinations(initial_set, i):
@@ -92,13 +94,17 @@ DefaultParams = dict(
     num_option=Option(),
     usr_option=Option(),
     url_option=Option(),
-    emo_option=Option(),
+    # emo_option=Option(),
+    emo_option=Fixed(OPTION_NONE),
     lc=Boolean(),
     del_dup=Boolean(),
     del_punc=Boolean(),
     del_diac=Option(),
-    token_list=PowersetVariable([(3, 1), (2, 2), (2, 1), -3, -2, -1, 2, 3, 5, 7, 9], max_size=4),
-    # token_list=PowersetVariable([-3, -2, -1, 3, 5, 7]),
+    token_list=PowersetVariable([(3, 1), (2, 2), (2, 1), -3, -2, -1, 2, 3, 5, 7, 9], max_size=None),
+    # token_min_freq=SetVariable([1, 3, 10, 30, 100, 1000]),
+    # token_max_ratio=SetVariable([0.1, 0.25, 0.5, 0.75, 1.0]),
+    token_min_freq=SetVariable([1]),
+    token_max_ratio=SetVariable([1.0]),
     # negation=Fixed(False),
     # stemming=Fixed(False),
     # stopwords=Fixed(OPTION_NONE),
@@ -193,9 +199,11 @@ class ParameterSelection:
                     break
 
         if hill_climbing:
-            _hill_climbing(['token_list'], "optimizing token_list")
+            _hill_climbing(['token_list', 'token_min_freq', 'token_max_ratio'], "optimizing token_list")
             ks = list(self.params.keys())
             ks.remove('token_list')
+            ks.remove('token_min_freq')
+            ks.remove('token_max_ratio')
             _hill_climbing(ks, "optimizing the rest of params")
 
         return best_list
