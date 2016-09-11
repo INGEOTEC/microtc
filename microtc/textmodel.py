@@ -118,8 +118,9 @@ class TextModel:
             del_punc=False,
             del_diac=True,
             token_list=[-1],
-            token_min_freq=1,
-            token_max_ratio=1.0,
+            token_min_filter=-1,
+            token_max_filter=1.0,
+            tfidf=True,
             **kwargs
     ):
         self.del_diac = del_diac
@@ -131,9 +132,9 @@ class TextModel:
         self.del_dup1 = del_dup1
         self.del_punc = del_punc
         self.token_list = token_list
-        self.token_min_freq = token_min_freq
-        self.token_max_ratio = token_max_ratio
-
+        self.token_min_filter = token_min_filter
+        self.token_max_filter = token_max_filter
+        self.tfidf = tfidf
         self.kwargs = {k: v for k, v in kwargs.items() if k[0] != '_'}
 
         if emo_option == OPTION_NONE:
@@ -145,10 +146,21 @@ class TextModel:
         docs = [self.tokenize(d) for d in docs]
         self.dictionary = corpora.Dictionary(docs)
         corpus = [self.dictionary.doc2bow(d) for d in docs]
-        if self.token_min_freq != 1 or self.token_max_ratio != 1.0:
-            self.dictionary.filter_extremes(no_below=self.token_min_freq, no_above=self.token_max_ratio, keep_n=None)
+        if self.token_min_filter != 1 or self.token_max_filter != 1.0:
+            if self.token_min_filter < 0:
+                self.token_min_filter = abs(self.token_min_filter)
+            else:
+                self.token_min_filter = int(len(corpus) * self.token_min_filter)
 
-        self.model = TfidfModel(corpus)
+            if self.token_max_filter < 0:
+                self.token_max_filter = abs(self.token_max_filter)/len(corpus)
+
+            self.dictionary.filter_extremes(no_below=self.token_min_filter, no_above=self.token_max_filter, keep_n=None)
+
+        if self.tfidf:
+            self.model = TfidfModel(corpus)
+        else:
+            self.model = None
 
     def __str__(self):
         return "[TextModel {0}]".format(dict(
@@ -161,13 +173,17 @@ class TextModel:
             del_punc=self.del_punc,
             del_diac=self.del_diac,
             token_list=self.token_list,
-            token_min_freq=self.token_min_freq,
-            token_max_ratio=self.token_max_ratio,
+            token_min_filter=self.token_min_filter,
+            token_max_filter=self.token_max_filter,
+            tfidf=self.tfidf,
             kwargs=self.kwargs
         ))
 
     def __getitem__(self, text):
-        return self.model[self.dictionary.doc2bow(self.tokenize(text))]
+        if self.tfidf:
+            return self.model[self.dictionary.doc2bow(self.tokenize(text))]
+        else:
+            return self.dictionary.doc2bow(self.tokenize(text))
 
     def tokenize(self, text):
         # print("tokenizing", str(self), text)

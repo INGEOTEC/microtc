@@ -100,11 +100,12 @@ DefaultParams = dict(
     del_dup=Boolean(),
     del_punc=Boolean(),
     del_diac=Option(),
-    token_list=PowersetVariable([(3, 1), (2, 2), (2, 1), -3, -2, -1, 2, 3, 5, 7, 9], max_size=None),
-    # token_min_freq=SetVariable([1, 3, 10, 30, 100, 1000]),
-    # token_max_ratio=SetVariable([0.1, 0.25, 0.5, 0.75, 1.0]),
-    token_min_freq=SetVariable([1]),
-    token_max_ratio=SetVariable([1.0]),
+    token_list=PowersetVariable([(3, 1), (2, 2), (2, 1), -3, -2, -1, 2, 3, 5, 7, 9]),
+    # negative values means for absolute frequencies, positive values between 0 and 1 means for ratio
+    # token_min_filter=SetVariable([-1, -3, -10]),
+    token_min_filter=SetVariable([-1]),
+    token_max_filter=SetVariable([1.0]),
+    tfidf=Fixed(False),
     # negation=Fixed(False),
     # stemming=Fixed(False),
     # stopwords=Fixed(OPTION_NONE),
@@ -199,11 +200,15 @@ class ParameterSelection:
                     break
 
         if hill_climbing:
-            _hill_climbing(['token_list', 'token_min_freq', 'token_max_ratio'], "optimizing token_list")
+            _hill_climbing(['token_list'], "optimizing token_list")
+            # _hill_climbing(['token_min_filter', 'token_max_filter'], "optimizing token max and min filters")
+            if len(self.params['token_min_filter'].valid_values) > 1 or len(self.params['token_max_filter'].valid_values) > 1:
+                _hill_climbing(['token_list', 'token_min_filter', 'token_max_filter'], "optimizing all token parameters")
+
             ks = list(self.params.keys())
             ks.remove('token_list')
-            ks.remove('token_min_freq')
-            ks.remove('token_max_ratio')
+            ks.remove('token_min_filter')
+            ks.remove('token_max_filter')
             _hill_climbing(ks, "optimizing the rest of params")
 
         return best_list
