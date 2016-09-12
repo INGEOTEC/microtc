@@ -103,9 +103,10 @@ DefaultParams = dict(
     token_list=PowersetVariable([(3, 1), (2, 2), (2, 1), -3, -2, -1, 2, 3, 5, 7, 9]),
     # negative values means for absolute frequencies, positive values between 0 and 1 means for ratio
     # token_min_filter=SetVariable([-1, -3, -10]),
-    token_min_filter=SetVariable([-1]),
-    token_max_filter=SetVariable([1.0]),
-    tfidf=Fixed(False),
+    # token_max_filter=SetVariable([0.75, 1.0]),
+    token_min_filter=Fixed(-1),
+    token_max_filter=Fixed(1.0),
+    tfidf=Boolean(),
     # negation=Fixed(False),
     # stemming=Fixed(False),
     # stopwords=Fixed(OPTION_NONE),
