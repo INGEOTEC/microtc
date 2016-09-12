@@ -15,9 +15,9 @@ from setuptools import setup
 import microtc
 
 
-with open('README.rst') as fpt:
-    long_desc = fpt.read()
-
+#with open('README.rst') as fpt:
+#    long_desc = fpt.read()
+long_desc = ''
 
 setup(
     name="microtc",
@@ -44,7 +44,7 @@ setup(
     },
     scripts=[
         'microtc/tools/microtc-train',
-        'microtc/tools/microtc-test',
+        'microtc/tools/microtc-predict',
         'microtc/tools/microtc-params',
         'microtc/tools/microtc-textModel',
         'microtc/tools/microtc-perf',
