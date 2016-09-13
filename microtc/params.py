@@ -18,6 +18,7 @@ logging.basicConfig(format='%(asctime)s : %(levelname)s :%(message)s')
 class Fixed:
     def __init__(self, value):
         self.value = value
+        self.valid_values = [value]
 
     def neighborhood(self, v):
         return []
