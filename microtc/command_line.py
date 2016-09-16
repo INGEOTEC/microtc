@@ -89,8 +89,8 @@ class CommandLine(object):
             return self.data.training_set + ".output"
         return self.data.output
 
-    def main(self):
-        self.data = self.parser.parse_args()
+    def main(self, args=None):
+        self.data = self.parser.parse_args(args=args)
         np.random.seed(self.data.seed)
         logging.basicConfig(level=self.data.verbose)
         if self.data.numprocs == 1:
@@ -127,6 +127,8 @@ class CommandLine(object):
         with open(self.get_output(), 'w') as fpt:
             fpt.write(json.dumps(best_list, indent=2, sort_keys=True))
 
+        return best_list
+
 
 class CommandLineTrain(CommandLine):
     def __init__(self):
@@ -142,8 +144,8 @@ class CommandLineTrain(CommandLine):
            required=True,
            help="TextModel params")
 
-    def main(self):
-        self.data = self.parser.parse_args()
+    def main(self, args=None):
+        self.data = self.parser.parse_args(args=args)
         logging.basicConfig(level=self.data.verbose)
         with open(self.data.params_fname) as fpt:
             param_list = json.loads(fpt.read())
@@ -161,6 +163,7 @@ class CommandLineTrain(CommandLine):
         with open(self.get_output(), 'wb') as fpt:
             pickle.dump([t, c, le], fpt)
 
+        return [t, c, le]
 
 class CommandLinePredict(CommandLine):
     def __init__(self):
@@ -186,32 +189,40 @@ class CommandLinePredict(CommandLine):
            help='Logging level default: INFO + 1',
            default=logging.INFO+1)
 
-    def main(self):
-        self.data = self.parser.parse_args()
+    def main(self, args=None, model_svc_le=None):
+        self.data = self.parser.parse_args(args=args)
         logging.basicConfig(level=self.data.verbose)
-        with open(self.data.model, 'rb') as fpt:
-            model, svc, le = pickle.load(fpt)
-        
+        if model_svc_le is None:
+            with open(self.data.model, 'rb') as fpt:
+                model, svc, le = pickle.load(fpt)
+        else:
+            model, svc, le = model_svc_le
+
         veclist, afflist = [], []
         for x in read_data(self.data.test_set):
             v, a = model.vectorize(x)
             veclist.append(v)
             afflist.append(a)
 
-        with open(self.get_output(), 'w') as fpt:
-            hy = svc.decision_function(veclist)
-            for tweet, scores, aff in zip(tweet_iterator(self.data.test_set), hy, afflist):
-                if len(scores.shape) == 1:
-                    index = np.argmax(scores)
-                else:
-                    index = scores.argmax(axis=1)
+        L = []
+        hy = svc.decision_function(veclist)
+        for tweet, scores, aff in zip(tweet_iterator(self.data.test_set), hy, afflist):
+            if len(scores.shape) == 1:
+                index = np.argmax(scores)
+            else:
+                index = scores.argmax(axis=1)
 
-                klass = le.inverse_transform(index)
-                tweet['decision_function'] = scores.tolist()
-                tweet['voc_affinity'] = aff
-                tweet['klass'] = klass
+            klass = le.inverse_transform(index)
+            tweet['decision_function'] = scores.tolist()
+            tweet['voc_affinity'] = aff
+            tweet['klass'] = klass
+            L.append(tweet)
+
+        with open(self.get_output(), 'w') as fpt:
+            for tweet in L:
                 fpt.write(json.dumps(tweet)+"\n")
 
+        return L
 
 class CommandLineTextModel(CommandLinePredict):
     def main(self):
@@ -245,4 +256,3 @@ def test():
 def textmodel():
     c = CommandLineTextModel()
     c.main()
-
