@@ -141,29 +141,6 @@ def test_test():
     assert len(y)
 
 
-def test_decision_function():
-    from microtc.command_line import params, train, test
-    from microtc.utils import tweet_iterator
-    import os
-    import sys
-    import tempfile
-    output = tempfile.mktemp()
-    fname = os.path.dirname(__file__) + '/text.json'
-    sys.argv = ['microtc', '-o', output, '-k', '2', fname, '-s', '2']
-    params()
-    sys.argv = ['microtc', '-m', output, fname, '-o', output]
-    train()
-    output2 = tempfile.mktemp()
-    sys.argv = ['microtc', '-m', output, fname,
-                '-o', output2, '--decision-function']
-    test()
-    d = [x for x in tweet_iterator(output2)]
-    os.unlink(output)
-    os.unlink(output2)
-    assert len(d)
-    assert len(d) == len([x for x in d if 'decision_function' in x])
-
-
 def test_score():
     from microtc.command_line import params
     import os
