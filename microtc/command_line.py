@@ -151,7 +151,7 @@ class CommandLineTrain(CommandLine):
         corpus, labels = read_data_labels(self.data.training_set)
         best = param_list[0]
         t = TextModel(corpus, **best)
-       le = LabelEncoder()
+        le = LabelEncoder()
         le.fit(labels)
         y = le.transform(labels)
         c = ClassifierWrapper()
