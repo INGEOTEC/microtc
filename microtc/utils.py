@@ -56,12 +56,16 @@ def read_data_labels(filename, get_tweet='text',
     count = 0
     for tweet in tweet_iterator(filename):
         count += 1
-        x = get_tweet(tweet) if callable(get_tweet) else tweet[get_tweet]
-        y = get_klass(tweet) if callable(get_klass) else tweet[get_klass]
-        data.append(x)
-        labels.append(y)
-        if count == maxitems:
-            break
+        try:
+            x = get_tweet(tweet) if callable(get_tweet) else tweet[get_tweet]
+            y = get_klass(tweet) if callable(get_klass) else tweet[get_klass]
+            data.append(x)
+            labels.append(y)
+            if count == maxitems:
+                break
+        except KeyError as e:
+            logging.warn("error at line {0}, input: {1}".format(count, tweet))
+            raise e
 
     return data, labels
 

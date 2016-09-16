@@ -151,7 +151,7 @@ class CommandLineTrain(CommandLine):
         corpus, labels = read_data_labels(self.data.training_set)
         best = param_list[0]
         t = TextModel(corpus, **best)
-        le = LabelEncoder()
+       le = LabelEncoder()
         le.fit(labels)
         y = le.transform(labels)
         c = ClassifierWrapper()
@@ -175,9 +175,6 @@ class CommandLinePredict(CommandLine):
         pa('-m', '--model', dest='model', type=str,
            required=True,
            help="SVM Model file name")
-        pa('--decision-function', dest='decision_function', default=False,
-           action='store_true',
-           help='Outputs the decision functions instead of the class')
 
     def training_set(self):
         cdn = 'File containing the test set'
@@ -194,23 +191,26 @@ class CommandLinePredict(CommandLine):
         logging.basicConfig(level=self.data.verbose)
         with open(self.data.model, 'rb') as fpt:
             model, svc, le = pickle.load(fpt)
-        X = [model[x] for x in read_data(self.data.test_set)]
+        
+        veclist, afflist = [], []
+        for x in read_data(self.data.test_set):
+            v, a = model.vectorize(x)
+            veclist.append(v)
+            afflist.append(a)
 
         with open(self.get_output(), 'w') as fpt:
-            if not self.data.decision_function:
-                hy = le.inverse_transform(svc.predict(X))
-                for tweet, klass in zip(tweet_iterator(self.data.test_set), hy):
-                    tweet['klass'] = klass
-                    fpt.write(json.dumps(tweet)+"\n")
-            else:
-                hy = svc.decision_function(X)
-                for tweet, klass in zip(tweet_iterator(self.data.test_set), hy):
-                    try:
-                        o = klass.tolist()
-                    except AttributeError:
-                        o = klass
-                    tweet['decision_function'] = o
-                    fpt.write(json.dumps(tweet)+"\n")
+            hy = svc.decision_function(veclist)
+            for tweet, scores, aff in zip(tweet_iterator(self.data.test_set), hy, afflist):
+                if len(scores.shape) == 1:
+                    index = np.argmax(scores)
+                else:
+                    index = scores.argmax(axis=1)
+
+                klass = le.inverse_transform(index)
+                tweet['decision_function'] = scores.tolist()
+                tweet['voc_affinity'] = aff
+                tweet['klass'] = klass
+                fpt.write(json.dumps(tweet)+"\n")
 
 
 class CommandLineTextModel(CommandLinePredict):

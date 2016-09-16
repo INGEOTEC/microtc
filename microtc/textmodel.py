@@ -12,7 +12,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 import re
-import os
 import unicodedata
 from gensim import corpora
 from gensim.models.tfidfmodel import TfidfModel
@@ -45,7 +44,7 @@ def get_word_list(text):
     return ("".join(L)).split()
 
 
-def norm_chars(text, del_diac=True, del_dup1=True, del_punc=False):
+def norm_chars(text, del_diac=True, del_dup=True, del_punc=False):
     L = ['~']
 
     prev = '~'
@@ -57,7 +56,7 @@ def norm_chars(text, del_diac=True, del_dup1=True, del_punc=False):
             
         if u in ('\n', '\r', ' ', '\t'):
             u = '~'
-        elif del_dup1 and prev == u:
+        elif del_dup and prev == u:
             continue
         elif del_punc and u in SKIP_SYMBOLS:
             prev = u
@@ -83,6 +82,7 @@ def expand_qgrams(text, qsize, output):
 def expand_qgrams_word_list(wlist, qsize, output, sep='~'):
     """Expands a list of words into a list of q-grams. It uses `sep` to join words"""
     n = len(wlist)
+    
     for start in range(n - qsize + 1):
         t = sep.join(wlist[start:start+qsize])
         output.append(t)
@@ -114,7 +114,7 @@ class TextModel:
             url_option=OPTION_GROUP,
             emo_option=OPTION_GROUP,
             lc=True,
-            del_dup1=True,
+            del_dup=True,
             del_punc=False,
             del_diac=True,
             token_list=[-1],
@@ -129,7 +129,7 @@ class TextModel:
         self.url_option = url_option
         self.emo_option = emo_option
         self.lc = lc
-        self.del_dup1 = del_dup1
+        self.del_dup = del_dup
         self.del_punc = del_punc
         self.token_list = token_list
         self.token_min_filter = token_min_filter
@@ -169,7 +169,7 @@ class TextModel:
             url_option=self.url_option,
             emo_option=self.emo_option,
             lc=self.lc,
-            del_dup1=self.del_dup1,
+            del_dup=self.del_dup,
             del_punc=self.del_punc,
             del_diac=self.del_diac,
             token_list=self.token_list,
@@ -180,10 +180,22 @@ class TextModel:
         ))
 
     def __getitem__(self, text):
+        vec, affinity = self.vectorize(text)
+        return vec
+
+    def vectorize(self, text):
+        tok = self.tokenize(text)
+        bow = self.dictionary.doc2bow(tok)
+
         if self.tfidf:
-            return self.model[self.dictionary.doc2bow(self.tokenize(text))]
+            m = self.model[bow]
         else:
-            return self.dictionary.doc2bow(self.tokenize(text))
+            m = bow
+        
+        try:
+            return m, len(bow) / len(tok)
+        except ZeroDivisionError:
+            return m, 0.0
 
     def tokenize(self, text):
         # print("tokenizing", str(self), text)
@@ -215,11 +227,13 @@ class TextModel:
         elif self.usr_option == OPTION_GROUP:
             text = re.sub(r"@\S+", "_usr", text)
 
-        text = norm_chars(text, del_diac=self.del_diac, del_dup1=self.del_dup1, del_punc=self.del_punc)
+        text = norm_chars(text, del_diac=self.del_diac, del_dup=self.del_dup, del_punc=self.del_punc)
 
         L = []
         textlist = None
 
+        # _text = memoryview(bytes(text, encoding='utf8'))
+        _text = text
         for q in self.token_list:
             if isinstance(q, int):
                 if q < 0:
@@ -228,12 +242,13 @@ class TextModel:
 
                     expand_qgrams_word_list(textlist, abs(q), L)
                 else:
-                    expand_qgrams(text, q, L)
+                    expand_qgrams(_text, q, L)
             else:
                 if textlist is None:
                     textlist = get_word_list(text)
 
                 expand_skipgrams_word_list(textlist, q, L)
 
+        # print(len(L), self.token_min_filter)
         return L
     
