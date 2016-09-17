@@ -56,7 +56,7 @@ class CommandLine(object):
         cdn = 'File containing the training set'
         pa = self.parser.add_argument
         pa('training_set',
-           # nargs=1,
+           nargs='+',
            default=None,
            help=cdn)
         pa('--verbose', dest='verbose', type=int,
@@ -86,10 +86,11 @@ class CommandLine(object):
 
     def get_output(self):
         if self.data.output is None:
-            return self.data.training_set + ".output"
+            return self.data.training_set[0] + ".output"
+
         return self.data.output
 
-    def main(self, args=None):
+    def main(self, args=None, params=None):
         self.data = self.parser.parse_args(args=args)
         np.random.seed(self.data.seed)
         logging.basicConfig(level=self.data.verbose)
@@ -102,9 +103,14 @@ class CommandLine(object):
 
         assert self.data.score.split(":")[0] in ('macrof1', 'microf1', 'weightedf1', 'accuracy', 'avgf1'), "Unknown score {0}".format(self.data.score)
 
-        sel = ParameterSelection(params=None)
+        sel = ParameterSelection(params=params)
 
-        X, y = read_data_labels(self.data.training_set)
+        X, y = [], []
+        for train in self.data.training_set:
+            X_, y_ = read_data_labels(train)
+            X.extend(X_)
+            y.extend(y_)
+
         if self.data.kratio > 1:
             fun_score = ScoreKFoldWrapper(X, y, nfolds=int(self.data.kratio), score=self.data.score, random_state=self.data.seed)
         else:
@@ -143,6 +149,8 @@ class CommandLineTrain(CommandLine):
         pa('-m', '--model-params', dest='params_fname', type=str,
            required=True,
            help="TextModel params")
+        pa('-l', '--labels', dest='labels', type=str,
+           help="a comma separated list of valid labels")
 
     def main(self, args=None):
         self.data = self.parser.parse_args(args=args)
@@ -150,11 +158,19 @@ class CommandLineTrain(CommandLine):
         with open(self.data.params_fname) as fpt:
             param_list = json.loads(fpt.read())
 
-        corpus, labels = read_data_labels(self.data.training_set)
+        corpus, labels = [], []
+        for train in self.data.training_set:
+            X_, y_ = read_data_labels(train)
+            corpus.extend(X_)
+            labels.extend(y_)
+
         best = param_list[0]
         t = TextModel(corpus, **best)
         le = LabelEncoder()
-        le.fit(labels)
+        if self.data.labels:
+            le.fit(self.data.labels.split(','))
+        else:
+            le.fit(labels)
         y = le.transform(labels)
         c = ClassifierWrapper()
         X = [t[x] for x in corpus]
@@ -206,13 +222,22 @@ class CommandLinePredict(CommandLine):
 
         L = []
         hy = svc.decision_function(veclist)
-        for tweet, scores, aff in zip(tweet_iterator(self.data.test_set), hy, afflist):
-            if len(scores.shape) == 1:
-                index = np.argmax(scores)
-            else:
-                index = scores.argmax(axis=1)
+        hyy = le.inverse_transform(svc.predict(veclist))
+        for tweet, scores, klass, aff in zip(tweet_iterator(self.data.test_set), hy, hyy, afflist):
+            # if True:
+            #     print("-YY>", scores)
+            #     print("-XX>", scores.shape, len(scores.shape))
+            #     print(svc.svc.classes_)
+            #     print(le)
 
-            klass = le.inverse_transform(index)
+            # if len(scores.shape) == 0:
+            #     index = 0 if scores < 0.0 else 1
+            # elif len(scores.shape) == 1:
+            #     index = np.argmax(scores)
+            # else:
+            #     index = scores.argmax(axis=1)
+
+            # klass = le.inverse_transform(svc.svc.classes_[index])
             tweet['decision_function'] = scores.tolist()
             tweet['voc_affinity'] = aff
             tweet['klass'] = klass
@@ -231,28 +256,31 @@ class CommandLineTextModel(CommandLinePredict):
         with open(self.data.model, 'rb') as fpt:
             textmodel, svc, le = pickle.load(fpt)
 
+        L = []
         with open(self.get_output(), 'w') as fpt:
             for tw in tweet_iterator(self.data.test_set):
                 extra = dict(textmodel[tw['text']] + [('num_terms', svc.num_terms)])
                 tw.update(extra)
+                L.append(tw)
                 fpt.write(json.dumps(tw) + "\n")
 
+        return L
 
-def params():
+def params(*args, **kwargs):
     c = CommandLine()
-    c.main()
+    return c.main(*args, **kwargs)
 
 
-def train():
+def train(*args, **kwargs):
     c = CommandLineTrain()
-    c.main()
+    return c.main(*args, **kwargs)
 
-
-def test():
+def predict(*args, **kwargs):
     c = CommandLinePredict()
-    c.main()
+    return c.main(*args, **kwargs)
 
 
-def textmodel():
+def textmodel(*args, **kwargs):
     c = CommandLineTextModel()
-    c.main()
+    return c.main(*args, **kwargs)
+
