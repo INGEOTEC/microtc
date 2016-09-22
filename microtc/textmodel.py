@@ -19,6 +19,7 @@ from .params import OPTION_DELETE, OPTION_GROUP, OPTION_NONE
 # from .emoticons import get_compiled_map, transform_del, transform_replace_by_klass, EmoticonClassifier
 from .emoticons import EmoticonClassifier
 import logging
+import os
 
 logging.basicConfig(format='%(asctime)s : %(levelname)s :%(message)s')
 
@@ -136,6 +137,7 @@ class TextModel:
         self.token_max_filter = token_max_filter
         self.tfidf = tfidf
         self.kwargs = {k: v for k, v in kwargs.items() if k[0] != '_'}
+        self.paragraph_sep = os.environ.get('PARAGRAPH_SEP', None)
 
         if emo_option == OPTION_NONE:
             self.emo_map = None
@@ -184,7 +186,7 @@ class TextModel:
         return vec
 
     def vectorize(self, text):
-        tok = self.tokenize(text)
+        tok = self.tokenize(text, self.paragraph_sep)
         bow = self.dictionary.doc2bow(tok)
 
         if self.tfidf:
@@ -197,7 +199,17 @@ class TextModel:
         except ZeroDivisionError:
             return m, 0.0
 
-    def tokenize(self, text):
+    def tokenize(self, text, paragraph_sep=None):
+        if paragraph_sep is None:
+            return self._tokenize(text)
+        else:
+            tokens = []
+            for _text in text.split(paragraph_sep):
+                tokens.extend(self._tokenize(_text))
+
+            return tokens
+
+    def _tokenize(self, text):
         # print("tokenizing", str(self), text)
         if text is None:
             text = ''
