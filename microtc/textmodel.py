@@ -138,6 +138,7 @@ class TextModel:
         self.tfidf = tfidf
         self.kwargs = {k: v for k, v in kwargs.items() if k[0] != '_'}
         self.paragraph_sep = os.environ.get('PARAGRAPH_SEP', None)
+        logging.info("Using paragraph_sep as '{0}'".format(self.paragraph_sep))
 
         if emo_option == OPTION_NONE:
             self.emo_map = None
