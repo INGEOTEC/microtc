@@ -1,2 +1,2 @@
-microtc/tests/text.json
-microtc/resources/emoticons.json
+include microtc/tests/text.json
+include microtc/resources/emoticons.json

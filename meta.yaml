@@ -29,7 +29,7 @@ test:
 
     - microtc-params --help
     - microtc-train --help
-    - microtc-test --help
+    - microtc-predict --help
 
   requires:
     # Put any additional test requirements here.  For example
