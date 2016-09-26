@@ -18,8 +18,8 @@ def test_nparams():
     from microtc.command_line import params
     import os
     fname = os.path.dirname(__file__) + '/text.json'
-    params(args=['-k', '2', '-s', '11', fname, '-o', '/dev/null'])
-
+    params(args=['-k', '2', '-s', '11', fname, '-o', fname + ".tmp"])
+    os.unlink(fname + ".tmp")
 
 def test_main():
     from microtc.command_line import params
