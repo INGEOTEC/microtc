@@ -15,13 +15,10 @@ import numpy as np
 
 
 def test_nparams():
-    from microtc.command_line import CommandLine
+    from microtc.command_line import params
     import os
     fname = os.path.dirname(__file__) + '/text.json'
-    c = CommandLine()
-    args = ['-k', '2', '-s', '11', fname]
-    c.main(args=args)
-    os.unlink(c.get_output())
+    params(args=['-k', '2', '-s', '11', fname, '-o', '/dev/null'])
 
 
 def test_main():

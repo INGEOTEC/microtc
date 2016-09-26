@@ -24,15 +24,20 @@ from microtc.classifier import ClassifierWrapper
 
 
 class ScoreSampleWrapper(object):
-    def __init__(self, X, y, ratio=0.8, score='macrof1', classifier=ClassifierWrapper, random_state=None):
+    def __init__(self, X, y, ratio=0.8, test_ratio=None, score='macrof1', classifier=ClassifierWrapper, random_state=None):
+        assert ratio < 1, "ratio {0} is invalid, valid values are 0 < ratio < 1".format(ratio)
         self.score = score
         self.le = preprocessing.LabelEncoder().fit(y)
         self.create_classifier = classifier
+        if test_ratio is None:
+            test_ratio = 1.0 - ratio
+
         I = list(range(len(y)))
         np.random.shuffle(I)
         s = int(np.ceil(len(y) * ratio))
+        s_end = int(np.ceil(len(y) * test_ratio))
         y = np.array(self.le.transform(y))
-        train, test = I[:s], I[s:]
+        train, test = I[:s], I[s:s+s_end]
         self.train_corpus = [X[i] for i in train]
         self.train_y = y[train]
         self.test_corpus = [X[i] for i in test]

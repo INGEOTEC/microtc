@@ -49,8 +49,8 @@ class CommandLine(object):
         pa = self.parser.add_argument
         pa('-k', '--kratio', dest='kratio',
            help='Predict the training set using stratified k-fold (k > 1) or a sampling ratio (when 0 < k < 1)',
-           default=0.8,
-           type=float)
+           default="0.8",
+           type=str)
 
     def training_set(self):
         cdn = 'File containing the training set'
@@ -111,10 +111,18 @@ class CommandLine(object):
             X.extend(X_)
             y.extend(y_)
 
-        if self.data.kratio > 1:
-            fun_score = ScoreKFoldWrapper(X, y, nfolds=int(self.data.kratio), score=self.data.score, random_state=self.data.seed)
+        if ":" in self.data.kratio:
+            ratio, test_ratio = self.data.kratio.split(":")
+            fun_score = ScoreSampleWrapper(X, y, ratio=float(ratio), test_ratio=float(test_ratio), score=self.data.score, random_state=self.data.seed)
         else:
-            fun_score = ScoreSampleWrapper(X, y, ratio=self.data.kratio, score=self.data.score, random_state=self.data.seed)
+            ratio = float(self.data.kratio)
+            if ratio == 1.0:
+                raise ValueError('k=1 is undefined')
+
+            if ratio > 1:
+                fun_score = ScoreKFoldWrapper(X, y, nfolds=int(ratio), score=self.data.score, random_state=self.data.seed)
+            else:
+                fun_score = ScoreSampleWrapper(X, y, ratio=ratio, score=self.data.score, random_state=self.data.seed)
 
         if self.data.best_list:
             with open(self.data.best_list) as f:
