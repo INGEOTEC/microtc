@@ -52,9 +52,9 @@ class ScoreSampleWrapper(object):
         return conf
 
     def compute_score(self, conf, hy):
-        conf['_all_f1'] = M = {self.le.inverse_transform([klass])[0]: f1 for klass, f1 in enumerate(f1_score(self.test_y, hy, average=None))}
-        conf['_all_recall'] = {self.le.inverse_transform([klass])[0]: f1 for klass, f1 in enumerate(recall_score(self.test_y, hy, average=None))}
-        conf['_all_precision'] = {self.le.inverse_transform([klass])[0]: f1 for klass, f1 in enumerate(precision_score(self.test_y, hy, average=None))}
+        conf['_all_f1'] = M = {str(self.le.inverse_transform([klass])[0]): f1 for klass, f1 in enumerate(f1_score(self.test_y, hy, average=None))}
+        conf['_all_recall'] = {str(self.le.inverse_transform([klass])[0]): f1 for klass, f1 in enumerate(recall_score(self.test_y, hy, average=None))}
+        conf['_all_precision'] = {str(self.le.inverse_transform([klass])[0]): f1 for klass, f1 in enumerate(precision_score(self.test_y, hy, average=None))}
 
         if len(self.le.classes_) == 2:
             conf['_macrof1'] = np.mean(np.array([v for v in conf['_all_f1'].values()]))

@@ -100,28 +100,22 @@ class CommandLine(object):
             pool = Pool(cpu_count())
         else:
             pool = Pool(self.data.numprocs)
-
         assert self.data.score.split(":")[0] in ('macrof1', 'microf1', 'weightedf1', 'accuracy', 'avgf1'), "Unknown score {0}".format(self.data.score)
-
         sel = ParameterSelection(params=params)
-
         X, y = [], []
         for train in self.data.training_set:
             X_, y_ = read_data_labels(train)
             X.extend(X_)
             y.extend(y_)
-
         if self.data.kratio > 1:
             fun_score = ScoreKFoldWrapper(X, y, nfolds=int(self.data.kratio), score=self.data.score, random_state=self.data.seed)
         else:
             fun_score = ScoreSampleWrapper(X, y, ratio=self.data.kratio, score=self.data.score, random_state=self.data.seed)
-
         if self.data.best_list:
             with open(self.data.best_list) as f:
                 best_list = json.load(f)
         else:
             best_list = None
-
         best_list = sel.search(
             fun_score,
             bsize=self.data.samplesize,
@@ -129,10 +123,9 @@ class CommandLine(object):
             pool=pool,
             best_list=best_list
         )
-
+        # print(best_list)
         with open(self.get_output(), 'w') as fpt:
             fpt.write(json.dumps(best_list, indent=2, sort_keys=True))
-
         return best_list
 
 
@@ -180,6 +173,7 @@ class CommandLineTrain(CommandLine):
             pickle.dump([t, c, le], fpt)
 
         return [t, c, le]
+
 
 class CommandLinePredict(CommandLine):
     def __init__(self):
@@ -240,7 +234,7 @@ class CommandLinePredict(CommandLine):
             # klass = le.inverse_transform(svc.svc.classes_[index])
             tweet['decision_function'] = scores.tolist()
             tweet['voc_affinity'] = aff
-            tweet['klass'] = klass
+            tweet['klass'] = str(klass)
             L.append(tweet)
 
         with open(self.get_output(), 'w') as fpt:
@@ -266,6 +260,7 @@ class CommandLineTextModel(CommandLinePredict):
 
         return L
 
+
 def params(*args, **kwargs):
     c = CommandLine()
     return c.main(*args, **kwargs)
@@ -274,6 +269,7 @@ def params(*args, **kwargs):
 def train(*args, **kwargs):
     c = CommandLineTrain()
     return c.main(*args, **kwargs)
+
 
 def predict(*args, **kwargs):
     c = CommandLinePredict()
