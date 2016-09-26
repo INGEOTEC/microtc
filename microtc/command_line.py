@@ -189,6 +189,7 @@ class CommandLineTrain(CommandLine):
 
         return [t, c, le]
 
+
 class CommandLinePredict(CommandLine):
     def __init__(self):
         self.parser = argparse.ArgumentParser(description='microtc')
@@ -248,7 +249,7 @@ class CommandLinePredict(CommandLine):
             # klass = le.inverse_transform(svc.svc.classes_[index])
             tweet['decision_function'] = scores.tolist()
             tweet['voc_affinity'] = aff
-            tweet['klass'] = klass
+            tweet['klass'] = str(klass)
             L.append(tweet)
 
         with open(self.get_output(), 'w') as fpt:
@@ -274,6 +275,7 @@ class CommandLineTextModel(CommandLinePredict):
 
         return L
 
+
 def params(*args, **kwargs):
     c = CommandLine()
     return c.main(*args, **kwargs)
@@ -282,6 +284,7 @@ def params(*args, **kwargs):
 def train(*args, **kwargs):
     c = CommandLineTrain()
     return c.main(*args, **kwargs)
+
 
 def predict(*args, **kwargs):
     c = CommandLinePredict()

@@ -15,7 +15,7 @@ from setuptools import setup
 import microtc
 
 
-#with open('README.rst') as fpt:
+# with open('README.rst') as fpt:
 #    long_desc = fpt.read()
 long_desc = ''
 

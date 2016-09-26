@@ -163,3 +163,33 @@ def test_textmodel():
     os.unlink(output2)
     a = json.loads(a)
     assert 'klass' in a
+
+
+def test_numeric_klass():
+    from microtc.utils import tweet_iterator
+    from microtc.command_line import params, train, predict
+    from sklearn.preprocessing import LabelEncoder
+    import os
+    import json
+    import tempfile
+    import sys
+    numeric = tempfile.mktemp() + '.json'
+    output = tempfile.mktemp()
+    fname = os.path.dirname(__file__) + '/text.json'
+    D = [x for x in tweet_iterator(fname)]
+    encoder = LabelEncoder().fit([x['klass'] for x in D])
+    y = encoder.transform([x['klass'] for x in D])
+    for x, k in zip(D, y):
+        x['klass'] = int(k)
+    with open(numeric, 'w') as fpt:
+        [fpt.write(json.dumps(x) + '\n') for x in D]
+    sys.argv = ['microtc', '-o', output, '-k', '2', numeric, '-s', '2']
+    params()
+    sys.argv = ['microtc', '-m', output, numeric, '-o', output]
+    train()
+    output2 = tempfile.mktemp()
+    sys.argv = ['microtc', '-m', output, fname, '-o', output2]
+    predict()
+    os.unlink(numeric)
+    os.unlink(output)
+    os.unlink(output2)
