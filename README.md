@@ -26,10 +26,8 @@ A list of datasets for 14 number of languages is provided by [Mozetič I et al. 
 
 We provide a reduced image of four languages, also in the correct format for microTC. We preserve the proportion of the original datasets.
 
-- [German](datasets/msa/german). 
-- [Swedish](datasets/msa/swedish).
-- [Portuguese](datasets/msa/portuguese)
-- [Russian](dataset/msa/russian)
+- [German](TBD/german). 
+- [Swedish](TBD/swedish).
+- [Portuguese](TBD/portuguese)
+- [Russian](TBD/russian).
 
-
-http://journals.plos.org/plosone/article?id=10.1371/journal.pone.0155036
