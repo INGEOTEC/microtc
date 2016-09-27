@@ -60,7 +60,7 @@ def read_data_labels(filename, get_tweet='text',
             x = get_tweet(tweet) if callable(get_tweet) else tweet[get_tweet]
             y = get_klass(tweet) if callable(get_klass) else tweet[get_klass]
             data.append(x)
-            labels.append(y)
+            labels.append(str(y))
             if count == maxitems:
                 break
         except KeyError as e:
