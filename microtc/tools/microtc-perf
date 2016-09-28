@@ -8,11 +8,11 @@ import os
 import sys
 
 def performance(gold, predicted, output=None, avgf1=None):
-    y = [tweet['klass'] for tweet in tweet_iterator(gold)]
+    y = [str(tweet['klass']) for tweet in tweet_iterator(gold)]
     le = LabelEncoder().fit(y)
     y = le.transform(y)
 
-    hy = [tweet['klass'] for tweet in tweet_iterator(predicted)]
+    hy = [str(tweet['klass']) for tweet in tweet_iterator(predicted)]
     hy = le.transform(hy)
     #with open(fname.replace('_output.json', '.params')) as fpt:
     #    a = json.load(fpt)
