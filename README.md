@@ -10,7 +10,7 @@ being both domain and language independent.  Currently, we only produce single-l
 $micro$TC is intentionally simple, so only a small number of features where implemented. However, it uses a some complex tools from gensim, numpy and scikit-lean. The number of dependencies is limited in a Scientific Python distribution like [Anaconda](https://www.continuum.io/downloads).
 
 
-## Where I can find datasets ##
+## Where I can find some datasets? ##
 
 - Ana Cachopo's provides a number of [datasets](http://ana.cachopo.org/datasets-for-single-label-text-categorization),
     some of them are already preprocessed.
@@ -24,7 +24,7 @@ $micro$TC is intentionally simple, so only a small number of features where impl
 
 A list of datasets for 14 number of languages is provided by [Mozetič I et al. 2016](http://dx.doi.org/10.1371/journal.pone.0155036).
 
-We provide a reduced image of four languages, also in the correct format for microTC. We preserve the proportion of the original datasets.
+We provide a reduced version of four languages with the intention of preserve a number of tweets over the time, i.e, some tweets are unaccessible over the time.  We also preserve the class' proportions of the original datasets, in order to capture the spirit of the original dataset. Finally, these datasets are prepared in the microTC's format.
 
 - [German](TBD/german). 
 - [Swedish](TBD/swedish).
