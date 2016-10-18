@@ -71,7 +71,7 @@ class ScoreSampleWrapper(object):
 
         conf['_accuracy'] = accuracy_score(self.test_y, hy)
         if self.score.startswith('avgf1:'):
-            klist = [M[x] for x in self.score.split(':')[-1].split(':')]
+            klist = [M[x] for x in self.score.replace('avgf1:', '').split(':')]
             conf['_' + self.score] = sum(klist) / len(klist)
 
         conf['_score'] = conf['_' + self.score]

@@ -34,6 +34,7 @@ def test_wrapper_score():
     w.compute_score(conf, hy)
     f1 = f1_score(y.astype(np.int), hy, average=None)
     assert conf['_accuracy'] == (y.astype(np.int) == hy).mean()
+    print(y)
     print(conf['_avgf1:0:2'], (f1[0] + f1[2]) / 2.)
     assert conf['_avgf1:0:2'] == (f1[0] + f1[2]) / 2.
 
