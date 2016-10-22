@@ -36,12 +36,12 @@ class ScoreSampleWrapper(object):
         np.random.shuffle(I)
         s = int(np.ceil(len(y) * ratio))
         s_end = int(np.ceil(len(y) * test_ratio))
-        y = np.array(self.le.transform(y))
+        y = self.le.transform(y)
         train, test = I[:s], I[s:s+s_end]
         self.train_corpus = [X[i] for i in train]
         self.train_corpus.extend(Xstatic)
 
-        ystatic = np.array(self.le.transform(ystatic))
+        ystatic = self.le.transform(ystatic)
         self.train_y = np.hstack((y[train], ystatic))
         self.test_corpus = [X[i] for i in test]
         self.test_y = y[test]
@@ -87,8 +87,8 @@ class ScoreKFoldWrapper(ScoreSampleWrapper):
         self.X = np.array(X)
         self.Xstatic = Xstatic
         self.le = preprocessing.LabelEncoder().fit(y)
-        self.y = np.array(self.le.transform(y))
-        self.ystatic = np.array(self.le.transform(ystatic))
+        self.y = self.le.transform(y)
+        self.ystatic = self.le.transform(ystatic)
         self.test_y = self.y
         self.create_classifier = classifier
         self.kfolds = cross_validation.StratifiedKFold(y, n_folds=nfolds, shuffle=True, random_state=random_state)
