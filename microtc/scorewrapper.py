@@ -24,7 +24,7 @@ from microtc.classifier import ClassifierWrapper
 
 
 class ScoreSampleWrapper(object):
-    def __init__(self, X, y, ratio=0.8, test_ratio=None, score='macrof1', classifier=ClassifierWrapper, random_state=None):
+    def __init__(self, X, y, Xstatic=[], ystatic=[], ratio=0.8, test_ratio=None, score='macrof1', classifier=ClassifierWrapper, random_state=None):
         assert ratio < 1, "ratio {0} is invalid, valid values are 0 < ratio < 1".format(ratio)
         self.score = score
         self.le = preprocessing.LabelEncoder().fit(y)
@@ -39,7 +39,10 @@ class ScoreSampleWrapper(object):
         y = np.array(self.le.transform(y))
         train, test = I[:s], I[s:s+s_end]
         self.train_corpus = [X[i] for i in train]
-        self.train_y = y[train]
+        self.train_corpus.extend(Xstatic)
+
+        ystatic = np.array(self.le.transform(ystatic))
+        self.train_y = np.hstack((y[train], ystatic))
         self.test_corpus = [X[i] for i in test]
         self.test_y = y[test]
 
@@ -78,12 +81,14 @@ class ScoreSampleWrapper(object):
 
 
 class ScoreKFoldWrapper(ScoreSampleWrapper):
-    def __init__(self, X, y, nfolds=5, score='macrof1', classifier=ClassifierWrapper, random_state=None):
+    def __init__(self, X, y, Xstatic=[], ystatic=[], nfolds=5, score='macrof1', classifier=ClassifierWrapper, random_state=None):
         self.nfolds = nfolds
         self.score = score
-        self.X = X
+        self.X = np.array(X)
+        self.Xstatic = Xstatic
         self.le = preprocessing.LabelEncoder().fit(y)
         self.y = np.array(self.le.transform(y))
+        self.ystatic = np.array(self.le.transform(ystatic))
         self.test_y = self.y
         self.create_classifier = classifier
         self.kfolds = cross_validation.StratifiedKFold(y, n_folds=nfolds, shuffle=True, random_state=random_state)
@@ -93,9 +98,17 @@ class ScoreKFoldWrapper(ScoreSampleWrapper):
         st = time()
         predY = np.zeros(len(self.y))
         for train, test in self.kfolds:
-            textmodel = TextModel([self.X[i] for i in train], **conf)
-            trainX = [textmodel[self.X[i]] for i in train]
-            trainY = [self.y[i] for i in train]
+            A = self.X[train]
+            if len(self.Xstatic) > 0:
+                A = np.hstack((A, self.Xstatic))
+                
+            textmodel = TextModel(A, **conf)
+            # textmodel = TextModel([self.X[i] for i in train], **conf)
+            trainX = [textmodel[x] for x in A]
+            trainY = self.y[train]
+            if len(self.ystatic) > 0:
+                trainY = np.hstack((trainY, self.ystatic))
+
             c = self.create_classifier()
             c.fit(trainX, trainY)
             testX = [textmodel[self.X[i]] for i in test]

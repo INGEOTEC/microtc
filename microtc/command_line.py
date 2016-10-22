@@ -106,23 +106,31 @@ class CommandLine(object):
         sel = ParameterSelection(params=params)
 
         X, y = [], []
+        Xstatic, ystatic = [], []
         for train in self.data.training_set:
-            X_, y_ = read_data_labels(train)
-            X.extend(X_)
-            y.extend(y_)
+            if train.startswith("static:"):
+                X_, y_ = read_data_labels(train[7:])
+                Xstatic.extend(X_)
+                ystatic.extend(y_)
+            else:
+                X_, y_ = read_data_labels(train)
+                X.extend(X_)
+                y.extend(y_)
 
         if ":" in self.data.kratio:
             ratio, test_ratio = self.data.kratio.split(":")
-            fun_score = ScoreSampleWrapper(X, y, ratio=float(ratio), test_ratio=float(test_ratio), score=self.data.score, random_state=self.data.seed)
+            fun_score = ScoreSampleWrapper(X, y,
+                                           Xstatic=Xstatic, ystatic=ystatic,
+                                           ratio=float(ratio), test_ratio=float(test_ratio), score=self.data.score, random_state=self.data.seed)
         else:
             ratio = float(self.data.kratio)
             if ratio == 1.0:
                 raise ValueError('k=1 is undefined')
 
             if ratio > 1:
-                fun_score = ScoreKFoldWrapper(X, y, nfolds=int(ratio), score=self.data.score, random_state=self.data.seed)
+                fun_score = ScoreKFoldWrapper(X, y, Xstatic=Xstatic, ystatic=ystatic, nfolds=int(ratio), score=self.data.score, random_state=self.data.seed)
             else:
-                fun_score = ScoreSampleWrapper(X, y, ratio=ratio, score=self.data.score, random_state=self.data.seed)
+                fun_score = ScoreSampleWrapper(X, y, Xstatic=Xstatic, ystatic=ystatic, ratio=ratio, score=self.data.score, random_state=self.data.seed)
 
         if self.data.best_list:
             with open(self.data.best_list) as f:
