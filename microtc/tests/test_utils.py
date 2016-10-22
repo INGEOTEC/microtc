@@ -29,7 +29,7 @@ def test_wrapper_score():
     np.random.seed(0)
     y = np.random.randint(3, size=100).astype(np.str)
     hy = np.random.randint(3, size=100)
-    w = ScoreKFoldWrapper(None, y, score='avgf1:0:2', nfolds=10)
+    w = ScoreKFoldWrapper([], y, score='avgf1:0:2', nfolds=10)
     conf = {}
     w.compute_score(conf, hy)
     f1 = f1_score(y.astype(np.int), hy, average=None)
