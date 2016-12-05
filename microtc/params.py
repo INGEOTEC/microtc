@@ -109,11 +109,11 @@ DefaultParams = dict(
     del_diac=Boolean(),
     token_list=PowersetVariable([(3, 1), (2, 2), (2, 1), -3, -2, -1, 1, 2, 3, 5, 7, 9], max_size=5),
     # negative values means for absolute frequencies, positive values between 0 and 1 means for ratio
-    token_min_filter=SetVariable([-1]),
-    token_max_filter=Fixed(1.0),
-    # token_max_filter=SetVariable([0.75, 1.0]),
-    # token_min_filter=Fixed(-1),
-    tfidf=Fixed(True),
+    # token_min_filter=SetVariable([-1]),
+    # token_max_filter=Fixed(1.0),
+    token_max_filter=SetVariable([0.9, 0.95, 0.99, 1.0]),
+    token_min_filter=SetVariable([-1, -3, -5, -10]),
+    tfidf=Boolean(),
     # negation=Fixed(False),
     # stemming=Fixed(False),
     # stopwords=Fixed(OPTION_NONE),
@@ -155,11 +155,13 @@ class ParameterSelection:
                 yield(x)
 
     def get_best(self, fun_score, cand, desc="searching for params", pool=None):
+        import pickle
         if pool is None:
             # X = list(map(fun_score, cand))
             X = [fun_score(x) for x in tqdm(cand, desc=desc, total=len(cand))]
         else:
             # X = list(pool.map(fun_score, cand))
+            # print("==== -----> {0} / {1}".format(len(pickle.dumps(fun_score.X)), len(pickle.dumps(fun_score.y))))
             X = [x for x in tqdm(pool.imap_unordered(fun_score, cand), desc=desc, total=len(cand))]
 
         # a list of tuples (score, conf)
@@ -211,12 +213,14 @@ class ParameterSelection:
             _hill_climbing(['token_list'], "optimizing token_list")
             # _hill_climbing(['token_min_filter', 'token_max_filter'], "optimizing token max and min filters")
             if len(self.params['token_min_filter'].valid_values) > 1 or len(self.params['token_max_filter'].valid_values) > 1:
-                _hill_climbing(['token_list', 'token_min_filter', 'token_max_filter'], "optimizing all token parameters")
+                _hill_climbing(['token_list', 'token_min_filter', 'token_max_filter', 'tfidf'], "optimizing all token parameters")
 
             ks = list(self.params.keys())
             ks.remove('token_list')
             ks.remove('token_min_filter')
             ks.remove('token_max_filter')
+            ks.remove('tfidf')
+
             _hill_climbing(ks, "optimizing the rest of params")
 
         return best_list
