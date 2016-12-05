@@ -88,7 +88,8 @@ class ScoreKFoldWrapper(ScoreSampleWrapper):
     def __init__(self, X, y, Xstatic=[], ystatic=[], nfolds=5, score='macrof1', classifier=ClassifierWrapper, random_state=None):
         self.nfolds = nfolds
         self.score = score
-        self.X = np.array(X)
+        # self.X = np.array(X)
+        self.X = X
         self.Xstatic = Xstatic
         self.le = preprocessing.LabelEncoder().fit(y)
         self.y = self.le.transform(y)
@@ -104,13 +105,15 @@ class ScoreKFoldWrapper(ScoreSampleWrapper):
         conf, code = conf_code
         st = time()
         predY = np.zeros(len(self.y))
+        # X = np.array(self.X)
         for train, test in self.kfolds:
-            A = self.X[train]
+            # A = X[train]
+            A = [self.X[i] for i in train]
             if len(self.Xstatic) > 0:
-                A = np.hstack((A, self.Xstatic))
-                
+                A.extend(self.Xstatic)
+
             textmodel = TextModel(A, **conf)
-            # textmodel = TextModel([self.X[i] for i in train], **conf)
+            # textmodel = TextModel([X[i] for i in train], **conf)
             trainX = [textmodel[x] for x in A]
             trainY = self.y[train]
             if len(self.ystatic) > 0:
