@@ -266,6 +266,7 @@ class CommandLinePredict(CommandLine):
 
         return L
 
+
 class CommandLineTextModel(CommandLinePredict):
     def main(self):
         self.data = self.parser.parse_args()
