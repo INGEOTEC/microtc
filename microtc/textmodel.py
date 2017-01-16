@@ -114,10 +114,13 @@ class TextModel:
             usr_option=OPTION_GROUP,
             url_option=OPTION_GROUP,
             emo_option=OPTION_GROUP,
+            ent_option=OPTION_NONE,
+            hashtag_option=OPTION_NONE,
             lc=True,
             del_dup=True,
             del_punc=False,
             del_diac=True,
+            get_conclusion=False,
             token_list=[-1],
             token_min_filter=-1,
             token_max_filter=1.0,
@@ -129,9 +132,12 @@ class TextModel:
         self.usr_option = usr_option
         self.url_option = url_option
         self.emo_option = emo_option
+        self.ent_option = ent_option
+        self.hashtag_option = hashtag_option
         self.lc = lc
         self.del_dup = del_dup
         self.del_punc = del_punc
+        self.get_conclusion = get_conclusion
         self.token_list = token_list
         self.token_min_filter = token_min_filter
         self.token_max_filter = token_max_filter
@@ -169,10 +175,13 @@ class TextModel:
             usr_option=self.usr_option,
             url_option=self.url_option,
             emo_option=self.emo_option,
+            ent_option=self.ent_option,
+            hashtag_option=self.hashtag_option,
             lc=self.lc,
             del_dup=self.del_dup,
             del_punc=self.del_punc,
             del_diac=self.del_diac,
+            get_conclusion=self.get_conclusion,
             token_list=self.token_list,
             token_min_filter=self.token_min_filter,
             token_max_filter=self.token_max_filter,
@@ -219,6 +228,19 @@ class TextModel:
         if self.emo_map:
             text = self.emo_map.replace(text, option=self.emo_option)
 
+        if self.get_conclusion:
+            text = re.sub(r'.+(but|than|then|therefore|however|nonetheless|nevertheless|short of|yet|so)\W', "", text, re.I)
+
+        if self.hashtag_option == OPTION_DELETE:
+            text = re.sub(r"#\S+", "", text)
+        elif self.hashtag_option == OPTION_GROUP:
+            text = re.sub(r"#\S+", "_htag", text)
+
+        if self.ent_option == OPTION_DELETE:
+            text = re.sub(r"[A-Z][a-z]+", "", text)
+        elif self.ent_option == OPTION_GROUP:
+            text = re.sub(r"[A-Z][a-z]+", "_ent", text)
+
         if self.lc:
             text = text.lower()
 
@@ -236,6 +258,13 @@ class TextModel:
             text = re.sub(r"@\S+", "", text)
         elif self.usr_option == OPTION_GROUP:
             text = re.sub(r"@\S+", "_usr", text)
+
+        if self.get_conclusion:
+            a = text.split('.')
+            while len(a) > 1 and len(a[-1]) == 0:
+                a.pop()
+
+            text = a[-1]
 
         text = norm_chars(text, del_diac=self.del_diac, del_dup=self.del_dup, del_punc=self.del_punc)
 
@@ -261,4 +290,3 @@ class TextModel:
 
         # print(len(L), self.token_min_filter)
         return L
-    

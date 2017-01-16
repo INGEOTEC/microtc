@@ -198,6 +198,7 @@ class CommandLineTrain(CommandLine):
         return [t, c, le]
 
 
+    
 class CommandLinePredict(CommandLine):
     def __init__(self):
         self.parser = argparse.ArgumentParser(description='microtc')
