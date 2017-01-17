@@ -101,7 +101,7 @@ class CommandLine(object):
         else:
             pool = Pool(self.data.numprocs)
 
-        assert self.data.score.split(":")[0] in ('macrof1', 'microf1', 'weightedf1', 'accuracy', 'avgf1'), "Unknown score {0}".format(self.data.score)
+        assert self.data.score.split(":")[0] in ('macrorecall', 'macrof1', 'microf1', 'weightedf1', 'accuracy', 'avgf1'), "Unknown score {0}".format(self.data.score)
 
         sel = ParameterSelection(params=params)
 

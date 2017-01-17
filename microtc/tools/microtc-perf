@@ -2,19 +2,20 @@
 
 from microtc.utils import tweet_iterator
 from sklearn.preprocessing import LabelEncoder
-from sklearn.metrics import f1_score, accuracy_score, precision_score
+from sklearn.metrics import f1_score, accuracy_score, precision_score, recall_score
 import json
 import os
 import sys
 
 def show_mismatches(gold, predicted, output=None, avgf1=None):
+    i = 0
     for g, p in zip(tweet_iterator(gold), tweet_iterator(predicted)):
         g['klass'] = str(g['klass'])
         p['klass'] = str(p['klass'])
-
+        i += 1
         if g['klass'] != p['klass']:
             p['klass_from_gold'] = g['klass']
-            print(json.dumps(p, sort_keys=True))
+            print(json.dumps(p, sort_keys=True), i)
 
 def performance(gold, predicted, output=None, avgf1=None):
     y = [str(tweet['klass']) for tweet in tweet_iterator(gold)]
@@ -30,6 +31,7 @@ def performance(gold, predicted, output=None, avgf1=None):
 
     report = {
         'macrof1': f1_score(y, hy, average='macro'),
+        'macrorecall': recall_score(y, hy, average='macro'),
         'microf1': f1_score(y, hy, average='micro'),
         'accuracy': accuracy_score(y, hy),
         'filename': predicted,
