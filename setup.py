@@ -40,7 +40,13 @@ setup(
     zip_safe=False,
     package_data={
         'microtc/tests': ['text.json'],
-        'microtc/resources': ['emoticons.json'],
+        'microtc/resources': ['emoticons.json',
+                              "english.neg.stopwords",
+                              "english.stopwords",
+                              "italian.neg.stopwords",
+                              "italian.stopwords",
+                              "spanish.neg.stopwords",
+                              "spanish.stopwords"],
     },
     scripts=[
         'microtc/tools/microtc-train',
