@@ -198,6 +198,7 @@ class CommandLineTrain(CommandLine):
         return [t, c, le]
 
 
+    
 class CommandLinePredict(CommandLine):
     def __init__(self):
         self.parser = argparse.ArgumentParser(description='microtc')
@@ -265,6 +266,7 @@ class CommandLinePredict(CommandLine):
                 fpt.write(json.dumps(tweet)+"\n")
 
         return L
+
 
 class CommandLineTextModel(CommandLinePredict):
     def main(self):
