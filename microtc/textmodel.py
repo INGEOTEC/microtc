@@ -18,6 +18,7 @@ from gensim.models.tfidfmodel import TfidfModel
 from .params import OPTION_DELETE, OPTION_GROUP, OPTION_NONE
 # from .emoticons import get_compiled_map, transform_del, transform_replace_by_klass, EmoticonClassifier
 from .emoticons import EmoticonClassifier
+from .lang_dependency import LangDependency
 import logging
 import os
 
@@ -122,6 +123,11 @@ class TextModel:
             token_min_filter=-1,
             token_max_filter=1.0,
             tfidf=True,
+            lang=None,
+            neg=True,
+            stem=True,
+            ent_option=OPTION_GROUP,
+            stopwords=OPTION_DELETE,
             **kwargs
     ):
         self.del_diac = del_diac
@@ -136,7 +142,19 @@ class TextModel:
         self.token_min_filter = token_min_filter
         self.token_max_filter = token_max_filter
         self.tfidf = tfidf
+
+        #SMJ
+        if self.lang:
+            self.lang = LangDependency(lang)
+            self.neg = neg
+            self.stem = stem
+            self.ent_option = ent_option
+            self.stopwords = stopwords
+        else:
+            self.lang = None
+
         self.kwargs = {k: v for k, v in kwargs.items() if k[0] != '_'}
+
 
         if emo_option == OPTION_NONE:
             self.emo_map = None
@@ -162,6 +180,7 @@ class TextModel:
             self.model = TfidfModel(corpus)
         else:
             self.model = None
+ 
 
     def __str__(self):
         return "[TextModel {0}]".format(dict(
@@ -177,6 +196,11 @@ class TextModel:
             token_min_filter=self.token_min_filter,
             token_max_filter=self.token_max_filter,
             tfidf=self.tfidf,
+            lang=self.lang,
+            neg=self.neg,
+            stem=self.stem,
+            ent_option=self.ent_option,
+            stopwords=self.stopwords,
             kwargs=self.kwargs
         ))
 
@@ -236,6 +260,15 @@ class TextModel:
             text = re.sub(r"@\S+", "", text)
         elif self.usr_option == OPTION_GROUP:
             text = re.sub(r"@\S+", "_usr", text)
+
+        #SMJ 
+        if self.lang:
+            if self.ent_option:
+                text = self.lang.process_entities(text, self.ent_option)
+            
+            text =self.lang.transform(self.neg, self.stem, self.stopwords)
+
+
 
         text = norm_chars(text, del_diac=self.del_diac, del_dup=self.del_dup, del_punc=self.del_punc)
 
