@@ -150,11 +150,7 @@ class TextModel:
         self.lang = lang
         self.neg = neg
         self.stem = stem
-
         self.lang = LangDependency(lang)
-        self.neg = neg
-        self.stem = stem
-        self.ent_option = ent_option
         self.stopwords = stopwords
 
         self.kwargs = {k: v for k, v in kwargs.items() if k[0] != '_'}

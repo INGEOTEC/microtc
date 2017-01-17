@@ -125,7 +125,11 @@ class LangDependency():
             if re.search(r"^(@|#|_|~)", tok, flags=re.I):
                 t.append(tok)
             else:
-                t.append(self.stemmer.stem(tok))
+                try:
+                    t.append(self.stemmer.stem(tok))
+                except IndexError:
+                    t.append(tok)
+
         return "~".join(t)
 
     def negation(self, text):
