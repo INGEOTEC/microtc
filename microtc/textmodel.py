@@ -115,7 +115,6 @@ class TextModel:
             usr_option=OPTION_GROUP,
             url_option=OPTION_GROUP,
             emo_option=OPTION_GROUP,
-            ent_option=OPTION_NONE,
             hashtag_option=OPTION_NONE,
             lc=True,
             del_dup=True,
@@ -126,7 +125,7 @@ class TextModel:
             token_min_filter=-1,
             token_max_filter=1.0,
             tfidf=True,
-            lang=None,
+            lang='english',
             neg=True,
             stem=True,
             ent_option=OPTION_GROUP,
@@ -148,19 +147,17 @@ class TextModel:
         self.token_min_filter = token_min_filter
         self.token_max_filter = token_max_filter
         self.tfidf = tfidf
+        self.lang = lang
+        self.neg = neg
+        self.stem = stem
 
-        #SMJ
-        if self.lang:
-            self.lang = LangDependency(lang)
-            self.neg = neg
-            self.stem = stem
-            self.ent_option = ent_option
-            self.stopwords = stopwords
-        else:
-            self.lang = None
+        self.lang = LangDependency(lang)
+        self.neg = neg
+        self.stem = stem
+        self.ent_option = ent_option
+        self.stopwords = stopwords
 
         self.kwargs = {k: v for k, v in kwargs.items() if k[0] != '_'}
-
 
         if emo_option == OPTION_NONE:
             self.emo_map = None
@@ -185,8 +182,7 @@ class TextModel:
         if self.tfidf:
             self.model = TfidfModel(corpus)
         else:
-            self.model = None
- 
+            self.model = None 
 
     def __str__(self):
         return "[TextModel {0}]".format(dict(
@@ -208,7 +204,6 @@ class TextModel:
             lang=self.lang,
             neg=self.neg,
             stem=self.stem,
-            ent_option=self.ent_option,
             stopwords=self.stopwords,
             kwargs=self.kwargs
         ))
@@ -260,10 +255,10 @@ class TextModel:
         elif self.hashtag_option == OPTION_GROUP:
             text = re.sub(r"#\S+", "_htag", text)
 
-        if self.ent_option == OPTION_DELETE:
-            text = re.sub(r"[A-Z][a-z]+", "", text)
-        elif self.ent_option == OPTION_GROUP:
-            text = re.sub(r"[A-Z][a-z]+", "_ent", text)
+        # if self.ent_option == OPTION_DELETE:
+        #     text = re.sub(r"[A-Z][a-z]+", "", text)
+        # elif self.ent_option == OPTION_GROUP:
+        #     text = re.sub(r"[A-Z][a-z]+", "_ent", text)
 
         if self.lc:
             text = text.lower()
@@ -283,23 +278,19 @@ class TextModel:
         elif self.usr_option == OPTION_GROUP:
             text = re.sub(r"@\S+", "_usr", text)
 
-<<<<<<< HEAD
-        #SMJ 
+        # SMJ 
         if self.lang:
             if self.ent_option:
                 text = self.lang.process_entities(text, self.ent_option)
-            
-            text =self.lang.transform(self.neg, self.stem, self.stopwords)
 
+            text = self.lang.transform(text, negation=self.neg, stemming=self.stem, stopwords=self.stopwords)
 
-=======
-        if self.get_conclusion:
-            a = text.split('.')
-            while len(a) > 1 and len(a[-1]) == 0:
-                a.pop()
+        # if self.get_conclusion:
+        #     a = text.split('.')
+        #     while len(a) > 1 and len(a[-1]) == 0:
+        #         a.pop()
 
-            text = a[-1]
->>>>>>> 166c12e225436c110e262fb5a6870b059c79a7e8
+        #     text = a[-1]
 
         text = norm_chars(text, del_diac=self.del_diac, del_dup=self.del_dup, del_punc=self.del_punc)
 

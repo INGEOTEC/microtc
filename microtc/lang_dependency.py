@@ -35,10 +35,6 @@ logger.addHandler(ch)
 
 PATH = os.path.join(os.path.dirname(__file__), 'resources')
 
-OPTION_GROUP = 1
-OPTION_DELETE = 2
-
-
 _HASHTAG = '#'
 _USERTAG = '@'
 _sURL_TAG = '_url'
@@ -92,6 +88,7 @@ class LangDependency():
 
         if self.lang not in SnowballStemmer.languages:
             raise LangDependencyError("Language not supported for stemming: " + lang)
+
         if self.lang == "english":
             self.stemmer = PorterStemmer()
         else:
@@ -256,6 +253,7 @@ class LangDependency():
         
         if m:
             text = p1.sub(r"\g<sk_words> \g<neg>_\g<text>", text)
+
         # removes isolated marks "no_" if marks appear because of negation rules
         text = re.sub(r"\b(no_)\b", r" no ", text, flags=re.I)
         # removes extra spaces because of transformations 
@@ -314,7 +312,9 @@ class LangDependency():
             for ent in entity_names:
                 if option == OPTION_DELETE:
                     entity = ""
-                text = re.sub(r"\b("+ ent +  r")\b", entity, text, flags=re.I)
+
+                text = re.sub(r"\b(" + ent + r")\b", entity, text, flags=re.I)
+
         return text
 
 
