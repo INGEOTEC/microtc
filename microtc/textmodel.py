@@ -125,7 +125,7 @@ class TextModel:
             token_min_filter=-1,
             token_max_filter=1.0,
             tfidf=True,
-            lang='english',
+            lang='arabic',
             neg=True,
             stem=True,
             ent_option=OPTION_GROUP,
