@@ -25,6 +25,7 @@ from .utils import read_data_labels
 from .textmodel import TextModel
 from sklearn.preprocessing import LabelEncoder
 import numpy as np
+import os
 import json
 import pickle
 
@@ -241,6 +242,7 @@ class CommandLinePredict(CommandLine):
         L = []
         hy = svc.decision_function(veclist)
         hyy = le.inverse_transform(svc.predict(veclist))
+        KLASS = os.environ.get('KLASS', 'klass')
         for tweet, scores, klass, aff in zip(tweet_iterator(self.data.test_set), hy, hyy, afflist):
             # if True:
             #     print("-YY>", scores)
@@ -256,9 +258,10 @@ class CommandLinePredict(CommandLine):
             #     index = scores.argmax(axis=1)
 
             # klass = le.inverse_transform(svc.svc.classes_[index])
+            
             tweet['decision_function'] = scores.tolist()
             tweet['voc_affinity'] = aff
-            tweet['klass'] = str(klass)
+            tweet[KLASS] = str(klass)
             L.append(tweet)
 
         with open(self.get_output(), 'w') as fpt:

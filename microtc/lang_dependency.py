@@ -100,7 +100,7 @@ class LangDependency():
         """
         logger.debug("loading stopwords... " + fileName)
         if not os.path.isfile(fileName):
-            raise LangDependencyError("File not found: " + fileName)                             
+            raise LangDependencyError("File not found: " + fileName)
         
         StopWords = []
         with io.open(fileName, encoding='utf8') as f:
@@ -112,8 +112,9 @@ class LangDependency():
                     continue
                 StopWords.append(line)
 
-        return StopWords
-                
+        M = "|".join(StopWords)
+        return re.compile(r"\b(" + M + r")\b", flags=re.I)
+
     def stemming(self, text):
         """
         Applies the stemming process to `text` parameter
@@ -224,17 +225,13 @@ class LangDependency():
             text = p1.sub(r"\g<sk_words> \g<neg>_\g<text>", text)
         # removes isolated marks "no_" if marks appear because of negation rules
         text = re.sub(r"\b(not_)\b", r" not ", text, flags=re.I)
-        text = re.sub(r"\s+", r" ", text, flags=re.I)
-        return text.replace(' ', '~')
+        text = re.sub(r"\s+", r"~", text, flags=re.I)
+        return text
 
     def italian_negation(self, text):
-        
-		
         if getattr(self, 'skip_words', None) is None:
             self.skip_words = "mi|ti|lo|gli|le|ne|li|glieli|glielo|gliela|gliene|gliele"
             self.skip_words = self.skip_words + "|" + "|".join(self.neg_stopwords)
-            
-		
        
         text = text.replace('~', ' ')
         tags = _sURL_TAG + "|" + _sUSER_TAG + "|" + _sENTITY_TAG + "|" + \
@@ -265,12 +262,14 @@ class LangDependency():
         return text.replace(' ', '~')
     
     def filterStopWords(self, text, stopwords_option):
-        if stopwords_option != 'none':
-            for sw in self.stopwords:
-                if stopwords_option == 'delete':
-                    text = re.sub(r"\b(" + sw + r")\b", r"~", text, flags=re.I)
-                elif stopwords_option == 'group':
-                    text = re.sub(r"\b(" + sw + r")\b", r"~_sw~", text, flags=re.I)
+        if stopwords_option != OPTION_NONE:
+            # for sw in self.stopwords:
+            if stopwords_option == OPTION_DELETE:
+                # text = re.sub(r"\b(" + sw + r")\b", r"~", text, flags=re.I)
+                text = self.stopwords(r"~", text, flags=re.I)
+            elif stopwords_option == OPTION_GROUP:
+                # text = re.sub(r"\b(" + sw + r")\b", r"~_sw~", text, flags=re.I)
+                text = self.stopwords(r"~_sw~", text, flags=re.I)
 
         return text
     

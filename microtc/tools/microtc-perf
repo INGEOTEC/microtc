@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/opt/anaconda/bin/python
 
 from microtc.utils import tweet_iterator
 from sklearn.preprocessing import LabelEncoder
@@ -17,12 +17,16 @@ def show_mismatches(gold, predicted, output=None, avgf1=None):
             p['klass_from_gold'] = g['klass']
             print(json.dumps(p, sort_keys=True), i)
 
+
+KLASS=os.environ.get('KLASS', 'klass')
+
+
 def performance(gold, predicted, output=None, avgf1=None):
-    y = [str(tweet['klass']) for tweet in tweet_iterator(gold)]
+    y = [str(tweet[KLASS]) for tweet in tweet_iterator(gold)]
     le = LabelEncoder().fit(y)
     y = le.transform(y)
 
-    hy = [str(tweet['klass']) for tweet in tweet_iterator(predicted)]
+    hy = [str(tweet[KLASS]) for tweet in tweet_iterator(predicted)]
     hy = le.transform(hy)
     # with open(fname.replace('_output.json', '.params')) as fpt:
     #     a = json.load(fpt)

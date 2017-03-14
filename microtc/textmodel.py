@@ -45,7 +45,6 @@ def get_word_list(text):
 
     return ("".join(L)).split()
 
-
 def norm_chars(text, del_diac=True, del_dup=True, del_punc=False):
     L = ['~']
 

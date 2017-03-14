@@ -12,6 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import os
 import json
 import gzip
 import logging
@@ -50,8 +51,12 @@ def tweet_iterator(filename):
         yield json.loads(line)
 
 
-def read_data_labels(filename, get_tweet='text',
-                     get_klass='klass', maxitems=1e100):
+TEXT = os.environ.get("TEXT", 'text')
+KLASS = os.environ.get("KLASS", 'klass')
+
+
+def read_data_labels(filename, get_tweet=TEXT,
+                     get_klass=KLASS, maxitems=1e100):
     data, labels = [], []
     count = 0
     for tweet in tweet_iterator(filename):
@@ -70,7 +75,7 @@ def read_data_labels(filename, get_tweet='text',
     return data, labels
 
 
-def read_data(filename, get_tweet='text', maxitems=1e100):
+def read_data(filename, get_tweet=TEXT, maxitems=1e100):
     data = []
     count = 0
     for tweet in tweet_iterator(filename):
