@@ -22,6 +22,8 @@ import logging
 from nltk.stem.snowball import SnowballStemmer
 from .params import OPTION_GROUP, OPTION_DELETE, OPTION_NONE
 from nltk.stem.porter import PorterStemmer
+from nltk.stem.isri import ISRIStemmer
+from stop_words import get_stop_words as arabic_get_stop_words
 import nltk
 
 idModule = "language_dependency"
@@ -47,6 +49,13 @@ _sNEGATIVE = "_neg"
 _sPOSITIVE = "_pos"
 _sNEUTRAL = "_neu"
 
+_ARABIC ="arabic"
+_ENGLISH = "english"
+_SPANISH = "spanish"
+_ITALIAN = "italian"
+_GERMAN = "german"
+
+_ar_ARABIC = "ar"
 
 class LangDependencyError(Exception):
     def __init__(self, message):
@@ -66,11 +75,11 @@ class LangDependency():
     STOPWORDS_CACHE = {}
     NEG_STOPWORDS_CACHE = {}
 
-    def __init__(self, lang="spanish"):
+    def __init__(self, lang=_SPANISH):
         """
         Initializes the parameters for specific language
         """
-        self.languages = ["spanish", "english", "italian", "german"]
+        self.languages = [_SPANISH, _ENGLISH, _ITALIAN, _GERMAN, _ARABIC]
         self.lang = lang
 
         if self.lang not in self.languages:
@@ -78,7 +87,10 @@ class LangDependency():
         
         self.stopwords = LangDependency.STOPWORDS_CACHE.get(lang, None)
         if self.stopwords is None:
-            self.stopwords = self.load_stopwords(os.path.join(PATH, "{0}.stopwords".format(lang)))
+            if self.lang == _ARABIC:
+                self.stopwords = arabic_get_stop_words(_ar_ARABIC)
+            else:
+                self.stopwords = self.load_stopwords(os.path.join(PATH, "{0}.stopwords".format(lang)))
             LangDependency.STOPWORDS_CACHE[lang] = self.stopwords
 
         self.neg_stopwords = LangDependency.NEG_STOPWORDS_CACHE.get(lang, None)
@@ -86,11 +98,13 @@ class LangDependency():
             self.neg_stopwords = self.load_stopwords(os.path.join(PATH, "{0}.neg.stopwords".format(lang)))
             LangDependency.NEG_STOPWORDS_CACHE[lang] = self.neg_stopwords
 
-        if self.lang not in SnowballStemmer.languages:
-            raise LangDependencyError("Language not supported for stemming: " + lang)
+        if self.lang not in SnowballStemmer.languages and self.lang != _ARABIC:
+                raise LangDependencyError("Language not supported for stemming: " + lang)
 
-        if self.lang == "english":
+        if self.lang == _ENGLISH:
             self.stemmer = PorterStemmer()
+        elif self.lang == _ARABIC:
+            self.stemmer = ISRIStemmer()
         else:
             self.stemmer = SnowballStemmer(self.lang)
 
@@ -140,13 +154,16 @@ class LangDependency():
         if self.lang not in self.languages:
             raise LangDependencyError("Negation - language not defined")
         
-        if self.lang == "spanish":
+        
+        if self.lang == _SPANISH:
             text = self.spanish_negation(text)
-        elif self.lang == "english":
+        elif self.lang == _ENGLISH:
             text = self.english_negation(text)
-        elif self.lang == "italian":
+        elif self.lang == _ITALIAN:
             text = self.italian_negation(text)
-
+        elif self.lang == _ARABIC:
+            #not supported yet
+            pass
         return text
 
     def spanish_negation(self, text):
@@ -309,6 +326,10 @@ class LangDependency():
         """
         Groups or deletes the entities identified in 'text' 
         """
+        # Today, NE Recognition is only supported for English
+        if self.lang != _ENGLISH:
+            return text
+        
         if option == OPTION_GROUP or option == OPTION_DELETE:
             entity_names = self.identify_entities(text)
             entity = _sENTITY_TAG 
