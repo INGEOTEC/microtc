@@ -18,7 +18,7 @@ from gensim.models.tfidfmodel import TfidfModel
 from .params import OPTION_DELETE, OPTION_GROUP, OPTION_NONE
 # from .emoticons import get_compiled_map, transform_del, transform_replace_by_klass, EmoticonClassifier
 from .emoticons import EmoticonClassifier
-from .lang_dependency import LangDependency
+# from .lang_dependency import LangDependency
 import logging
 import os
 
@@ -149,7 +149,7 @@ class TextModel:
         self.lang = lang
         self.neg = neg
         self.stem = stem
-        self.lang = LangDependency(lang)
+        # self.lang = LangDependency(lang)
         self.stopwords = stopwords
 
         self.kwargs = {k: v for k, v in kwargs.items() if k[0] != '_'}
@@ -274,11 +274,11 @@ class TextModel:
             text = re.sub(r"@\S+", "_usr", text)
 
         # SMJ 
-        if self.lang:
-            if self.ent_option:
-                text = self.lang.process_entities(text, self.ent_option)
+        #if self.lang:
+        #    if self.ent_option:
+        #        text = self.lang.process_entities(text, self.ent_option)
 
-            text = self.lang.transform(text, negation=self.neg, stemming=self.stem, stopwords=self.stopwords)
+        # text = self.lang.transform(text, negation=self.neg, stemming=self.stem, stopwords=self.stopwords)
 
         # if self.get_conclusion:
         #     a = text.split('.')
