@@ -168,13 +168,11 @@ class ParameterSelection:
                 yield(x)
 
     def get_best(self, fun_score, cand, desc="searching for params", pool=None):
-        import pickle
         if pool is None:
             # X = list(map(fun_score, cand))
             X = [fun_score(x) for x in tqdm(cand, desc=desc, total=len(cand))]
         else:
             # X = list(pool.map(fun_score, cand))
-            # print("==== -----> {0} / {1}".format(len(pickle.dumps(fun_score.X)), len(pickle.dumps(fun_score.y))))
             X = [x for x in tqdm(pool.imap_unordered(fun_score, cand), desc=desc, total=len(cand))]
 
         # a list of tuples (score, conf)

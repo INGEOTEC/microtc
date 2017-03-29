@@ -13,8 +13,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-
 import numpy as np
+import os
 from time import time
 from sklearn.metrics import f1_score, accuracy_score, recall_score, precision_score
 from sklearn import preprocessing
@@ -53,7 +53,14 @@ class ScoreSampleWrapper(object):
     def __call__(self, conf_code):
         conf, code = conf_code
         st = time()
-        textmodel = TextModel(self.train_corpus, **conf)
+        model_klass = os.environ.get("TEXTMODEL_KLASSES", None)
+        if model_klass:
+            model_klass = self.le.transform(model_klass.split(','))
+            _train = [self.train_corpus[i] for i in len(self.train_corpus) if self.train_y[i] in model_klass]
+            textmodel = TextModel(_train, **conf)
+        else:
+            textmodel = TextModel(self.train_corpus, **conf)
+
         train_X = [textmodel[doc] for doc in self.train_corpus]
         c = self.create_classifier()
         c.fit(train_X, self.train_y)

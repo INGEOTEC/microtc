@@ -78,6 +78,7 @@ class CommandLine(object):
            help="Number of processes to compute the best setup")
         pa('-S', '--score', dest='score', type=str, default='macrof1',
            help="The name of the score to be optimized (macrof1|weightedf1|accuracy|avgf1:klass1:klass2); it defaults to macrof1")
+        pa('--conf', dest='conf', type=str, default=None, help="Do not perform search, just evaluate the given configuration (in json-format)")
 
     def param_set(self):
         pa = self.parser.add_argument
@@ -139,13 +140,17 @@ class CommandLine(object):
         else:
             best_list = None
 
-        best_list = sel.search(
-            fun_score,
-            bsize=self.data.samplesize,
-            hill_climbing=self.data.hill_climbing,
-            pool=pool,
-            best_list=best_list
-        )
+        if self.data.conf:
+            conf = json.loads(self.data.conf)
+            best_list = self.get_best(fun_score, (conf, 'direct-input'))
+        else:
+            best_list = sel.search(
+                fun_score,
+                bsize=self.data.samplesize,
+                hill_climbing=self.data.hill_climbing,
+                pool=pool,
+                best_list=best_list
+            )
 
         with open(self.get_output(), 'w') as fpt:
             fpt.write(json.dumps(best_list, indent=2, sort_keys=True))
@@ -168,12 +173,17 @@ class CommandLineTrain(CommandLine):
            help="TextModel params")
         pa('-l', '--labels', dest='labels', type=str,
            help="a comma separated list of valid labels")
+        pa('--conf', dest='conf', type=str,
+           help="Specifies the configuration in JSON-format")
 
     def main(self, args=None):
         self.data = self.parser.parse_args(args=args)
         logging.basicConfig(level=self.data.verbose)
-        with open(self.data.params_fname) as fpt:
-            param_list = json.loads(fpt.read())
+        if self.data.conf:
+            best = json.loads(self.data.conf)
+        else:
+            with open(self.data.params_fname) as fpt:
+                best = json.loads(fpt.read())[0]
 
         corpus, labels = [], []
         for train in self.data.training_set:
@@ -181,14 +191,21 @@ class CommandLineTrain(CommandLine):
             corpus.extend(X_)
             labels.extend(y_)
 
-        best = param_list[0]
-        t = TextModel(corpus, **best)
         le = LabelEncoder()
         if self.data.labels:
             le.fit(self.data.labels.split(','))
         else:
             le.fit(labels)
+
         y = le.transform(labels)
+
+        model_klasses = os.environ.get('TEXTMODEL_KLASSES')
+        if model_klasses:
+            model_klasses = le.transform(model_klasses.split(','))
+            t = TextModel([corpus[i] for i in range(len(corpus)) if y[i] in model_klasses], **best)
+        else:
+            t = TextModel(corpus, **best)
+
         c = ClassifierWrapper()
         X = [t[x] for x in corpus]
         c.fit(X, y)
@@ -197,7 +214,6 @@ class CommandLineTrain(CommandLine):
             pickle.dump([t, c, le], fpt)
 
         return [t, c, le]
-
 
     
 class CommandLinePredict(CommandLine):
