@@ -86,7 +86,3 @@ def read_data(filename, get_tweet=TEXT, maxitems=1e100):
             break
 
     return data
-
-
-# def pos_neg_f1(y, hy):
-#     return f1_score(y, hy, average=None)[:2].mean()

@@ -119,16 +119,11 @@ class TextModel:
             del_dup=True,
             del_punc=False,
             del_diac=True,
-            get_conclusion=False,
             token_list=[-1],
             token_min_filter=-1,
             token_max_filter=1.0,
             tfidf=True,
-            lang='arabic',
-            neg=True,
-            stem=True,
-            ent_option=OPTION_GROUP,
-            stopwords=OPTION_DELETE,
+            ent_option=OPTION_NONE,
             **kwargs
     ):
         self.del_diac = del_diac
@@ -141,16 +136,10 @@ class TextModel:
         self.lc = lc
         self.del_dup = del_dup
         self.del_punc = del_punc
-        self.get_conclusion = get_conclusion
         self.token_list = token_list
         self.token_min_filter = token_min_filter
         self.token_max_filter = token_max_filter
         self.tfidf = tfidf
-        self.lang = lang
-        self.neg = neg
-        self.stem = stem
-        # self.lang = LangDependency(lang)
-        self.stopwords = stopwords
 
         self.kwargs = {k: v for k, v in kwargs.items() if k[0] != '_'}
 
@@ -191,15 +180,10 @@ class TextModel:
             del_dup=self.del_dup,
             del_punc=self.del_punc,
             del_diac=self.del_diac,
-            get_conclusion=self.get_conclusion,
             token_list=self.token_list,
             token_min_filter=self.token_min_filter,
             token_max_filter=self.token_max_filter,
             tfidf=self.tfidf,
-            lang=self.lang,
-            neg=self.neg,
-            stem=self.stem,
-            stopwords=self.stopwords,
             kwargs=self.kwargs
         ))
 
@@ -242,18 +226,15 @@ class TextModel:
         if self.emo_map:
             text = self.emo_map.replace(text, option=self.emo_option)
 
-        if self.get_conclusion:
-            text = re.sub(r'.+(but|than|then|therefore|however|nonetheless|nevertheless|short of|yet|so)\W', "", text, re.I)
-
         if self.hashtag_option == OPTION_DELETE:
             text = re.sub(r"#\S+", "", text)
         elif self.hashtag_option == OPTION_GROUP:
             text = re.sub(r"#\S+", "_htag", text)
 
-        # if self.ent_option == OPTION_DELETE:
-        #     text = re.sub(r"[A-Z][a-z]+", "", text)
-        # elif self.ent_option == OPTION_GROUP:
-        #     text = re.sub(r"[A-Z][a-z]+", "_ent", text)
+        if self.ent_option == OPTION_DELETE:
+            text = re.sub(r"[A-Z][a-z]+", "", text)
+        elif self.ent_option == OPTION_GROUP:
+            text = re.sub(r"[A-Z][a-z]+", "_ent", text)
 
         if self.lc:
             text = text.lower()
@@ -273,26 +254,11 @@ class TextModel:
         elif self.usr_option == OPTION_GROUP:
             text = re.sub(r"@\S+", "_usr", text)
 
-        # SMJ 
-        #if self.lang:
-        #    if self.ent_option:
-        #        text = self.lang.process_entities(text, self.ent_option)
-
-        # text = self.lang.transform(text, negation=self.neg, stemming=self.stem, stopwords=self.stopwords)
-
-        # if self.get_conclusion:
-        #     a = text.split('.')
-        #     while len(a) > 1 and len(a[-1]) == 0:
-        #         a.pop()
-
-        #     text = a[-1]
-
         text = norm_chars(text, del_diac=self.del_diac, del_dup=self.del_dup, del_punc=self.del_punc)
 
         L = []
         textlist = None
 
-        # _text = memoryview(bytes(text, encoding='utf8'))
         _text = text
         for q in self.token_list:
             if isinstance(q, int):
@@ -309,5 +275,4 @@ class TextModel:
 
                 expand_skipgrams_word_list(textlist, q, L)
 
-        # print(len(L), self.token_min_filter)
         return L

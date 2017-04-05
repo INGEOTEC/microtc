@@ -1,6 +1,7 @@
 # author: Eric S. Tellez <eric.tellez@infotec.mx>
 
-
+import os
+import json
 import numpy as np
 import logging
 from itertools import combinations
@@ -97,6 +98,13 @@ def Boolean():
     return SetVariable([False, True])
 
 
+TOKENLIST = [(3, 1), (2, 2), (2, 1), -3, -2, -1, 1, 2, 3, 5, 7, 9]
+if "TOKENLIST" in os.environ:
+    TOKENLIST = json.load(os.environ["TOKENLIST"])
+
+MAX_TOKENLIST = os.environ.get("MAX_TOKENLIST", len(TOKENLIST)//2)
+
+
 DefaultParams = dict(
     num_option=Option(),
     usr_option=Option(),
@@ -104,34 +112,25 @@ DefaultParams = dict(
     emo_option=Option(),
     # ent_option=Option(),
     ent_option=Fixed(OPTION_NONE),
-    hashtag_option=Option(),
-    # stem=Boolean(),
-    # neg=Boolean(),
-    # stopwords=Boolean(),
-    stem=Fixed(False),
-    neg=Fixed(False),
-    stopwords=Fixed(False),
-    lang=Fixed('english'),
+    hashtag_option=Fixed(OPTION_NONE),
     
     lc=Boolean(),
     del_dup=Boolean(),
     del_punc=Boolean(),
     del_diac=Boolean(),
-    get_conclusion=Boolean(),
     
-    token_list=PowersetVariable([(3, 1), (2, 2), (2, 1), -3, -2, -1, 1, 2, 3, 5, 7, 9], max_size=5),
+    token_list=PowersetVariable(TOKENLIST, max_size=MAX_TOKENLIST),
     # negative values means for absolute frequencies, positive values between 0 and 1 means for ratio
     token_min_filter=SetVariable([-1]),
     token_max_filter=Fixed(1.0),
     # token_max_filter=SetVariable([0.9, 0.95, 0.99, 1.0]),
     # token_min_filter=SetVariable([-1, -3, -5, -10]),
     tfidf=Fixed(True),
-    # tfidf=Boolean(),
-    # negation=Fixed(False),
-    # stemming=Fixed(False),
-    # stopwords=Fixed(OPTION_NONE),
-    # lang=Fixed(None),
 )
+
+if "PARAMS" in os.environ:
+    for k, v in json.loads(os.environ["PARAMS"]).items():
+        DefaultParams[k] = Fixed(v)
 
 
 class ParameterSelection:
