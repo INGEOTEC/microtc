@@ -54,5 +54,6 @@ setup(
         'microtc/tools/microtc-params',
         'microtc/tools/microtc-textModel',
         'microtc/tools/microtc-perf',
+        'microtc/tools/microtc-ensemble',
     ]
 )

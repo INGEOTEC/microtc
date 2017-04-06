@@ -113,7 +113,9 @@ DefaultParams = dict(
     # ent_option=Option(),
     ent_option=Fixed(OPTION_NONE),
     hashtag_option=Fixed(OPTION_NONE),
-    
+
+    select_ent=Fixed(False),
+
     lc=Boolean(),
     del_dup=Boolean(),
     del_punc=Boolean(),

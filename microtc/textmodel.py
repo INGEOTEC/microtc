@@ -124,6 +124,7 @@ class TextModel:
             token_max_filter=1.0,
             tfidf=True,
             ent_option=OPTION_NONE,
+            select_ent=False,
             **kwargs
     ):
         self.del_diac = del_diac
@@ -132,6 +133,7 @@ class TextModel:
         self.url_option = url_option
         self.emo_option = emo_option
         self.ent_option = ent_option
+        self.select_ent = select_ent
         self.hashtag_option = hashtag_option
         self.lc = lc
         self.del_dup = del_dup
@@ -166,7 +168,7 @@ class TextModel:
         if self.tfidf:
             self.model = TfidfModel(corpus)
         else:
-            self.model = None 
+            self.model = None
 
     def __str__(self):
         return "[TextModel {0}]".format(dict(
@@ -175,6 +177,7 @@ class TextModel:
             url_option=self.url_option,
             emo_option=self.emo_option,
             ent_option=self.ent_option,
+            select_ent=self.select_ent,
             hashtag_option=self.hashtag_option,
             lc=self.lc,
             del_dup=self.del_dup,
@@ -219,12 +222,11 @@ class TextModel:
         if text is None:
             text = ''
 
-        # if self.emo_option == OPTION_DELETE:
-        #     text = transform_del(text, self.emo_map)
-        # elif self.emo_option == OPTION_GROUP:
-        #     text = transform_replace_by_klass(text, self.emo_map)
         if self.emo_map:
             text = self.emo_map.replace(text, option=self.emo_option)
+
+        if self.select_ent:
+            text = " ".join(re.findall(r"(@\S+|#\S+|[A-Z]\S+)", text))
 
         if self.hashtag_option == OPTION_DELETE:
             text = re.sub(r"#\S+", "", text)

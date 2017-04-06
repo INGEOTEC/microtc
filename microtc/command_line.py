@@ -260,24 +260,11 @@ class CommandLinePredict(CommandLine):
         hyy = le.inverse_transform(svc.predict(veclist))
         KLASS = os.environ.get('KLASS', 'klass')
         for tweet, scores, klass, aff in zip(tweet_iterator(self.data.test_set), hy, hyy, afflist):
-            # if True:
-            #     print("-YY>", scores)
-            #     print("-XX>", scores.shape, len(scores.shape))
-            #     print(svc.svc.classes_)
-            #     print(le)
-
-            # if len(scores.shape) == 0:
-            #     index = 0 if scores < 0.0 else 1
-            # elif len(scores.shape) == 1:
-            #     index = np.argmax(scores)
-            # else:
-            #     index = scores.argmax(axis=1)
-
-            # klass = le.inverse_transform(svc.svc.classes_[index])
-            
+            # klass = le.inverse_transform(svc.svc.classes_[index])            
             tweet['decision_function'] = scores.tolist()
             tweet['voc_affinity'] = aff
             tweet[KLASS] = str(klass)
+            tweet['predicted'] = tweet[KLASS]
             L.append(tweet)
 
         with open(self.get_output(), 'w') as fpt:
