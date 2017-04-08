@@ -193,3 +193,25 @@ def test_numeric_klass():
     os.unlink(numeric)
     os.unlink(output)
     os.unlink(output2)
+
+
+def test_kfolds():
+    from microtc.command_line import params, kfolds
+    import os
+    import sys
+    import json
+    import tempfile
+    output = tempfile.mktemp()
+    fname = os.path.dirname(__file__) + '/text.json'
+    sys.argv = ['microtc', '-o', output, '-k', '2', fname, '-s', '2']
+    params()
+    output2 = tempfile.mktemp()
+    sys.argv = ['microtc', '-m', output, fname, '-o', output2]
+    kfolds()
+    os.unlink(output)
+    a = open(output2).readline()
+    os.unlink(output2)
+    a = json.loads(a)
+    assert 'decision_function' in a
+    assert False
+    
