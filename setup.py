@@ -55,5 +55,6 @@ setup(
         'microtc/tools/microtc-textModel',
         'microtc/tools/microtc-perf',
         'microtc/tools/microtc-ensemble',
+        'microtc/tools/microtc-kfolds'
     ]
 )
