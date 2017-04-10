@@ -213,5 +213,11 @@ def test_kfolds():
     os.unlink(output2)
     a = json.loads(a)
     assert 'decision_function' in a
+    sys.argv = ['microtc', '--update-klass', '-m', output, fname, '-o', output2]
+    try:
+        kfolds()
+    except AssertionError:
+        return
     assert False
+
     

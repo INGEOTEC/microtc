@@ -279,11 +279,16 @@ class CommandLineKfolds(CommandLineTrain):
 
     def param_kfold(self):
         pa = self.parser.add_argument
-        pa('--update-klass', default=False,
-           action="store_true", help='Update the klass')
+        pa('--update-klass', default=False, dest='update_klass',
+           action="store_true", help='Indicates whether the klass should be updated (default False)')
+        pa('-k', '--kratio', dest='kratio',
+           help='Predict the training set using k-fold (k > 1)',
+           default="5",
+           type=int)
 
     def main(self, args=None):
         self.data = self.parser.parse_args(args=args)
+        assert not self.data.update_klass
         logging.basicConfig(level=self.data.verbose)
         if self.data.conf:
             best = json.loads(self.data.conf)
@@ -309,7 +314,8 @@ class CommandLineKfolds(CommandLineTrain):
             t = TextModel(corpus, **best)
         X = [t[x] for x in corpus]
         hy = [None for x in y]
-        for tr, ts in KFold(n_splits=5, shuffle=True, random_state=0).split(X):
+        for tr, ts in KFold(n_splits=self.data.kratio,
+                            shuffle=True, random_state=self.data.seed).split(X):
             c = ClassifierWrapper()
             c.fit([X[x] for x in tr], [y[x] for x in tr])
             _ = c.decision_function([X[x] for x in ts])
