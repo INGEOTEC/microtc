@@ -308,7 +308,6 @@ class CommandLineKfolds(CommandLineTrain):
         else:
             t = TextModel(corpus, **best)
         X = [t[x] for x in corpus]
-        print(y)
         hy = [None for x in y]
         for tr, ts in KFold(n_splits=5, shuffle=True, random_state=0).split(X):
             c = ClassifierWrapper()
