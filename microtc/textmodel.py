@@ -27,6 +27,7 @@ logging.basicConfig(format='%(asctime)s : %(levelname)s :%(message)s')
 PUNCTUACTION = ";:,.@\\-\"'/"
 SYMBOLS = "()[]¿?¡!{}~<>|"
 SKIP_SYMBOLS = set(PUNCTUACTION + SYMBOLS)
+SKIP_SYMBOLS_AND_SPACES = set(PUNCTUACTION + SYMBOLS + '\t\n\r ')
 # SKIP_WORDS = set(["…", "..", "...", "...."])
 
 
@@ -44,6 +45,7 @@ def get_word_list(text):
         prev = u
 
     return ("".join(L)).split()
+
 
 def norm_chars(text, del_diac=True, del_dup=True, del_punc=False):
     L = ['~']
@@ -125,6 +127,8 @@ class TextModel:
             tfidf=True,
             ent_option=OPTION_NONE,
             select_ent=False,
+            select_suff=False,
+            select_conn=False,
             **kwargs
     ):
         self.del_diac = del_diac
@@ -134,6 +138,9 @@ class TextModel:
         self.emo_option = emo_option
         self.ent_option = ent_option
         self.select_ent = select_ent
+        self.select_suff = select_suff
+        self.select_conn = select_conn
+
         self.hashtag_option = hashtag_option
         self.lc = lc
         self.del_dup = del_dup
@@ -169,26 +176,6 @@ class TextModel:
             self.model = TfidfModel(corpus)
         else:
             self.model = None
-
-    def __str__(self):
-        return "[TextModel {0}]".format(dict(
-            num_option=self.num_option,
-            usr_option=self.usr_option,
-            url_option=self.url_option,
-            emo_option=self.emo_option,
-            ent_option=self.ent_option,
-            select_ent=self.select_ent,
-            hashtag_option=self.hashtag_option,
-            lc=self.lc,
-            del_dup=self.del_dup,
-            del_punc=self.del_punc,
-            del_diac=self.del_diac,
-            token_list=self.token_list,
-            token_min_filter=self.token_min_filter,
-            token_max_filter=self.token_max_filter,
-            tfidf=self.tfidf,
-            kwargs=self.kwargs
-        ))
 
     def __getitem__(self, text):
         vec, affinity = self.vectorize(text)
@@ -276,5 +263,15 @@ class TextModel:
                     textlist = get_word_list(text)
 
                 expand_skipgrams_word_list(textlist, q, L)
+
+        if self.select_suff:
+            L = [tok for tok in L if tok[-1] in SKIP_SYMBOLS_AND_SPACES]
+            if len(L) == 0:
+                L = ['~']
+            
+        if self.select_conn:
+            L = [tok for tok in L if '~' in tok and tok[0] != '~' and tok[-1] != '~']
+            if len(L) == 0:
+                L = ['~']
 
         return L

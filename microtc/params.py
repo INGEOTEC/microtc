@@ -100,7 +100,7 @@ def Boolean():
 
 TOKENLIST = [(3, 1), (2, 2), (2, 1), -3, -2, -1, 1, 2, 3, 5, 7, 9]
 if "TOKENLIST" in os.environ:
-    TOKENLIST = json.load(os.environ["TOKENLIST"])
+    TOKENLIST = json.loads(os.environ["TOKENLIST"])
 
 MAX_TOKENLIST = os.environ.get("MAX_TOKENLIST", len(TOKENLIST)//2)
 
@@ -115,7 +115,9 @@ DefaultParams = dict(
     hashtag_option=Fixed(OPTION_NONE),
 
     select_ent=Fixed(False),
-
+    select_suff=Fixed(False),
+    select_conn=Fixed(False),
+    
     lc=Boolean(),
     del_dup=Boolean(),
     del_punc=Boolean(),
