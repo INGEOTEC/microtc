@@ -18,6 +18,7 @@ from gensim.models.tfidfmodel import TfidfModel
 from .params import OPTION_DELETE, OPTION_GROUP, OPTION_NONE
 # from .emoticons import get_compiled_map, transform_del, transform_replace_by_klass, EmoticonClassifier
 from .emoticons import EmoticonClassifier
+# from .lang_dependency import LangDependency
 import logging
 import os
 
@@ -26,7 +27,14 @@ logging.basicConfig(format='%(asctime)s : %(levelname)s :%(message)s')
 PUNCTUACTION = ";:,.@\\-\"'/"
 SYMBOLS = "()[]¿?¡!{}~<>|"
 SKIP_SYMBOLS = set(PUNCTUACTION + SYMBOLS)
+SKIP_SYMBOLS_AND_SPACES = set(PUNCTUACTION + SYMBOLS + '\t\n\r ')
 # SKIP_WORDS = set(["…", "..", "...", "...."])
+
+_SPANISH = 'spanish'
+_ENGLISH = 'english'
+_ITALIAN = 'italian'
+_PORTUGUESE = 'portuguese'
+_ARABIC = "arabic"
 
 
 def get_word_list(text):
@@ -114,6 +122,7 @@ class TextModel:
             usr_option=OPTION_GROUP,
             url_option=OPTION_GROUP,
             emo_option=OPTION_GROUP,
+            hashtag_option=OPTION_NONE,
             lc=True,
             del_dup=True,
             del_punc=False,
@@ -122,6 +131,12 @@ class TextModel:
             token_min_filter=-1,
             token_max_filter=1.0,
             tfidf=True,
+            ent_option=OPTION_NONE,
+            select_ent=False,
+            select_suff=False,
+            select_conn=False,
+            stem_complement=True,
+            lang=None,
             **kwargs
     ):
         self.del_diac = del_diac
@@ -129,6 +144,12 @@ class TextModel:
         self.usr_option = usr_option
         self.url_option = url_option
         self.emo_option = emo_option
+        self.ent_option = ent_option
+        self.select_ent = select_ent
+        self.select_suff = select_suff
+        self.select_conn = select_conn
+
+        self.hashtag_option = hashtag_option
         self.lc = lc
         self.del_dup = del_dup
         self.del_punc = del_punc
@@ -136,6 +157,9 @@ class TextModel:
         self.token_min_filter = token_min_filter
         self.token_max_filter = token_max_filter
         self.tfidf = tfidf
+        self.stem_complement = stem_complement
+        self.lang = lang
+
         self.kwargs = {k: v for k, v in kwargs.items() if k[0] != '_'}
 
         if emo_option == OPTION_NONE:
@@ -143,6 +167,19 @@ class TextModel:
         else:
             # self.emo_map = get_compiled_map(os.path.join(os.path.dirname(__file__), 'resources', 'emoticons.json'))
             self.emo_map = EmoticonClassifier()
+
+        if self.stem_complement:
+            if self.lang in [ _SPANISH, _ITALIAN, _PORTUGUESE]:
+                from nltk.stem.snowball import SnowballStemmer
+                self.stemmer = SnowballStemmer(_SPANISH)
+            elif self.lang == _ENGLISH:
+                from nltk.stem.porter import PorterStemmer
+                self.stemmer =  PorterStemmer()
+            elif self.lang == _ARABIC:
+                from nltk.stem.isri import ISRIStemmer
+                self.stemmer = ISRIStemmer()
+        else:
+            self.stemmer = None
 
         docs = [self.tokenize(d) for d in docs]
         self.dictionary = corpora.Dictionary(docs)
@@ -162,23 +199,6 @@ class TextModel:
             self.model = TfidfModel(corpus)
         else:
             self.model = None
-
-    def __str__(self):
-        return "[TextModel {0}]".format(dict(
-            num_option=self.num_option,
-            usr_option=self.usr_option,
-            url_option=self.url_option,
-            emo_option=self.emo_option,
-            lc=self.lc,
-            del_dup=self.del_dup,
-            del_punc=self.del_punc,
-            del_diac=self.del_diac,
-            token_list=self.token_list,
-            token_min_filter=self.token_min_filter,
-            token_max_filter=self.token_max_filter,
-            tfidf=self.tfidf,
-            kwargs=self.kwargs
-        ))
 
     def __getitem__(self, text):
         vec, affinity = self.vectorize(text)
@@ -208,16 +228,45 @@ class TextModel:
         else:
             return self._tokenize(text)
 
+    def stemming_complement(self, text):
+        if self.stemmer is None:
+            print("Stemmer is not initialized") 
+            import sys
+            sys.exit(-1)
+
+        tokens = text.split()
+        stem_c = []
+        for t in tokens:
+            if not (t.startswith("http://") or  
+                t.startswith("ftp://") or
+                t.startswith("@") or
+                t.startswith("#")):
+                s = self.stemmer.stem(t)
+                c = t.replace(s,"")
+                stem_c.append(c)            
+            else:
+                stem_c.append(t)
+        return " ".join(stem_c)
+
     def _tokenize(self, text):
         if text is None:
             text = ''
 
-        # if self.emo_option == OPTION_DELETE:
-        #     text = transform_del(text, self.emo_map)
-        # elif self.emo_option == OPTION_GROUP:
-        #     text = transform_replace_by_klass(text, self.emo_map)
         if self.emo_map:
             text = self.emo_map.replace(text, option=self.emo_option)
+
+        if self.select_ent:
+            text = " ".join(re.findall(r"(@\S+|#\S+|[A-Z]\S+)", text))
+
+        if self.hashtag_option == OPTION_DELETE:
+            text = re.sub(r"#\S+", "", text)
+        elif self.hashtag_option == OPTION_GROUP:
+            text = re.sub(r"#\S+", "_htag", text)
+
+        if self.ent_option == OPTION_DELETE:
+            text = re.sub(r"[A-Z][a-z]+", "", text)
+        elif self.ent_option == OPTION_GROUP:
+            text = re.sub(r"[A-Z][a-z]+", "_ent", text)
 
         if self.lc:
             text = text.lower()
@@ -242,7 +291,6 @@ class TextModel:
         L = []
         textlist = None
 
-        # _text = memoryview(bytes(text, encoding='utf8'))
         _text = text
         for q in self.token_list:
             if isinstance(q, int):
@@ -259,6 +307,14 @@ class TextModel:
 
                 expand_skipgrams_word_list(textlist, q, L)
 
-        # print(len(L), self.token_min_filter)
+        if self.select_suff:
+            L = [tok for tok in L if tok[-1] in SKIP_SYMBOLS_AND_SPACES]
+            if len(L) == 0:
+                L = ['~']
+            
+        if self.select_conn:
+            L = [tok for tok in L if '~' in tok and tok[0] != '~' and tok[-1] != '~']
+            if len(L) == 0:
+                L = ['~']
+
         return L
-    
