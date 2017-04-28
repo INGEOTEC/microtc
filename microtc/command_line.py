@@ -24,7 +24,9 @@ from .scorewrapper import ScoreKFoldWrapper, ScoreSampleWrapper
 from .utils import read_data_labels
 from .textmodel import TextModel
 from sklearn.preprocessing import LabelEncoder
+from sklearn.model_selection import KFold
 import numpy as np
+import os
 import json
 import pickle
 
@@ -77,6 +79,7 @@ class CommandLine(object):
            help="Number of processes to compute the best setup")
         pa('-S', '--score', dest='score', type=str, default='macrof1',
            help="The name of the score to be optimized (macrof1|weightedf1|accuracy|avgf1:klass1:klass2); it defaults to macrof1")
+        pa('--conf', dest='conf', type=str, default=None, help="Do not perform search, just evaluate the given configuration (in json-format)")
 
     def param_set(self):
         pa = self.parser.add_argument
@@ -87,7 +90,6 @@ class CommandLine(object):
     def get_output(self):
         if self.data.output is None:
             return self.data.training_set[0] + ".output"
-
         return self.data.output
 
     def main(self, args=None, params=None):
@@ -101,10 +103,8 @@ class CommandLine(object):
         else:
             pool = Pool(self.data.numprocs)
 
-        assert self.data.score.split(":")[0] in ('macrof1', 'microf1', 'weightedf1', 'accuracy', 'avgf1'), "Unknown score {0}".format(self.data.score)
-
+        assert self.data.score.split(":")[0] in ('macrorecall', 'macrof1', 'microf1', 'weightedf1', 'accuracy', 'avgf1'), "Unknown score {0}".format(self.data.score)
         sel = ParameterSelection(params=params)
-
         X, y = [], []
         Xstatic, ystatic = [], []
         for train in self.data.training_set:
@@ -126,29 +126,28 @@ class CommandLine(object):
             ratio = float(self.data.kratio)
             if ratio == 1.0:
                 raise ValueError('k=1 is undefined')
-
             if ratio > 1:
                 fun_score = ScoreKFoldWrapper(X, y, Xstatic=Xstatic, ystatic=ystatic, nfolds=int(ratio), score=self.data.score, random_state=self.data.seed)
             else:
                 fun_score = ScoreSampleWrapper(X, y, Xstatic=Xstatic, ystatic=ystatic, ratio=ratio, score=self.data.score, random_state=self.data.seed)
-
         if self.data.best_list:
             with open(self.data.best_list) as f:
                 best_list = json.load(f)
         else:
             best_list = None
-
-        best_list = sel.search(
-            fun_score,
-            bsize=self.data.samplesize,
-            hill_climbing=self.data.hill_climbing,
-            pool=pool,
-            best_list=best_list
-        )
-
+        if self.data.conf:
+            conf = json.loads(self.data.conf)
+            best_list = self.get_best(fun_score, (conf, 'direct-input'))
+        else:
+            best_list = sel.search(
+                fun_score,
+                bsize=self.data.samplesize,
+                hill_climbing=self.data.hill_climbing,
+                pool=pool,
+                best_list=best_list
+            )
         with open(self.get_output(), 'w') as fpt:
             fpt.write(json.dumps(best_list, indent=2, sort_keys=True))
-
         return best_list
 
 
@@ -167,37 +166,42 @@ class CommandLineTrain(CommandLine):
            help="TextModel params")
         pa('-l', '--labels', dest='labels', type=str,
            help="a comma separated list of valid labels")
+        pa('--conf', dest='conf', type=str,
+           help="Specifies the configuration in JSON-format")
 
     def main(self, args=None):
         self.data = self.parser.parse_args(args=args)
         logging.basicConfig(level=self.data.verbose)
-        with open(self.data.params_fname) as fpt:
-            param_list = json.loads(fpt.read())
-
+        if self.data.conf:
+            best = json.loads(self.data.conf)
+        else:
+            with open(self.data.params_fname) as fpt:
+                best = json.loads(fpt.read())[0]
         corpus, labels = [], []
         for train in self.data.training_set:
             X_, y_ = read_data_labels(train)
             corpus.extend(X_)
             labels.extend(y_)
-
-        best = param_list[0]
-        t = TextModel(corpus, **best)
         le = LabelEncoder()
         if self.data.labels:
             le.fit(self.data.labels.split(','))
         else:
             le.fit(labels)
         y = le.transform(labels)
+        model_klasses = os.environ.get('TEXTMODEL_KLASSES')
+        if model_klasses:
+            model_klasses = le.transform(model_klasses.split(','))
+            t = TextModel([corpus[i] for i in range(len(corpus)) if y[i] in model_klasses], **best)
+        else:
+            t = TextModel(corpus, **best)
         c = ClassifierWrapper()
         X = [t[x] for x in corpus]
         c.fit(X, y)
-        
         with open(self.get_output(), 'wb') as fpt:
             pickle.dump([t, c, le], fpt)
-
         return [t, c, le]
 
-
+    
 class CommandLinePredict(CommandLine):
     def __init__(self):
         self.parser = argparse.ArgumentParser(description='microtc')
@@ -230,41 +234,27 @@ class CommandLinePredict(CommandLine):
                 model, svc, le = pickle.load(fpt)
         else:
             model, svc, le = model_svc_le
-
         veclist, afflist = [], []
         for x in read_data(self.data.test_set):
             v, a = model.vectorize(x)
             veclist.append(v)
             afflist.append(a)
-
         L = []
         hy = svc.decision_function(veclist)
         hyy = le.inverse_transform(svc.predict(veclist))
+        KLASS = os.environ.get('KLASS', 'klass')
         for tweet, scores, klass, aff in zip(tweet_iterator(self.data.test_set), hy, hyy, afflist):
-            # if True:
-            #     print("-YY>", scores)
-            #     print("-XX>", scores.shape, len(scores.shape))
-            #     print(svc.svc.classes_)
-            #     print(le)
-
-            # if len(scores.shape) == 0:
-            #     index = 0 if scores < 0.0 else 1
-            # elif len(scores.shape) == 1:
-            #     index = np.argmax(scores)
-            # else:
-            #     index = scores.argmax(axis=1)
-
             # klass = le.inverse_transform(svc.svc.classes_[index])
             tweet['decision_function'] = scores.tolist()
             tweet['voc_affinity'] = aff
-            tweet['klass'] = str(klass)
+            tweet[KLASS] = str(klass)
+            tweet['predicted'] = tweet[KLASS]
             L.append(tweet)
-
         with open(self.get_output(), 'w') as fpt:
             for tweet in L:
                 fpt.write(json.dumps(tweet)+"\n")
-
         return L
+
 
 class CommandLineTextModel(CommandLinePredict):
     def main(self):
@@ -272,7 +262,6 @@ class CommandLineTextModel(CommandLinePredict):
         logging.basicConfig(level=self.data.verbose)
         with open(self.data.model, 'rb') as fpt:
             textmodel, svc, le = pickle.load(fpt)
-
         L = []
         with open(self.get_output(), 'w') as fpt:
             for tw in tweet_iterator(self.data.test_set):
@@ -280,8 +269,66 @@ class CommandLineTextModel(CommandLinePredict):
                 tw.update(extra)
                 L.append(tw)
                 fpt.write(json.dumps(tw) + "\n")
-
         return L
+
+
+class CommandLineKfolds(CommandLineTrain):
+    def __init__(self):
+        super(CommandLineKfolds, self).__init__()
+        self.param_kfold()
+
+    def param_kfold(self):
+        pa = self.parser.add_argument
+        pa('--update-klass', default=False, dest='update_klass',
+           action="store_true", help='Indicates whether the klass should be updated (default False)')
+        pa('-k', '--kratio', dest='kratio',
+           help='Predict the training set using k-fold (k > 1)',
+           default="5",
+           type=int)
+
+    def main(self, args=None):
+        self.data = self.parser.parse_args(args=args)
+        assert not self.data.update_klass
+        logging.basicConfig(level=self.data.verbose)
+        if self.data.conf:
+            best = json.loads(self.data.conf)
+        else:
+            with open(self.data.params_fname) as fpt:
+                best = json.loads(fpt.read())[0]
+        corpus, labels = [], []
+        for train in self.data.training_set:
+            X_, y_ = read_data_labels(train)
+            corpus.extend(X_)
+            labels.extend(y_)
+        le = LabelEncoder()
+        if self.data.labels:
+            le.fit(self.data.labels.split(','))
+        else:
+            le.fit(labels)
+        y = le.transform(labels)
+        model_klasses = os.environ.get('TEXTMODEL_KLASSES')
+        if model_klasses:
+            model_klasses = le.transform(model_klasses.split(','))
+            t = TextModel([corpus[i] for i in range(len(corpus)) if y[i] in model_klasses], **best)
+        else:
+            t = TextModel(corpus, **best)
+        X = [t[x] for x in corpus]
+        hy = [None for x in y]
+        for tr, ts in KFold(n_splits=self.data.kratio,
+                            shuffle=True, random_state=self.data.seed).split(X):
+            c = ClassifierWrapper()
+            c.fit([X[x] for x in tr], [y[x] for x in tr])
+            _ = c.decision_function([X[x] for x in ts])
+            [hy.__setitem__(k, v) for k, v in zip(ts, _)]
+
+        i = 0
+        with open(self.get_output(), 'w') as fpt:
+            for train in self.data.training_set:
+                for tweet in tweet_iterator(train):
+                    tweet['decision_function'] = hy[i].tolist()
+                    i += 1
+                    fpt.write(json.dumps(tweet)+"\n")
+        return hy
 
 
 def params(*args, **kwargs):
@@ -303,3 +350,7 @@ def textmodel(*args, **kwargs):
     c = CommandLineTextModel()
     return c.main(*args, **kwargs)
 
+
+def kfolds(*args, **kwargs):
+    c = CommandLineKfolds()
+    return c.main(*args, **kwargs)

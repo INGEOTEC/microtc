@@ -13,8 +13,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-
 import numpy as np
+import os
 from time import time
 from sklearn.metrics import f1_score, accuracy_score, recall_score, precision_score
 from sklearn import preprocessing
@@ -53,7 +53,14 @@ class ScoreSampleWrapper(object):
     def __call__(self, conf_code):
         conf, code = conf_code
         st = time()
-        textmodel = TextModel(self.train_corpus, **conf)
+        model_klass = os.environ.get("TEXTMODEL_KLASSES", None)
+        if model_klass:
+            model_klass = self.le.transform(model_klass.split(','))
+            _train = [self.train_corpus[i] for i in len(self.train_corpus) if self.train_y[i] in model_klass]
+            textmodel = TextModel(_train, **conf)
+        else:
+            textmodel = TextModel(self.train_corpus, **conf)
+
         train_X = [textmodel[doc] for doc in self.train_corpus]
         c = self.create_classifier()
         c.fit(train_X, self.train_y)
@@ -64,10 +71,12 @@ class ScoreSampleWrapper(object):
         return conf
 
     def compute_score(self, conf, hy):
+        RS = recall_score(self.test_y, hy, average=None)
         conf['_all_f1'] = M = {str(self.le.inverse_transform([klass])[0]): f1 for klass, f1 in enumerate(f1_score(self.test_y, hy, average=None))}
-        conf['_all_recall'] = {str(self.le.inverse_transform([klass])[0]): f1 for klass, f1 in enumerate(recall_score(self.test_y, hy, average=None))}
+        conf['_all_recall'] = {str(self.le.inverse_transform([klass])[0]): r for klass, r in enumerate(RS)}
         conf['_all_precision'] = {str(self.le.inverse_transform([klass])[0]): f1 for klass, f1 in enumerate(precision_score(self.test_y, hy, average=None))}
 
+        conf['_macrorecall'] = np.mean(RS)
         if len(self.le.classes_) == 2:
             conf['_macrof1'] = np.mean(np.array([v for v in conf['_all_f1'].values()]))
             conf['_weightedf1'] = conf['_microf1'] = f1_score(self.test_y, hy, average='binary')

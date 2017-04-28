@@ -1,0 +1,71 @@
+#!/opt/anaconda/bin/python
+
+from microtc.utils import tweet_iterator
+from sklearn.preprocessing import LabelEncoder
+from sklearn.metrics import f1_score, accuracy_score, precision_score, recall_score
+import json
+import os
+import sys
+from collections import Counter
+from sklearn.svm import SVC
+
+KLASS=os.environ.get('KLASS', 'klass')
+
+def voting(predictedlist, output=None):
+    H = []
+    for filename in predictedlist:
+        hy = [str(tweet[KLASS]) for tweet in tweet_iterator(filename)]
+        H.append(hy)
+
+    L = []
+    for i in range(len(H[0])):
+        c = Counter(h[i] for h in H).most_common()
+        L.append(c[0][0])
+
+    del H
+    if output is None:
+        for x in L:
+            x = {KLASS: x}
+            print(json.dumps(x, sort_keys=1))
+    else:
+        with open(output, 'w') as f:
+            f.write(json.dumps(x, sort_keys=1) + "\n")
+
+
+# def encoders(train, predictedlist, output=None):
+#     H = [tweet['decision_function'] for tweet in tweet_iterator(predictedlist[0])]
+#     for filename in predictedlist[1:]:
+#         X = list(tweet_iterator(filename))
+#         for i in range(len(X)):
+#             H[i].extend(X[i]['decision_function'])
+        
+#     hy = [str(tweet[KLASS]) for tweet in tweet_iterator(train)]
+#     le = LabelEncoder().fit(y)
+#     hy = le.transform(hy)
+
+#     m = SVC().fit(H, )
+#     Xt, _ = read_data(test)
+#     hy = m.predict(Xt)
+#     with open(output, 'w') as fpt:
+#         fpt.write('\n'.join(hy))
+
+
+#     if output is None:
+#         for x in H:
+#             x = {KLASS: x}
+#             print(json.dumps(x, sort_keys=1))
+#     else:
+#         with open(output, 'w') as f:
+#             f.write(json.dumps(x, sort_keys=1) + "\n")
+
+
+if __name__ == '__main__':
+    from argparse import ArgumentParser
+    parser = ArgumentParser(description='microtc')
+    parser.add_argument('predictions', nargs='+', default=None, help='Prediction list')
+    parser.add_argument('-o', '--output', dest='output', default=None, type=str, help='Indicates the name of the output file, defaults to stdout')
+    args = parser.parse_args()
+
+    # voting(args.predictions, output=args.output)
+    voting(args.predictions[0], args.predictions[1:], output=args.output)
+
