@@ -7,18 +7,19 @@ import json
 import os
 import sys
 
+KLASS=os.environ.get('KLASS', 'klass')
+
+
 def show_mismatches(gold, predicted, output=None, avgf1=None):
     i = 0
+    klass = os.environ.get(KLASS)
     for g, p in zip(tweet_iterator(gold), tweet_iterator(predicted)):
-        g['klass'] = str(g['klass'])
-        p['klass'] = str(p['klass'])
+        g[KLASS] = str(g[KLASS])
+        p[KLASS] = str(p[KLASS])
         i += 1
-        if g['klass'] != p['klass']:
-            p['klass_from_gold'] = g['klass']
+        if g[KLASS] != p[KLASS]:
+            p['klass_from_gold'] = g[KLASS]
             print(json.dumps(p, sort_keys=True), i)
-
-
-KLASS=os.environ.get('KLASS', 'klass')
 
 
 def performance(gold, predicted, output=None, avgf1=None):

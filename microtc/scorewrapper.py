@@ -19,7 +19,7 @@ from time import time
 from sklearn.metrics import f1_score, accuracy_score, recall_score, precision_score
 from sklearn import preprocessing
 from sklearn import cross_validation
-from microtc.textmodel import TextModel
+from microtc.textmodel import TextModel, DistTextModel
 from microtc.classifier import ClassifierWrapper
 
 
@@ -54,12 +54,18 @@ class ScoreSampleWrapper(object):
         conf, code = conf_code
         st = time()
         model_klass = os.environ.get("TEXTMODEL_KLASSES", None)
+        use_dist_vectors = os.environ.get('DIST_VECTORS', 'false').strip() == 'true'
         if model_klass:
             model_klass = self.le.transform(model_klass.split(','))
             _train = [self.train_corpus[i] for i in len(self.train_corpus) if self.train_y[i] in model_klass]
             textmodel = TextModel(_train, **conf)
+            if use_dist_vectors:
+                _train_y = [self.train_y[i] for i in len(self.train_corpus) if self.train_y[i] in model_klass]
+                textmodel = DistTextModel(textmodel, _train, _train_y, self.le.classes_.shape[0])
         else:
             textmodel = TextModel(self.train_corpus, **conf)
+            if use_dist_vectors:
+                textmodel = DistTextModel(textmodel, self.train_corpus, self.train_y, self.le.classes_.shape[0])
 
         train_X = [textmodel[doc] for doc in self.train_corpus]
         c = self.create_classifier()
@@ -91,7 +97,7 @@ class ScoreSampleWrapper(object):
             conf['_' + self.score] = sum(klist) / len(klist)
 
         conf['_score'] = conf['_' + self.score]
-
+        print(conf)
 
 class ScoreKFoldWrapper(ScoreSampleWrapper):
     def __init__(self, X, y, Xstatic=[], ystatic=[], nfolds=5, score='macrof1', classifier=ClassifierWrapper, random_state=None):
@@ -121,12 +127,16 @@ class ScoreKFoldWrapper(ScoreSampleWrapper):
             if len(self.Xstatic) > 0:
                 A.extend(self.Xstatic)
 
-            textmodel = TextModel(A, **conf)
-            # textmodel = TextModel([X[i] for i in train], **conf)
-            trainX = [textmodel[x] for x in A]
             trainY = self.y[train]
             if len(self.ystatic) > 0:
                 trainY = np.hstack((trainY, self.ystatic))
+
+            textmodel = TextModel(A, **conf)
+            if os.environ.get('DIST_VECTORS', 'false').strip() == 'true':
+                textmodel = DistTextModel(textmodel, A, trainY, self.le.classes_.shape[0])
+            
+            # textmodel = TextModel([X[i] for i in train], **conf)
+            trainX = [textmodel[x] for x in A]
 
             c = self.create_classifier()
             c.fit(trainX, trainY)

@@ -22,7 +22,7 @@ from multiprocessing import cpu_count, Pool
 from .params import ParameterSelection
 from .scorewrapper import ScoreKFoldWrapper, ScoreSampleWrapper
 from .utils import read_data_labels
-from .textmodel import TextModel
+from .textmodel import TextModel, DistTextModel
 from sklearn.preprocessing import LabelEncoder
 from sklearn.model_selection import KFold
 import numpy as np
@@ -189,11 +189,25 @@ class CommandLineTrain(CommandLine):
             le.fit(labels)
         y = le.transform(labels)
         model_klasses = os.environ.get('TEXTMODEL_KLASSES')
+        use_dist_vectors = os.environ.get('DIST_VECTORS', 'false').strip() == 'true'
+
         if model_klasses:
             model_klasses = le.transform(model_klasses.split(','))
-            t = TextModel([corpus[i] for i in range(len(corpus)) if y[i] in model_klasses], **best)
+            docs_ = []
+            labels_ = []
+            for i in range(len(corpus)):
+                if y[i] in model_klasses:
+                    docs_.append(corpus[i])
+                    labels_.append(y[i])
+
+            t = TextModel(docs_, **best)
+            if use_dist_vectors:
+                t = DistTextModel(t, docs_, labels_, le.classes_.shape[0])
         else:
             t = TextModel(corpus, **best)
+            if use_dist_vectors:
+                t = DistTextModel(t, corpus, y, le.classes_.shape[0])
+
         c = ClassifierWrapper()
         X = [t[x] for x in corpus]
         c.fit(X, y)
@@ -307,11 +321,25 @@ class CommandLineKfolds(CommandLineTrain):
             le.fit(labels)
         y = le.transform(labels)
         model_klasses = os.environ.get('TEXTMODEL_KLASSES')
+        use_dist_vectors = os.environ.get('DIST_VECTORS', 'false').strip() == 'true'
+
         if model_klasses:
             model_klasses = le.transform(model_klasses.split(','))
-            t = TextModel([corpus[i] for i in range(len(corpus)) if y[i] in model_klasses], **best)
+            docs_ = []
+            labels_ = []
+            for i in range(len(corpus)):
+                if y[i] in model_klasses:
+                    docs_.append(corpus[i])
+                    labels_.append(y[i])
+
+            t = TextModel(docs_, **best)
+            if use_dist_vectors:
+                t = DistTextModel(t, docs_, labels_, le.classes_.shape[0])
         else:
             t = TextModel(corpus, **best)
+            if use_dist_vectors:
+                t = DistTextModel(t, corpus, y, le.classes_.shape[0])
+
         X = [t[x] for x in corpus]
         hy = [None for x in y]
         for tr, ts in KFold(n_splits=self.data.kratio,

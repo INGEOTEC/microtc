@@ -275,3 +275,40 @@ class TextModel:
                 L = ['~']
 
         return L
+
+
+from collections import defaultdict
+
+
+class DistTextModel:
+    def __init__(self, model, texts, labels, numlabels):
+        H = {}
+
+        for text, label in zip(texts, labels):
+            for token, weight in model[text]:
+                hist = H.get(token, None)
+                if hist is None:
+                    hist = [0 for i in range(numlabels)]
+                    H[token] = hist
+
+                hist[label] += weight
+            
+        for token, hist in H.items():
+            s = sum(hist)
+            for i in range(numlabels):
+                hist[i] /= s
+        self.H = H
+        self.numlabels = numlabels
+        self.model = model
+
+    def __getitem__(self, text):
+        vec = []
+        for token, weight in self.model[text]:
+            x = token * self.numlabels
+            for i, w in enumerate(self.H[token]):
+                vec.append((x + i, w))
+        
+        return vec
+    
+    def vectorize(self, text):
+        return self[text], 1.0
