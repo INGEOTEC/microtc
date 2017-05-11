@@ -19,7 +19,7 @@ from microtc.classifier import ClassifierWrapper
 from microtc.utils import read_data, tweet_iterator
 # from microtc.params import OPTION_DELETE
 from multiprocessing import cpu_count, Pool
-from .params import ParameterSelection
+from .params import ParameterSelection, OPTION_NONE
 from .scorewrapper import ScoreKFoldWrapper, ScoreSampleWrapper
 from .utils import read_data_labels
 from .textmodel import TextModel, DistTextModel
@@ -189,7 +189,6 @@ class CommandLineTrain(CommandLine):
             le.fit(labels)
         y = le.transform(labels)
         model_klasses = os.environ.get('TEXTMODEL_KLASSES')
-        use_dist_vectors = os.environ.get('DIST_VECTORS', 'false').strip() == 'true'
 
         if model_klasses:
             model_klasses = le.transform(model_klasses.split(','))
@@ -201,11 +200,11 @@ class CommandLineTrain(CommandLine):
                     labels_.append(y[i])
 
             t = TextModel(docs_, **best)
-            if use_dist_vectors:
-                t = DistTextModel(t, docs_, labels_, le.classes_.shape[0])
+            if best['dist_vector'] != OPTION_NONE:
+                t = DistTextModel(t, docs_, labels_, le.classes_.shape[0], best['dist_vector'])
         else:
             t = TextModel(corpus, **best)
-            if use_dist_vectors:
+            if best['dist_vector'] != OPTION_NONE:
                 t = DistTextModel(t, corpus, y, le.classes_.shape[0])
 
         c = ClassifierWrapper()
@@ -321,7 +320,6 @@ class CommandLineKfolds(CommandLineTrain):
             le.fit(labels)
         y = le.transform(labels)
         model_klasses = os.environ.get('TEXTMODEL_KLASSES')
-        use_dist_vectors = os.environ.get('DIST_VECTORS', 'false').strip() == 'true'
 
         if model_klasses:
             model_klasses = le.transform(model_klasses.split(','))
@@ -333,12 +331,12 @@ class CommandLineKfolds(CommandLineTrain):
                     labels_.append(y[i])
 
             t = TextModel(docs_, **best)
-            if use_dist_vectors:
-                t = DistTextModel(t, docs_, labels_, le.classes_.shape[0])
+            if best['dist_vector'] != OPTION_NONE:
+                t = DistTextModel(t, docs_, labels_, le.classes_.shape[0], best['dist_vector'])
         else:
             t = TextModel(corpus, **best)
-            if use_dist_vectors:
-                t = DistTextModel(t, corpus, y, le.classes_.shape[0])
+            if best['dist_vector'] != OPTION_NONE:
+                t = DistTextModel(t, corpus, y, le.classes_.shape[0], best['dist_vector'])
 
         X = [t[x] for x in corpus]
         hy = [None for x in y]

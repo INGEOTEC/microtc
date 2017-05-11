@@ -130,6 +130,8 @@ DefaultParams = dict(
     # token_max_filter=SetVariable([0.9, 0.95, 0.99, 1.0]),
     # token_min_filter=SetVariable([-1, -3, -5, -10]),
     tfidf=Fixed(True),
+    # dist_vector=SetVariable([OPTION_NONE, 'plain', 'plain+100', 'plain+1000', 'entropy+100', 'entropy+1000'])
+    dist_vector=Fixed(OPTION_NONE)
 )
 
 if "PARAMS" in os.environ:

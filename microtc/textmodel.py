@@ -15,6 +15,7 @@ import re
 import unicodedata
 from gensim import corpora
 from gensim.models.tfidfmodel import TfidfModel
+import numpy as np
 from .params import OPTION_DELETE, OPTION_GROUP, OPTION_NONE
 # from .emoticons import get_compiled_map, transform_del, transform_replace_by_klass, EmoticonClassifier
 from .emoticons import EmoticonClassifier
@@ -277,13 +278,10 @@ class TextModel:
         return L
 
 
-from collections import defaultdict
-
-
 class DistTextModel:
-    def __init__(self, model, texts, labels, numlabels):
+    def __init__(self, model, texts, labels, numlabels, kind):
         H = {}
-
+        self.kind = kind
         for text, label in zip(texts, labels):
             for token, weight in model[text]:
                 hist = H.get(token, None)
@@ -292,22 +290,36 @@ class DistTextModel:
                     H[token] = hist
 
                 hist[label] += weight
-            
+
+        if '+' in self.kind:
+            base = int(self.kind.split('+')[-1])
+        else:
+            base = 0
+
         for token, hist in H.items():
-            s = sum(hist)
+            s = sum(hist) + base * len(hist)
             for i in range(numlabels):
-                hist[i] /= s
+                hist[i] = (hist[i] + base) / s
+        
+        if self.kind.startswith('entropy'):
+            for token, hist in H.items():
+                H[token] = -sum(x * np.log2(x+0.0001) for x in hist)
+        
         self.H = H
         self.numlabels = numlabels
         self.model = model
 
     def __getitem__(self, text):
         vec = []
-        for token, weight in self.model[text]:
-            x = token * self.numlabels
-            for i, w in enumerate(self.H[token]):
-                vec.append((x + i, w))
-        
+        if self.kind.startswith('plain'):
+            for token, weight in self.model[text]:
+                x = token * self.numlabels
+                for i, w in enumerate(self.H[token]):
+                    vec.append((x + i, w))
+        else:
+            for token, weight in self.model[text]:
+                vec.append((token, self.H[token]))
+
         return vec
     
     def vectorize(self, text):
