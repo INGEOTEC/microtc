@@ -282,6 +282,8 @@ class DistTextModel:
     def __init__(self, model, texts, labels, numlabels, kind):
         H = {}
         self.kind = kind
+        self.numlabels = numlabels
+
         for text, label in zip(texts, labels):
             for token, weight in model[text]:
                 hist = H.get(token, None)
@@ -302,8 +304,10 @@ class DistTextModel:
                 hist[i] = (hist[i] + base) / s
         
         if self.kind.startswith('entropy'):
+            maxent = np.log2(self.numlabels)
             for token, hist in H.items():
-                H[token] = -sum(x * np.log2(x+0.0001) for x in hist)
+                # H[token] = -sum(x * np.log2(x+0.0001) for x in hist)
+                H[token] = maxent + sum(x * np.log2(x+0.0001) for x in hist)
         
         self.H = H
         self.numlabels = numlabels

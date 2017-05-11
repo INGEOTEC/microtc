@@ -205,7 +205,7 @@ class CommandLineTrain(CommandLine):
         else:
             t = TextModel(corpus, **best)
             if best['dist_vector'] != OPTION_NONE:
-                t = DistTextModel(t, corpus, y, le.classes_.shape[0])
+                t = DistTextModel(t, corpus, y, le.classes_.shape[0], best['dist_vector'])
 
         c = ClassifierWrapper()
         X = [t[x] for x in corpus]
