@@ -15,6 +15,7 @@
 import argparse
 import logging
 import microtc
+import gzip
 from microtc.classifier import ClassifierWrapper
 from microtc.utils import read_data, tweet_iterator
 # from microtc.params import OPTION_DELETE
@@ -31,7 +32,25 @@ import json
 import pickle
 
 # from microtc.params import ParameterSelection
+def load_pickle(filename):
+    if filename.endswith(".gz"):
+        f = gzip.GzipFile(filename)
+        X = pickle.load(f)
+        f.close()
+        return X
+    else:
+        with open(filename, 'rb') as f:
+            return pickle.load(f)
 
+def load_json(filename):
+    if filename.endswith(".gz"):
+        f = gzip.GzipFile(filename)
+        X = json.load(f)
+        f.close()
+        return X
+    else:
+        with open(filename) as f:
+            return json.load(f)
 
 class CommandLine(object):
     def __init__(self):
@@ -131,10 +150,10 @@ class CommandLine(object):
             else:
                 fun_score = ScoreSampleWrapper(X, y, Xstatic=Xstatic, ystatic=ystatic, ratio=ratio, score=self.data.score, random_state=self.data.seed)
         if self.data.best_list:
-            with open(self.data.best_list) as f:
-                best_list = json.load(f)
+            best_list = load_json(self.data.best_list)
         else:
             best_list = None
+
         if self.data.conf:
             conf = json.loads(self.data.conf)
             best_list = self.get_best(fun_score, (conf, 'direct-input'))
@@ -146,8 +165,10 @@ class CommandLine(object):
                 pool=pool,
                 best_list=best_list
             )
+
         with open(self.get_output(), 'w') as fpt:
             fpt.write(json.dumps(best_list, indent=2, sort_keys=True))
+
         return best_list
 
 
@@ -175,18 +196,20 @@ class CommandLineTrain(CommandLine):
         if self.data.conf:
             best = json.loads(self.data.conf)
         else:
-            with open(self.data.params_fname) as fpt:
-                best = json.loads(fpt.read())[0]
+            best = load_json(self.data.params_fname)[0]
+
         corpus, labels = [], []
         for train in self.data.training_set:
             X_, y_ = read_data_labels(train)
             corpus.extend(X_)
             labels.extend(y_)
+
         le = LabelEncoder()
         if self.data.labels:
             le.fit(self.data.labels.split(','))
         else:
             le.fit(labels)
+
         y = le.transform(labels)
         model_klasses = os.environ.get('TEXTMODEL_KLASSES')
 
@@ -243,15 +266,16 @@ class CommandLinePredict(CommandLine):
         self.data = self.parser.parse_args(args=args)
         logging.basicConfig(level=self.data.verbose)
         if model_svc_le is None:
-            with open(self.data.model, 'rb') as fpt:
-                model, svc, le = pickle.load(fpt)
+            model, svc, le = load_pickle(self.data.model)
         else:
             model, svc, le = model_svc_le
+
         veclist, afflist = [], []
         for x in read_data(self.data.test_set):
             v, a = model.vectorize(x)
             veclist.append(v)
             afflist.append(a)
+
         L = []
         hy = svc.decision_function(veclist)
         hyy = le.inverse_transform(svc.predict(veclist))
@@ -273,8 +297,7 @@ class CommandLineTextModel(CommandLinePredict):
     def main(self):
         self.data = self.parser.parse_args()
         logging.basicConfig(level=self.data.verbose)
-        with open(self.data.model, 'rb') as fpt:
-            textmodel, svc, le = pickle.load(fpt)
+        textmodel, svc, le = load_pickle(self.data.model)
         L = []
         with open(self.get_output(), 'w') as fpt:
             for tw in tweet_iterator(self.data.test_set):
@@ -306,8 +329,8 @@ class CommandLineKfolds(CommandLineTrain):
         if self.data.conf:
             best = json.loads(self.data.conf)
         else:
-            with open(self.data.params_fname) as fpt:
-                best = json.loads(fpt.read())[0]
+            best = load_json(self.data.params_fname)[0]
+
         corpus, labels = [], []
         for train in self.data.training_set:
             X_, y_ = read_data_labels(train)
