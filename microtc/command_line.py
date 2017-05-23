@@ -301,8 +301,8 @@ class CommandLineTextModel(CommandLinePredict):
         L = []
         with open(self.get_output(), 'w') as fpt:
             for tw in tweet_iterator(self.data.test_set):
-                extra = dict(textmodel[tw['text']] + [('num_terms', svc.num_terms)])
-                tw.update(extra)
+                tw["vec"] = textmodel[tw['text']]
+                tw["vecsize"] = svc.num_terms
                 L.append(tw)
                 fpt.write(json.dumps(tw) + "\n")
         return L
