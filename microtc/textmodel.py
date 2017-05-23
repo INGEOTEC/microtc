@@ -307,7 +307,7 @@ class DistTextModel:
             maxent = np.log2(self.numlabels)
             for token, hist in H.items():
                 # H[token] = -sum(x * np.log2(x+0.0001) for x in hist)
-                H[token] = maxent + sum(x * np.log2(x+0.0001) for x in hist)
+                H[token] = maxent + sum(x * np.log2(x) for x in hist if x > 0)
         
         self.H = H
         self.numlabels = numlabels
