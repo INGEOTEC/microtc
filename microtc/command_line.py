@@ -182,9 +182,10 @@ class CommandLineTrain(CommandLine):
 
     def param_train(self):
         pa = self.parser.add_argument
-        pa('-m', '--model-params', dest='params_fname', type=str,
-           required=True,
+        pa('-m', '--model-params', dest='params_fname', type=str, required=True,
            help="TextModel params")
+        pa('-i', '--i-th', dest='position', type=int, default=0,  # best by default
+           help="i-th model in the set of configurations (defaults to the best, i.e., 0)")
         pa('-l', '--labels', dest='labels', type=str,
            help="a comma separated list of valid labels")
         pa('--conf', dest='conf', type=str,
@@ -196,7 +197,7 @@ class CommandLineTrain(CommandLine):
         if self.data.conf:
             best = json.loads(self.data.conf)
         else:
-            best = load_json(self.data.params_fname)[0]
+            best = load_json(self.data.params_fname)[self.data.position]
 
         corpus, labels = [], []
         for train in self.data.training_set:
