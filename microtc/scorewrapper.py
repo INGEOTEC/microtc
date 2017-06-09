@@ -92,8 +92,10 @@ class ScoreSampleWrapper(object):
             conf['_macrof1'] = f1_score(self.test_y, hy, average='macro')
             conf['_microf1'] = f1_score(self.test_y, hy, average='micro')
             conf['_weightedf1'] = f1_score(self.test_y, hy, average='weighted')
-
+    
         conf['_accuracy'] = accuracy_score(self.test_y, hy)
+        conf['_macrof1accuracy'] = conf["_macrof1"] * conf["_accuracy"]
+
         if self.score.startswith('avgf1:'):
             klist = [M[x] for x in self.score.replace('avgf1:', '').split(':')]
             conf['_' + self.score] = sum(klist) / len(klist)

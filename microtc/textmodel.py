@@ -294,9 +294,16 @@ class DistTextModel:
                 hist[label] += weight
 
         if '+' in self.kind:
-            base = int(self.kind.split('+')[-1])
+            a = self.kind.split('+')
+            if len(a) == 2:
+                lowerent = 0.0
+                base = int(self.kind.split('+')[1])
+            else:
+                lowerent = float(a[1])
+                base = int(a[2])
         else:
             base = 0
+            lowerent = 0.0
 
         for token, hist in H.items():
             s = sum(hist) + base * len(hist)
@@ -304,10 +311,13 @@ class DistTextModel:
                 hist[i] = (hist[i] + base) / s
         
         if self.kind.startswith('entropy'):
+
             maxent = np.log2(self.numlabels)
             for token, hist in H.items():
                 # H[token] = -sum(x * np.log2(x+0.0001) for x in hist)
                 H[token] = maxent + sum(x * np.log2(x) for x in hist if x > 0)
+            
+            H = {k: v for k, v in H.items() if v >= lowerent}
         
         self.H = H
         self.numlabels = numlabels
@@ -322,7 +332,9 @@ class DistTextModel:
                     vec.append((x + i, w))
         else:
             for token, weight in self.model[text]:
-                vec.append((token, self.H[token]))
+                w = self.H.get(token, 0.0)
+                if w > 0:
+                    vec.append((token, w))
 
         return vec
     

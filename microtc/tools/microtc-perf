@@ -41,6 +41,7 @@ def performance(gold, predicted, output=None, avgf1=None):
         'accuracy': accuracy_score(y, hy),
         'filename': predicted,
     }
+    report['macrof1accuracy'] = report['accuracy'] * report['macrof1']
 
     for key, value in f1.items():
         report["f1_{0}".format(key)] = value
