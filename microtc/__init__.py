@@ -17,19 +17,19 @@ import pickle
 __version__ = "1.4.0"
 
 
-class WorkerTC:
-    def __init__(self, filename):
-        with open(filename, 'rb') as f:
-            t, c, le = pickle.load(f)
+# class WorkerTC:
+#     def __init__(self, filename):
+#         with open(filename, 'rb') as f:
+#             t, c, le = pickle.load(f)
 
-        self.model = t
-        self.svc = c
-        self.le = le
+#         self.model = t
+#         self.svc = c
+#         self.le = le
 
-    def predict_dict(self, tweet):
-        tweet['klass'] = self.predict(tweet['text'])
-        return tweet
+#     def predict_dict(self, tweet):
+#         tweet['klass'] = self.predict(tweet['text'])
+#         return tweet
 
-    def predict(self, text):
-        vec = self.model[text]
-        return self.le.inverse_transform(self.svc.predict([vec]))[0]
+#     def predict(self, text):
+#         vec = self.model[text]
+#         return self.le.inverse_transform(self.svc.predict([vec]))[0]
