@@ -305,16 +305,23 @@ class DistTextModel:
             base = 0
             lowerent = 0.0
 
+        sizes = np.zeros(numlabels)
+        for token, hist in H.items():
+            sizes += hist
+
+        minsize = np.median(sizes)
+        for token, hist in H.items():
+            for i in range(len(sizes)):
+                hist[i] *= minsize / sizes[i]
+
         for token, hist in H.items():
             s = sum(hist) + base * len(hist)
             for i in range(numlabels):
                 hist[i] = (hist[i] + base) / s
         
         if self.kind.startswith('entropy'):
-
             maxent = np.log2(self.numlabels)
             for token, hist in H.items():
-                # H[token] = -sum(x * np.log2(x+0.0001) for x in hist)
                 H[token] = maxent + sum(x * np.log2(x) for x in hist if x > 0)
             
             H = {k: v for k, v in H.items() if v >= lowerent}
