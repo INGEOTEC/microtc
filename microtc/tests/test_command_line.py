@@ -167,6 +167,7 @@ def test_textmodel():
 
 def test_numeric_klass():
     from microtc.utils import tweet_iterator
+    from microtc.params import DefaultParams, Fixed
     from microtc.command_line import params, train, predict
     from sklearn.preprocessing import LabelEncoder
     import os
@@ -183,8 +184,11 @@ def test_numeric_klass():
         x['klass'] = int(k)
     with open(numeric, 'w') as fpt:
         [fpt.write(json.dumps(x) + '\n') for x in D]
+
+    parameterspace = DefaultParams.copy()
+    parameterspace["dist_vector"] = Fixed("entropy+0+1")
     sys.argv = ['microtc', '-o', output, '-k', '2', numeric, '-s', '2']
-    params()
+    params(params=parameterspace)
     sys.argv = ['microtc', '-m', output, numeric, '-o', output]
     train()
     output2 = tempfile.mktemp()
@@ -219,5 +223,3 @@ def test_kfolds():
     except AssertionError:
         return
     assert False
-
-    
