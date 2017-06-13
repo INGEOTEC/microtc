@@ -6,35 +6,35 @@ from collections import defaultdict
 from .params import OPTION_DELETE, OPTION_GROUP, OPTION_NONE
 
 
-def get_compiled_map(filename):
-    with open(filename) as f:
-        E = json.load(f)
+# def get_compiled_map(filename):
+#     with open(filename) as f:
+#         E = json.load(f)
 
-    X = defaultdict(list)
+#     X = defaultdict(list)
 
-    for code, klass in E.items():
-        X[klass].append(re.escape(code))
+#     for code, klass in E.items():
+#         X[klass].append(re.escape(code))
             
-    Y = {}
+#     Y = {}
 
-    for klass, codelist in X.items():
-        Y[klass] = re.compile(r"\b{0}\b".format("|".join(codelist)), re.IGNORECASE)
+#     for klass, codelist in X.items():
+#         Y[klass] = re.compile(r"\b{0}\b".format("|".join(codelist)), re.IGNORECASE)
         
-    return Y
+#     return Y
 
 
-def transform_replace_by_klass(text, map):
-    for klass, regex in map.items():
-        text = regex.sub(" {0} ".format(klass), text)
+# def transform_replace_by_klass(text, map):
+#     for klass, regex in map.items():
+#         text = regex.sub(" {0} ".format(klass), text)
 
-    return re.sub(r"\s+", " ", text)
+#     return re.sub(r"\s+", " ", text)
 
 
-def transform_del(text, map):
-    for klass, regex in map.items():
-        text = regex.sub(' ', text)
+# def transform_del(text, map):
+#     for klass, regex in map.items():
+#         text = regex.sub(' ', text)
 
-    return re.sub(r"\s+", " ", text).strip()
+#     return re.sub(r"\s+", " ", text).strip()
 
 
 class EmoticonClassifier:
