@@ -113,8 +113,10 @@ def test_test():
     import tempfile
     output = tempfile.mktemp()
     fname = os.path.dirname(__file__) + '/text.json'
-    sys.argv = ['microtc', '-o', output, '-k', '2', fname, '-s', '2']
+    sys.argv = ['microtc', '-o', output, '-k', '0.5:0.5', fname, '-s', '2']  # testing sample's score
     params()
+    sys.argv = ['microtc', '-o', output, '-k', '2', fname, '-s', '2']
+    params()    
     sys.argv = ['microtc', '-m', output, fname, '-o', output]
     train()
     output2 = tempfile.mktemp()
