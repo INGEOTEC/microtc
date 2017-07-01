@@ -97,7 +97,7 @@ class CommandLine(object):
         pa('-n', '--numprocs', dest='numprocs', type=int, default=1,
            help="Number of processes to compute the best setup")
         pa('-S', '--score', dest='score', type=str, default='macrof1',
-           help="The name of the score to be optimized (macrof1|macrorecall|macrof1accuracy|weightedf1|accuracy|avgf1:klass1:klass2); it defaults to macrof1")
+           help="The name of the score to be optimized (macrof1|macrorecall|macrof1accuracy|weightedf1|accuracy|avgf1:klass1:klass2|geometricf1|harmonicf1); it defaults to macrof1")
         pa('--conf', dest='conf', type=str, default=None, help="Do not perform search, just evaluate the given configuration (in json-format)")
 
     def param_set(self):
@@ -122,7 +122,7 @@ class CommandLine(object):
         else:
             pool = Pool(self.data.numprocs)
 
-        assert self.data.score.split(":")[0] in ('macrorecall', 'macrof1accuracy', 'macrof1', 'microf1', 'weightedf1', 'accuracy', 'avgf1'), "Unknown score {0}".format(self.data.score)
+        assert self.data.score.split(":")[0] in ('macrorecall', 'macrof1accuracy', 'macrof1', 'microf1', 'weightedf1', 'accuracy', 'avgf1', 'geometricf1', 'harmonicf1'), "Unknown score {0}".format(self.data.score)
         sel = ParameterSelection(params=params)
         X, y = [], []
         Xstatic, ystatic = [], []

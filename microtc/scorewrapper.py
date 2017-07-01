@@ -92,7 +92,14 @@ class ScoreSampleWrapper(object):
             conf['_macrof1'] = f1_score(self.test_y, hy, average='macro')
             conf['_microf1'] = f1_score(self.test_y, hy, average='micro')
             conf['_weightedf1'] = f1_score(self.test_y, hy, average='weighted')
-    
+
+        m = 1.0
+        for x in conf['_all_f1'].values():
+            m *= x
+
+        conf['_geometricf1'] = m
+        conf['_harmonicf1'] = len(conf['_all_f1']) / sum([1/(x+0.0001)  for x in conf['_all_f1'].values()])  # the extra 0.0001 is introduced to avoid divisions by zero
+        
         conf['_accuracy'] = accuracy_score(self.test_y, hy)
         conf['_macrof1accuracy'] = conf["_macrof1"] * conf["_accuracy"]
 
