@@ -95,7 +95,7 @@ class ScoreSampleWrapper(object):
 
         m = 1.0
         for x in conf['_all_f1'].values():
-            m *= x
+            m *= x + 0.0001
 
         conf['_geometricf1'] = m
         conf['_harmonicf1'] = len(conf['_all_f1']) / sum([1/(x+0.0001)  for x in conf['_all_f1'].values()])  # the extra 0.0001 is introduced to avoid divisions by zero

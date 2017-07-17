@@ -214,6 +214,7 @@ class CommandLineTrain(CommandLine):
         y = le.transform(labels)
         model_klasses = os.environ.get('TEXTMODEL_KLASSES')
 
+        best.setdefault('dist_vector', OPTION_NONE)
         if model_klasses:
             model_klasses = le.transform(model_klasses.split(','))
             docs_ = []
@@ -345,6 +346,7 @@ class CommandLineKfolds(CommandLineTrain):
         y = le.transform(labels)
         model_klasses = os.environ.get('TEXTMODEL_KLASSES')
 
+        best.setdefault('dist_vector', OPTION_NONE)
         if model_klasses:
             model_klasses = le.transform(model_klasses.split(','))
             docs_ = []
