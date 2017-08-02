@@ -36,7 +36,7 @@ def performance(gold, predicted, output=None, avgf1=None):
     precision = {le.inverse_transform([klass])[0]: p for klass, p in enumerate(precision_score(y, hy, average=None))}
 
     report = {
-        'kappa': cohen_kappa_score(y, hy),
+        'quadratic_weighted_kappa': cohen_kappa_score(y, hy, weights='quadratic'),
         'macrof1': f1_score(y, hy, average='macro'),
         'macrorecall': recall_score(y, hy, average='macro'),
         'microf1': f1_score(y, hy, average='micro'),
