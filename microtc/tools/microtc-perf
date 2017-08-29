@@ -3,6 +3,7 @@
 from microtc.utils import tweet_iterator
 from sklearn.preprocessing import LabelEncoder
 from sklearn.metrics import f1_score, accuracy_score, precision_score, recall_score
+from sklearn.metrics import cohen_kappa_score
 import json
 import os
 import sys
@@ -35,6 +36,7 @@ def performance(gold, predicted, output=None, avgf1=None):
     precision = {le.inverse_transform([klass])[0]: p for klass, p in enumerate(precision_score(y, hy, average=None))}
 
     report = {
+        'quadratic_weighted_kappa': cohen_kappa_score(y, hy, weights='quadratic'),
         'macrof1': f1_score(y, hy, average='macro'),
         'macrorecall': recall_score(y, hy, average='macro'),
         'microf1': f1_score(y, hy, average='micro'),

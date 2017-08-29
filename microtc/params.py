@@ -70,7 +70,8 @@ class PowersetVariable:
         return list(self.mismatches(set(L)))
 
     def get_random(self):
-        i = np.random.randint(len(self.valid_values))
+        x = len(self.valid_values)
+        i = np.random.randint(x)
         return self.valid_values[i]
 
 
@@ -102,7 +103,7 @@ TOKENLIST = [(3, 1), (2, 2), (2, 1), -3, -2, -1, 1, 2, 3, 5, 7, 9]
 if "TOKENLIST" in os.environ:
     TOKENLIST = json.loads(os.environ["TOKENLIST"])
 
-MAX_TOKENLIST = os.environ.get("MAX_TOKENLIST", len(TOKENLIST)//2)
+MAX_TOKENLIST = os.environ.get("MAX_TOKENLIST", len(TOKENLIST)//2 + 1)
 
 
 DefaultParams = dict(
