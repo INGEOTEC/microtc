@@ -108,7 +108,7 @@ class ScoreSampleWrapper(object):
             conf['_' + self.score] = sum(klist) / len(klist)
 
         conf['_score'] = conf['_' + self.score]
-        print(conf)
+        # print(conf)
 
 class ScoreKFoldWrapper(ScoreSampleWrapper):
     def __init__(self, X, y, Xstatic=[], ystatic=[], nfolds=5, score='macrof1', classifier=ClassifierWrapper, random_state=None):
@@ -150,7 +150,13 @@ class ScoreKFoldWrapper(ScoreSampleWrapper):
             trainX = [textmodel[x] for x in A]
 
             c = self.create_classifier()
-            c.fit(trainX, trainY)
+            try:
+                c.fit(trainX, trainY)
+            except ValueError:
+                conf["_error"] = "this configuration produces an empty matrix"
+                conf["_score"] = 0.0
+                return conf
+
             testX = [textmodel[self.X[i]] for i in test]
             predY[test] = c.predict(testX)
 

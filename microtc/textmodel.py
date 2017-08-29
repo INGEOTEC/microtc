@@ -267,13 +267,12 @@ class TextModel:
 
         if self.select_suff:
             L = [tok for tok in L if tok[-1] in SKIP_SYMBOLS_AND_SPACES]
-            if len(L) == 0:
-                L = ['~']
             
         if self.select_conn:
             L = [tok for tok in L if '~' in tok and tok[0] != '~' and tok[-1] != '~']
-            if len(L) == 0:
-                L = ['~']
+
+        if len(L) == 0:
+            L = ['~']
 
         return L
 
