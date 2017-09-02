@@ -55,7 +55,6 @@ class PowersetVariable:
         lvalue = len(value)
         for v in self.valid_values:
             # if len(value.intersection(v)) == lvalue - 1 or len(value.union(v)) == lvalue + 1:
-            print((value, v))
             ulen = len(value.union(v))
             ilen = len(value.intersection(v))
             if ulen in (lvalue, lvalue + 1) and ilen in (lvalue, lvalue - 1):
