@@ -55,6 +55,7 @@ class PowersetVariable:
         lvalue = len(value)
         for v in self.valid_values:
             # if len(value.intersection(v)) == lvalue - 1 or len(value.union(v)) == lvalue + 1:
+            print((value, v))
             ulen = len(value.union(v))
             ilen = len(value.intersection(v))
             if ulen in (lvalue, lvalue + 1) and ilen in (lvalue, lvalue - 1):
@@ -101,7 +102,12 @@ def Boolean():
 
 TOKENLIST = [(3, 1), (2, 2), (2, 1), -3, -2, -1, 1, 2, 3, 5, 7, 9]
 if "TOKENLIST" in os.environ:
-    TOKENLIST = json.loads(os.environ["TOKENLIST"])
+    def _simple_cast(x):
+        if isinstance(x, list):
+            return tuple(x)
+        else:
+            return x
+    TOKENLIST = [_simple_cast(x) for x in json.loads(os.environ["TOKENLIST"])]
 
 MAX_TOKENLIST = os.environ.get("MAX_TOKENLIST", len(TOKENLIST)//2 + 1)
 
