@@ -53,6 +53,7 @@ def tweet_iterator(filename):
 
 TEXT = os.environ.get("TEXT", 'text')
 KLASS = os.environ.get("KLASS", 'klass')
+VALUE = os.environ.get("VALUE", 'value')
 
 
 def read_data_labels(filename, get_tweet=TEXT,
@@ -74,6 +75,24 @@ def read_data_labels(filename, get_tweet=TEXT,
 
     return data, labels
 
+
+def read_data_values(filename, get_tweet=TEXT, get_value=VALUE, maxitems=1e100):
+    data, values = [], []
+    count = 0
+    for tweet in tweet_iterator(filename):
+        count += 1
+        try:
+            x = get_tweet(tweet) if callable(get_tweet) else tweet[get_tweet]
+            y = get_value(tweet) if callable(get_value) else tweet[get_value]
+            data.append(x)
+            values.append(float(y))
+            if count == maxitems:
+                break
+        except KeyError as e:
+            logging.warn("error at line {0}, input: {1}".format(count, tweet))
+            raise e
+
+    return data, values
 
 def read_data(filename, get_tweet=TEXT, maxitems=1e100):
     data = []

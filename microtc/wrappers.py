@@ -13,7 +13,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from sklearn.svm import LinearSVC
+from sklearn.svm import LinearSVC, LinearSVR
 from gensim.matutils import corpus2csc
 import logging
 logging.basicConfig(format='%(asctime)s : %(levelname)s :%(message)s')
@@ -33,6 +33,23 @@ class ClassifierWrapper(object):
     def decision_function(self, Xnew):
         Xnew = corpus2csc(Xnew, num_terms=self.num_terms).T
         return self.svc.decision_function(Xnew)
+
+    def predict(self, Xnew):
+        Xnew = corpus2csc(Xnew, num_terms=self.num_terms).T
+        ynew = self.svc.predict(Xnew)
+        return ynew
+
+
+class RegressorWrapper(object):
+    def __init__(self, classifier=LinearSVR):
+        self.svc = classifier()
+        self.num_terms = -1
+
+    def fit(self, X, y):
+        X = corpus2csc(X).T
+        self.num_terms = X.shape[1]
+        self.svc.fit(X, y)
+        return self
 
     def predict(self, Xnew):
         Xnew = corpus2csc(Xnew, num_terms=self.num_terms).T

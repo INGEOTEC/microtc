@@ -16,14 +16,15 @@ import argparse
 import logging
 import microtc
 import gzip
-from microtc.classifier import ClassifierWrapper
-from microtc.utils import read_data, tweet_iterator
+from microtc.wrappers import ClassifierWrapper, RegressorWrapper
+from microtc.utils import read_data, read_data_labels, read_data_values, tweet_iterator
 # from microtc.params import OPTION_DELETE
 from multiprocessing import cpu_count, Pool
 from .params import ParameterSelection, OPTION_NONE
 from .scorewrapper import ScoreKFoldWrapper, ScoreSampleWrapper
-from .utils import read_data_labels
+from .regcorewrapper import RegressionScoreKFoldWrapper, RegressionScoreSampleWrapper
 from .textmodel import TextModel, DistTextModel
+from .utils import KLASS, TEXT, VALUE
 from sklearn.preprocessing import LabelEncoder
 from sklearn.model_selection import KFold
 import numpy as np
@@ -97,7 +98,10 @@ class CommandLine(object):
         pa('-n', '--numprocs', dest='numprocs', type=int, default=1,
            help="Number of processes to compute the best setup")
         pa('-S', '--score', dest='score', type=str, default='macrof1',
-           help="The name of the score to be optimized (macrof1|macrorecall|macrof1accuracy|weightedf1|accuracy|avgf1:klass1:klass2|geometricf1|harmonicf1); it defaults to macrof1")
+           help="The name of the score to be optimized (classification scores: {0}); (regression scores: {1}) it defaults to macrof1".format(
+               ScoreSampleWrapper.valid_scores,
+               RegressionScoreSampleWrapper.valid_scores
+           ))
         pa('--conf', dest='conf', type=str, default=None, help="Do not perform search, just evaluate the given configuration (in json-format)")
 
     def param_set(self):
@@ -122,33 +126,42 @@ class CommandLine(object):
         else:
             pool = Pool(self.data.numprocs)
 
-        assert self.data.score.split(":")[0] in ('macrorecall', 'macrof1accuracy', 'macrof1', 'microf1', 'weightedf1', 'accuracy', 'avgf1', 'geometricf1', 'harmonicf1'), "Unknown score {0}".format(self.data.score)
+        assert self.data.score.split(":")[0] in ScoreSampleWrapper.valid_scores + RegressionScoreSampleWrapper.valid_scores, "Unknown score {0}".format(self.data.score)
+        if self.data.score in RegressionScoreSampleWrapper.valid_scores:
+            ScoreSample = RegressionScoreSampleWrapper
+            ScoreKFold = RegressionScoreKFoldWrapper
+            _read_data = read_data_values
+        else:
+            ScoreSample = ScoreSampleWrapper
+            ScoreKFold = ScoreKFoldWrapper
+            _read_data = read_data_labels
+
         sel = ParameterSelection(params=params)
         X, y = [], []
         Xstatic, ystatic = [], []
         for train in self.data.training_set:
             if train.startswith("static:"):
-                X_, y_ = read_data_labels(train[7:])
+                X_, y_ = _read_data(train[7:])
                 Xstatic.extend(X_)
                 ystatic.extend(y_)
             else:
-                X_, y_ = read_data_labels(train)
+                X_, y_ = _read_data(train)
                 X.extend(X_)
                 y.extend(y_)
 
+
         if ":" in self.data.kratio:
             ratio, test_ratio = self.data.kratio.split(":")
-            fun_score = ScoreSampleWrapper(X, y,
-                                           Xstatic=Xstatic, ystatic=ystatic,
-                                           ratio=float(ratio), test_ratio=float(test_ratio), score=self.data.score, random_state=self.data.seed)
+            fun_score = ScoreSample(X, y, Xstatic=Xstatic, ystatic=ystatic, ratio=float(ratio), test_ratio=float(test_ratio), score=self.data.score, random_state=self.data.seed)
         else:
             ratio = float(self.data.kratio)
             if ratio == 1.0:
                 raise ValueError('k=1 is undefined')
             if ratio > 1:
-                fun_score = ScoreKFoldWrapper(X, y, Xstatic=Xstatic, ystatic=ystatic, nfolds=int(ratio), score=self.data.score, random_state=self.data.seed)
+                fun_score = ScoreKFold(X, y, Xstatic=Xstatic, ystatic=ystatic, nfolds=int(ratio), score=self.data.score, random_state=self.data.seed)
             else:
-                fun_score = ScoreSampleWrapper(X, y, Xstatic=Xstatic, ystatic=ystatic, ratio=ratio, score=self.data.score, random_state=self.data.seed)
+                fun_score = ScoreSample(X, y, Xstatic=Xstatic, ystatic=ystatic, ratio=ratio, score=self.data.score, random_state=self.data.seed)
+        
         if self.data.best_list:
             best_list = load_json(self.data.best_list)
         else:
@@ -156,7 +169,7 @@ class CommandLine(object):
 
         if self.data.conf:
             conf = json.loads(self.data.conf)
-            best_list = self.get_best(fun_score, (conf, 'direct-input'))
+            best_list = sel.get_best(fun_score, (conf, 'direct-input'))
         else:
             best_list = sel.search(
                 fun_score,
@@ -190,6 +203,7 @@ class CommandLineTrain(CommandLine):
            help="a comma separated list of valid labels")
         pa('--conf', dest='conf', type=str,
            help="Specifies the configuration in JSON-format")
+        pa('-R', '--regression', dest='regression', action='store_true', help="The model will be a regressor")
 
     def main(self, args=None):
         self.data = self.parser.parse_args(args=args)
@@ -199,40 +213,42 @@ class CommandLineTrain(CommandLine):
         else:
             best = load_json(self.data.params_fname)[self.data.position]
 
-        corpus, labels = [], []
+
+        _read_data = read_data_values
+        _read_data = read_data_labels
+
+        if self.data.regression:
+            _read_data = read_data_values
+            wrapper = RegressorWrapper
+        else:
+            _read_data = read_data_labels
+            wrapper = ClassifierWrapper
+
+        corpus, values = [], []
         for train in self.data.training_set:
-            X_, y_ = read_data_labels(train)
+            X_, y_ = read_data_values(train)
             corpus.extend(X_)
-            labels.extend(y_)
-
-        le = LabelEncoder()
-        if self.data.labels:
-            le.fit(self.data.labels.split(','))
-        else:
-            le.fit(labels)
-
-        y = le.transform(labels)
-        model_klasses = os.environ.get('TEXTMODEL_KLASSES')
-
+            values.extend(y_)
+        
         best.setdefault('dist_vector', OPTION_NONE)
-        if model_klasses:
-            model_klasses = le.transform(model_klasses.split(','))
-            docs_ = []
-            labels_ = []
-            for i in range(len(corpus)):
-                if y[i] in model_klasses:
-                    docs_.append(corpus[i])
-                    labels_.append(y[i])
 
-            t = TextModel(docs_, **best)
-            if best['dist_vector'] != OPTION_NONE:
-                t = DistTextModel(t, docs_, labels_, le.classes_.shape[0], best['dist_vector'])
+        t = TextModel(corpus, **best)
+        if self.data.regression:
+            le = None
+            y = values
         else:
-            t = TextModel(corpus, **best)
+            le = LabelEncoder()
+            if self.data.labels:
+                le.fit(self.data.labels.split(','))
+            else:
+                le.fit(values)
+
+            y = le.transform(values)
+
             if best['dist_vector'] != OPTION_NONE:
                 t = DistTextModel(t, corpus, y, le.classes_.shape[0], best['dist_vector'])
 
-        c = ClassifierWrapper()
+        c = wrapper()
         X = [t[x] for x in corpus]
         c.fit(X, y)
         with open(self.get_output(), 'wb') as fpt:
@@ -279,16 +295,25 @@ class CommandLinePredict(CommandLine):
             afflist.append(a)
 
         L = []
-        hy = svc.decision_function(veclist)
-        hyy = le.inverse_transform(svc.predict(veclist))
-        KLASS = os.environ.get('KLASS', 'klass')
-        for tweet, scores, klass, aff in zip(tweet_iterator(self.data.test_set), hy, hyy, afflist):
-            # klass = le.inverse_transform(svc.svc.classes_[index])
-            tweet['decision_function'] = scores.tolist()
-            tweet['voc_affinity'] = aff
-            tweet[KLASS] = str(klass)
-            tweet['predicted'] = tweet[KLASS]
-            L.append(tweet)
+        if le is None:
+            hy = svc.predict(veclist)
+
+            for tweet, pred in zip(tweet_iterator(self.data.test_set), hy):
+                # klass = le.inverse_transform(svc.svc.classes_[index])
+                tweet[VALUE] = pred
+                L.append(tweet)
+        else:
+            hy = svc.decision_function(veclist)
+            hyy = le.inverse_transform(svc.predict(veclist))
+
+            for tweet, scores, klass, aff in zip(tweet_iterator(self.data.test_set), hy, hyy, afflist):
+                # klass = le.inverse_transform(svc.svc.classes_[index])
+                tweet['decision_function'] = scores.tolist()
+                tweet['voc_affinity'] = aff
+                tweet[KLASS] = str(klass)
+                tweet['predicted'] = tweet[KLASS]
+                L.append(tweet)
+    
         with open(self.get_output(), 'w') as fpt:
             for tweet in L:
                 fpt.write(json.dumps(tweet)+"\n")

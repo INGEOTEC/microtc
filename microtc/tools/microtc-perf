@@ -1,14 +1,13 @@
 #!/opt/anaconda/bin/python
 
-from microtc.utils import tweet_iterator
+from microtc.utils import tweet_iterator, TEXT, KLASS, VALUE
 from sklearn.preprocessing import LabelEncoder
-from sklearn.metrics import f1_score, accuracy_score, precision_score, recall_score
+from sklearn.metrics import f1_score, accuracy_score, precision_score, recall_score, r2_score
 from sklearn.metrics import cohen_kappa_score
+import numpy as np
 import json
 import os
 import sys
-
-KLASS=os.environ.get('KLASS', 'klass')
 
 
 def show_mismatches(gold, predicted, output=None, avgf1=None):
@@ -32,8 +31,10 @@ def performance(gold, predicted, output=None, avgf1=None):
     hy = le.transform(hy)
     # with open(fname.replace('_output.json', '.params')) as fpt:
     #     a = json.load(fpt)
-    f1 = {le.inverse_transform([klass])[0]: f1 for klass, f1 in enumerate(f1_score(y, hy, average=None))}
-    precision = {le.inverse_transform([klass])[0]: p for klass, p in enumerate(precision_score(y, hy, average=None))}
+    f1 = {le.inverse_transform([klass])[0]: f1 for klass, f1 in enumerate(
+        f1_score(y, hy, average=None))}
+    precision = {le.inverse_transform([klass])[0]: p for klass, p in enumerate(
+        precision_score(y, hy, average=None))}
 
     report = {
         'quadratic_weighted_kappa': cohen_kappa_score(y, hy, weights='quadratic'),
@@ -59,6 +60,21 @@ def performance(gold, predicted, output=None, avgf1=None):
         with open(output, 'w') as f:
             f.write(json.dumps(report, sort_keys=1) + "\n")
 
+def regression_performance(gold, predicted, output=None):
+    y = np.array([str(tweet[VALUE]) for tweet in tweet_iterator(gold)], dtype=np.float)
+    hy = np.array([str(tweet[VALUE]) for tweet in tweet_iterator(predicted)], dtype=np.float)
+  
+    report = {
+        'r2': r2_score(y, hy),
+        'filename': predicted,
+    }
+
+    if output is None:
+        print(json.dumps(report, sort_keys=1, indent=2) + "\n")
+    else:
+        with open(output, 'w') as f:
+            f.write(json.dumps(report, sort_keys=1) + "\n")
+
 
 if __name__ == '__main__':
     from argparse import ArgumentParser
@@ -69,10 +85,13 @@ if __name__ == '__main__':
 
     parser.add_argument('-o', '--output', dest='output', default=None, type=str, help='Indicates the name of the output file, defaults to stdout')
     parser.add_argument('--mismatches', dest='mismatches', default=False, action='store_true', help='Prints the mismatching classifications to stdout')
+    parser.add_argument('--regression', dest='regression', default=False, action='store_true', help='Score regression data')
     args = parser.parse_args()
 
     if args.mismatches:
         show_mismatches(args.gold[0], args.predicted[0])
+    elif args.regression:
+        regression_performance(args.gold[0], args.predicted[0], args.output)
     else:
         performance(args.gold[0], args.predicted[0], args.output, args.avgf1)
 
