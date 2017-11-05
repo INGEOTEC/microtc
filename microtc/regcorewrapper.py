@@ -15,7 +15,8 @@
 
 import numpy as np
 from time import time
-from sklearn.metrics import explained_variance_score, mean_absolute_error, mean_squared_error, mean_squared_error, median_absolute_error, r2_score
+from sklearn.metrics import r2_score
+from scipy.stats import pearsonr, spearmanr
 from sklearn import preprocessing
 from sklearn import cross_validation
 from microtc.params import OPTION_NONE
@@ -23,7 +24,7 @@ from microtc.textmodel import TextModel, DistTextModel
 from microtc.wrappers import RegressorWrapper
 
 class RegressionScoreSampleWrapper(object):
-    valid_scores = ['r2']
+    valid_scores = ['r2', 'pearsonr', 'spearmanr']
 
     def __init__(self, X, y, Xstatic=[], ystatic=[], ratio=0.8, test_ratio=None, score='r2', classifier=RegressorWrapper, random_state=None):
         assert ratio < 1, "ratio {0} is invalid, valid values are 0 < ratio < 1".format(ratio)
@@ -74,6 +75,8 @@ class RegressionScoreSampleWrapper(object):
 
     def compute_score(self, conf, hy):
         conf['_r2'] = r2_score(self.test_y, hy)
+        conf['_spearmanr'] = spearmanr(self.test_y, hy)[0]
+        conf['_pearsonr'] = pearsonr(self.test_y, hy)[0]
         conf['_score'] = conf['_' + self.score]
         # print(conf)
 
