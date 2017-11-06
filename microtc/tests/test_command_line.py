@@ -189,12 +189,12 @@ def test_numeric_klass():
 
     parameterspace = DefaultParams.copy()
     parameterspace["dist_vector"] = Fixed("entropy+0+1")
-    sys.argv = ['microtc', '-o', output, '-k', '2', numeric, '-s', '2']
+    sys.argv = ['microtc-params', '-o', output, '-k', '2', numeric, '-s', '2']
     params(params=parameterspace)
-    sys.argv = ['microtc', '-m', output, numeric, '-o', output]
+    sys.argv = ['microtc-train', '-m', output, numeric, '-o', output]
     train()
     output2 = tempfile.mktemp()
-    sys.argv = ['microtc', '-m', output, fname, '-o', output2]
+    sys.argv = ['microtc-predict', '-m', output, fname, '-o', output2]
     predict()
     os.unlink(numeric)
     os.unlink(output)
@@ -209,17 +209,17 @@ def test_kfolds():
     import tempfile
     output = tempfile.mktemp()
     fname = os.path.dirname(__file__) + '/text.json'
-    sys.argv = ['microtc', '-o', output, '-k', '2', fname, '-s', '2']
+    sys.argv = ['microtc-params', '-o', output, '-k', '2', fname, '-s', '2']
     params()
     output2 = tempfile.mktemp()
-    sys.argv = ['microtc', '-m', output, fname, '-o', output2]
+    sys.argv = ['microtc-kfolds', '-m', output, fname, '-o', output2]
     kfolds()
     os.unlink(output)
     a = open(output2).readline()
     os.unlink(output2)
     a = json.loads(a)
     assert 'decision_function' in a
-    sys.argv = ['microtc', '--update-klass', '-m', output, fname, '-o', output2]
+    sys.argv = ['microtc-kfolds', '--update-klass', '-m', output, fname, '-o', output2]
     try:
         kfolds()
     except AssertionError:

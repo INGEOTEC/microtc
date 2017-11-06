@@ -226,7 +226,7 @@ class CommandLineTrain(CommandLine):
 
         corpus, values = [], []
         for train in self.data.training_set:
-            X_, y_ = read_data_values(train)
+            X_, y_ = _read_data(train)
             corpus.extend(X_)
             values.extend(y_)
         

@@ -14,7 +14,7 @@
 
 
 def test_predict_from_file():
-    from microtc.classifier import ClassifierWrapper
+    from microtc.wrappers import ClassifierWrapper
     from microtc.textmodel import TextModel
     from microtc.utils import read_data_labels
     from sklearn.preprocessing import LabelEncoder
