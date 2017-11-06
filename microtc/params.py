@@ -147,8 +147,11 @@ if "PARAMS" in os.environ:
 
 class ParameterSelection:
     def __init__(self, params=None):
-        if params is None:
+        if (params is None) or (0 == len(params)):
             params = DefaultParams
+        else:
+            for k in DefaultParams.keys():
+                assert k in params, "{0} is not in given parameters; {1}".format(k, params)
 
         self.params = params
 

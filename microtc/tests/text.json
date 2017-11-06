@@ -1,9 +1,9 @@
-{"text": "buenos dia microtc", "klass": "POS"}
-{"text": "excelente dia", "klass": "POS"}
-{"text": "buenas tardes", "klass": "POS"}
-{"text": "las vacas me deprimen", "klass": "NEG"}
-{"text": "odio los lunes", "klass": "NEG"}
-{"text": "odio el trafico", "klass": "NEG"}
-{"text": "la computadora", "klass": "NEU"}
-{"text": "la mesa", "klass": "NEU"}
-{"text": "la ventana", "klass": "NEU"}
+{"text": "buenos dia microtc", "klass": "POS", "value": 0.5}
+{"text": "excelente dia", "klass": "POS", "value": 0.9}
+{"text": "buenas tardes", "klass": "POS", "value": 0.5}
+{"text": "las vacas me deprimen", "klass": "NEG", "value": -0.5}
+{"text": "odio los lunes", "klass": "NEG", "value": -0.9}
+{"text": "odio el trafico", "klass": "NEG", "value": -0.9}
+{"text": "la computadora", "klass": "NEU", "value": 0}
+{"text": "la mesa", "klass": "NEU", "value": 0}
+{"text": "la ventana", "klass": "NEU", "value": 0}

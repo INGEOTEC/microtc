@@ -12,13 +12,13 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 import numpy as np
-
+import sys
 
 def test_nparams():
     from microtc.command_line import params
     import os
     fname = os.path.dirname(__file__) + '/text.json'
-    params(args=['-k', '2', '-s', '11', fname, '-o', fname + ".tmp"])
+    params('-k', '2', '-s', '11', '-o', fname + ".tmp", fname)
     os.unlink(fname + ".tmp")
 
 def test_main():
@@ -27,28 +27,25 @@ def test_main():
     import tempfile
     output = tempfile.mktemp()
     fname = os.path.dirname(__file__) + '/text.json'
-    params(args=['-o', output, '-k', '2', fname])
+    params('-o', output, '-k', '2', fname)
     os.unlink(output)
 
 
 def test_pool():
-    from microtc.command_line import CommandLine
+    from microtc.command_line import params
     import os
     fname = os.path.dirname(__file__) + '/text.json'
-    c = CommandLine()
-    c.main(args=['-k', '2', '-s', '11', '-n', '2', fname])
-    os.unlink(c.get_output())
+    params('-k', '2', '-s', '11', '-n', '2', '-o', fname + ".params", fname)
+    os.unlink(fname + ".params")
 
 
 def test_output():
-    from microtc.command_line import CommandLine
+    from microtc.command_line import params
     import os
     import tempfile
     output = tempfile.mktemp()
     fname = os.path.dirname(__file__) + '/text.json'
-    c = CommandLine()
-    args = ['-o', output, '-k', '2', fname]
-    c.main(args=args)
+    params('-o', output, '-k', '2', fname)
     assert os.path.isfile(output)
     os.unlink(output)
 
@@ -58,49 +55,66 @@ def test_seed():
         from mock import MagicMock
     except ImportError:
         from unittest.mock import MagicMock
-    from microtc.command_line import CommandLine
+    from microtc.command_line import params
     import os
     fname = os.path.dirname(__file__) + '/text.json'
     seed = np.random.seed
     np.random.seed = MagicMock()
-    c = CommandLine()
-    c.main(args=['-s', '2', '--seed', '1', '-k', '2', fname])
-    os.unlink(c.get_output())
+    params('-s', '2', '--seed', '1', '-k', '2', '-o', fname + ".params", fname)
+    os.unlink(fname + ".params")
     np.random.seed.assert_called_once_with(1)
     np.random.seed = seed
 
 
 def test_train():
-    from microtc.command_line import CommandLine, CommandLineTrain
+    from microtc.command_line import params, train
     import os
     import tempfile
     output = tempfile.mktemp()
     fname = os.path.dirname(__file__) + '/text.json'
-    c = CommandLine()
-    c.main(args=['-o', output, '-k', '2', fname, '-s', '2'])
+    sys.argv[0] = 'test-train:microtc-params'
+    params('-o', output, '-k', '2', fname, '-s', '2')
     assert os.path.isfile(output)
     with open(output) as fpt:
         print(fpt.read())
-    c = CommandLineTrain()
 
-    print(c.main(args=['-m', output, fname]))
+    sys.argv[0] = 'test-train:microtc-train'
+    print(train('-m', output, '-o', output + ".model", fname))
     os.unlink(output)
-    os.unlink(c.get_output())
+    os.unlink(output + '.model')
         
 
+def test_train_regression():
+    from microtc.command_line import params, train, predict
+    import os
+    import sys
+    import tempfile
+
+    output = tempfile.mktemp()
+    fname = os.path.dirname(__file__) + '/text.json'
+    params('-o', output, '-k', '2', '-s', '2', '-S', 'r2', fname)
+    with open(output) as fpt:
+        print(fpt.read())
+
+    train('-o', output + '.model', '-R', '-m', output, fname)
+    for x in predict('-m', output + '.model', fname, '-o', output + '.predicted'):
+        print(x, file=sys.stderr)
+
+    os.unlink(output)
+    os.unlink(output + '.model')
+    os.unlink(output + '.predicted')
+
+
 def test_train2():
-    from microtc.command_line import CommandLine, train
+    from microtc.command_line import train, params
     import os
     import tempfile
     output = tempfile.mktemp()
     fname = os.path.dirname(__file__) + '/text.json'
-    c = CommandLine()
-    args = ['-o', output, '-k', '2', fname, '-s', '2']
-    c.main(args=args)
+    params('-o', output, '-k', '2', fname, '-s', '2')
     assert os.path.isfile(output)
     output2 = tempfile.mktemp()
-    args = ['-m', output, fname, '-o', output2]
-    train(args=args)
+    train('-m', output, fname, '-o', output2)
     os.unlink(output)
     os.unlink(output2)
 
@@ -113,19 +127,15 @@ def test_test():
     import tempfile
     output = tempfile.mktemp()
     fname = os.path.dirname(__file__) + '/text.json'
-    sys.argv = ['microtc', '-o', output, '-k', '0.5:0.5', fname, '-s', '2']  # testing sample's score
-    params()
-    sys.argv = ['microtc', '-o', output, '-k', '2', fname, '-s', '2']
-    params()    
-    sys.argv = ['microtc', '-m', output, fname, '-o', output]
-    train()
-    output2 = tempfile.mktemp()
-    sys.argv = ['microtc', '-m', output, fname, '-o', output2]
-    predict()
-    X, y = read_data_labels(output2)
+    params('-o', output, '-k', '0.5:0.5', fname, '-s', '2')
+    params('-o', output, '-k', '2', fname, '-s', '2')
+    train('-o', output + '.model', '-m', output, fname)
+    predict('-m', output + '.model', fname, '-o', output + '.predicted')
+    X, y = read_data_labels(fname)
     print(y)
     os.unlink(output)
-    os.unlink(output2)
+    os.unlink(output + '.model')
+    os.unlink(output + '.predicted')
     assert len(y)
 
 
@@ -137,8 +147,7 @@ def test_score():
     import json
     output = tempfile.mktemp()
     fname = os.path.dirname(__file__) + '/text.json'
-    sys.argv = ['microtc', '-o', output, '-k', '2', fname, '-s', '2', '-S', 'avgf1:POS:NEG']
-    params()
+    params('-o', output, '-k', '2', '-s', '2', '-S', 'avgf1:POS:NEG', fname)
     with open(output) as fpt:
         a = json.loads(fpt.read())[0]
     assert a['_score'] == a['_avgf1:POS:NEG']
@@ -153,13 +162,10 @@ def test_textmodel():
     import tempfile
     output = tempfile.mktemp()
     fname = os.path.dirname(__file__) + '/text.json'
-    sys.argv = ['microtc', '-o', output, '-k', '2', fname, '-s', '2']
-    params()
-    sys.argv = ['microtc', '-m', output, fname, '-o', output]
-    train()
+    params('-o', output, '-k', '2', fname, '-s', '2')
+    train('-m', output, fname, '-o', output)
     output2 = tempfile.mktemp()
-    sys.argv = ['microtc', '-m', output, fname, '-o', output2]
-    textmodel()
+    textmodel('-m', output, fname, '-o', output2)
     os.unlink(output)
     a = open(output2).readline()
     os.unlink(output2)
@@ -184,18 +190,16 @@ def test_numeric_klass():
     y = encoder.transform([x['klass'] for x in D])
     for x, k in zip(D, y):
         x['klass'] = int(k)
+
     with open(numeric, 'w') as fpt:
         [fpt.write(json.dumps(x) + '\n') for x in D]
 
-    parameterspace = DefaultParams.copy()
-    parameterspace["dist_vector"] = Fixed("entropy+0+1")
-    sys.argv = ['microtc-params', '-o', output, '-k', '2', numeric, '-s', '2']
-    params(params=parameterspace)
-    sys.argv = ['microtc-train', '-m', output, numeric, '-o', output]
-    train()
+    P = DefaultParams.copy()
+    P["dist_vector"] = Fixed("entropy+0+1")
+    params('-o', output, '-k', '2', numeric, '-s', '2', **P)
+    train('-m', output, numeric, '-o', output)
     output2 = tempfile.mktemp()
-    sys.argv = ['microtc-predict', '-m', output, fname, '-o', output2]
-    predict()
+    predict('-m', output, fname, '-o', output2)
     os.unlink(numeric)
     os.unlink(output)
     os.unlink(output2)
@@ -209,19 +213,16 @@ def test_kfolds():
     import tempfile
     output = tempfile.mktemp()
     fname = os.path.dirname(__file__) + '/text.json'
-    sys.argv = ['microtc-params', '-o', output, '-k', '2', fname, '-s', '2']
-    params()
+    params('-o', output, '-k', '2', fname, '-s', '2')
     output2 = tempfile.mktemp()
-    sys.argv = ['microtc-kfolds', '-m', output, fname, '-o', output2]
-    kfolds()
+    kfolds('-m', output, fname, '-o', output2)
     os.unlink(output)
     a = open(output2).readline()
     os.unlink(output2)
     a = json.loads(a)
     assert 'decision_function' in a
-    sys.argv = ['microtc-kfolds', '--update-klass', '-m', output, fname, '-o', output2]
     try:
-        kfolds()
+        kfolds('--update-klass', '-m', output, fname, '-o', output2)
     except AssertionError:
         return
     assert False

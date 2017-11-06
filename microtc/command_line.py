@@ -149,7 +149,6 @@ class CommandLine(object):
                 X.extend(X_)
                 y.extend(y_)
 
-
         if ":" in self.data.kratio:
             ratio, test_ratio = self.data.kratio.split(":")
             fun_score = ScoreSample(X, y, Xstatic=Xstatic, ystatic=ystatic, ratio=float(ratio), test_ratio=float(test_ratio), score=self.data.score, random_state=self.data.seed)
@@ -205,17 +204,13 @@ class CommandLineTrain(CommandLine):
            help="Specifies the configuration in JSON-format")
         pa('-R', '--regression', dest='regression', action='store_true', help="The model will be a regressor")
 
-    def main(self, args=None):
+    def main(self, args=None):        
         self.data = self.parser.parse_args(args=args)
         logging.basicConfig(level=self.data.verbose)
         if self.data.conf:
             best = json.loads(self.data.conf)
         else:
             best = load_json(self.data.params_fname)[self.data.position]
-
-
-        _read_data = read_data_values
-        _read_data = read_data_labels
 
         if self.data.regression:
             _read_data = read_data_values
@@ -270,6 +265,12 @@ class CommandLinePredict(CommandLine):
            required=True,
            help="SVM Model file name")
 
+    def get_output(self):
+        if self.data.output is None:
+            return self.data.test_set[0] + ".predicted"
+
+        return self.data.output
+
     def training_set(self):
         cdn = 'File containing the test set'
         pa = self.parser.add_argument
@@ -317,12 +318,13 @@ class CommandLinePredict(CommandLine):
         with open(self.get_output(), 'w') as fpt:
             for tweet in L:
                 fpt.write(json.dumps(tweet)+"\n")
+
         return L
 
 
 class CommandLineTextModel(CommandLinePredict):
-    def main(self):
-        self.data = self.parser.parse_args()
+    def main(self, args=None):
+        self.data = self.parser.parse_args(args=args)
         logging.basicConfig(level=self.data.verbose)
         textmodel, svc, le = load_pickle(self.data.model)
         L = []
@@ -410,24 +412,24 @@ class CommandLineKfolds(CommandLineTrain):
 
 def params(*args, **kwargs):
     c = CommandLine()
-    return c.main(*args, **kwargs)
+    return c.main(args, params=kwargs)
 
 
 def train(*args, **kwargs):
     c = CommandLineTrain()
-    return c.main(*args, **kwargs)
+    return c.main(args, **kwargs)
 
 
 def predict(*args, **kwargs):
     c = CommandLinePredict()
-    return c.main(*args, **kwargs)
+    return c.main(args, **kwargs)
 
 
 def textmodel(*args, **kwargs):
     c = CommandLineTextModel()
-    return c.main(*args, **kwargs)
+    return c.main(args, **kwargs)
 
 
 def kfolds(*args, **kwargs):
     c = CommandLineKfolds()
-    return c.main(*args, **kwargs)
+    return c.main(args, **kwargs)
