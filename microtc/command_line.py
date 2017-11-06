@@ -412,24 +412,34 @@ class CommandLineKfolds(CommandLineTrain):
 
 def params(*args, **kwargs):
     c = CommandLine()
+    if len(args) == 0:
+        args = None
     return c.main(args, params=kwargs)
 
 
 def train(*args, **kwargs):
     c = CommandLineTrain()
+    if len(args) == 0:
+        args = None
     return c.main(args, **kwargs)
 
 
 def predict(*args, **kwargs):
     c = CommandLinePredict()
+    if len(args) == 0:
+        args = None
     return c.main(args, **kwargs)
 
 
 def textmodel(*args, **kwargs):
     c = CommandLineTextModel()
+    if len(args) == 0:
+        args = None
     return c.main(args, **kwargs)
 
 
 def kfolds(*args, **kwargs):
     c = CommandLineKfolds()
+    if len(args) == 0:
+        args = None
     return c.main(args, **kwargs)
