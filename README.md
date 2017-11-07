@@ -97,11 +97,11 @@ The input dataset is quite simple:
 # Training the model 
 
 At this point, we are in the position to train a model.
-Let us that the workload is `user-profiling.json` and that the parameters are in
-`user-profiling.params` then the following command will save the model in `user-profiling.model`
+Let us that the workload is `emotions.json` and that the parameters are in
+`emotions.params` then the following command will save the model in `emotions.model`
 
 ```bash
-microtc-train -o user-profiling.model -m user-profiling.params user-profiling.json
+microtc-train -o emptions.model -m emotions.params emotions.json
 ```
 
 You can create a regressor adding the `-R` option to `microtc-train`
@@ -109,17 +109,17 @@ You can create a regressor adding the `-R` option to `microtc-train`
 # Testing the classifier against a workload
 
 At this point, we are in the position to test the model (i.e,
-`user-profiling.model`) in a new set. That is, we are in the position to ask
+`emotions.model`) in a new set. That is, we are in the position to ask
 the classifier to assign a label to a particular text.
 
 ```bash
-microtc-predict -m user-profiling.model -o predicted.json unknown-exemplars.json
+microtc-predict -m emotions.model -o emotions-predicted.json test-emotions.json
 ```
 
 Finally, you can evaluate the performance of the prediction as follows:
 
 ```bash
-microtc-perf gold.json predicted.json
+microtc-perf gold.json emotions-predicted.json
 ```
 This will show a number of scores in the screen.
 
