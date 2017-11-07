@@ -74,7 +74,7 @@ the parameters means for:
 - `-s24` specifies that the parameter space should be sampled in 24 points and then get the best among them
 - `-n24` let us specify the number of processes to be launch, it is a good idea to set `-s` as a multiply of `-n`.
 - `-o user-profiling.params` specifies the file to store the configurations found by the parameter selection process, in best first order
-- `-S` the name of the fitness function (e.g., macrof1, microf1, macrorecall, accuracy)
+- `-S` or `--score` the name of the fitness function (e.g., macrof1, microf1, macrorecall, accuracy, r2, pearsonr, spearmanr)
 - `-H` makes b4msa to perform last hill climbing search for the parameter selection, in many cases, this will produce much better configurations (never worst, guaranteed)
 - all of these parameters have default values, such as no arguments are needed
 
@@ -82,9 +82,17 @@ Notes:
 - "text"  can be a string or an array of strings, in the last case, the final vector considers each string as independent strings.
 - there is no typo, we use "klass" instead of "class" because of oscure historical reasons
 - `-k` accepts an a:b syntax that allow searching in a sample of size $a$ and test in $b$; for $0 < a < 1$, and $0 < b < 1$. It is common to use $b = 1 - a$; however, it is not a hard constraint and just you need to follow `a + b <= 1` and no overlapping ranges.
+- If `-S` is `r2`, `pearsonr`, or `spearmanr` then microTC computes the parameters for a regression task.
 
 
-TODO: Explain environment variables TEXT, KLASS, TOKENLIST, PARAMS
+TODO: Explain environment variables TOKENLIST, PARAMS
+# Input format:
+The input dataset is quite simple:
+- each line is an example
+- each example is a valid json dictionary, with two special keywords _"text"_ and _"klass"_
+  - _"text"_ is the object's content
+  - _"klass"_ is the label of the object
+  - you can specify other keywords with the TEXT and KLASS environment variables
 
 # Training the model 
 
@@ -96,6 +104,8 @@ Let us that the workload is `user-profiling.json` and that the parameters are in
 microtc-train -o user-profiling.model -m user-profiling.params user-profiling.json
 ```
 
+You can create a regressor adding the `-R` option to `microtc-train`
+
 # Testing the classifier against a workload
 
 At this point, we are in the position to test the model (i.e,
@@ -104,6 +114,43 @@ the classifier to assign a label to a particular text.
 
 ```bash
 microtc-predict -m user-profiling.model -o predicted.json unknown-exemplars.json
+```
+
+Finally, you can evaluate the performance of the prediction as follows:
+
+```bash
+microtc-perf gold.json predicted.json
+```
+This will show a number of scores in the screen.
+
+```json
+{
+    "accuracy": 0.7025,
+    "f1_anger": 0.705,
+    "f1_fear": 0.6338797814207651,
+    "f1_joy": 0.7920353982300885,
+    "f1_sadness": 0.6596858638743456,
+    "macrof1": 0.6976502608812997,
+    "macrof1accuracy": 0.490099308269113,
+    "macrorecall": 0.7024999999999999,
+    "microf1": 0.7025,
+    "quadratic_weighted_kappa": 0.5773930753564155
+}
+```
+or, in case of provide the `--regression` flag
+```json
+{
+    "filename": "some-path/some-name.predicted",
+    "pearsonr": [
+        0.6311471948385253,
+        1.2734619266038659e-23
+    ],
+    "r2": 0.3276512897198096,
+    "spearmanr": [
+        0.6377984613587965,
+        3.112636137077516e-24
+    ]
+}
 ```
 
 # Minimum requirements

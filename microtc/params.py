@@ -99,7 +99,7 @@ def Boolean():
     return SetVariable([False, True])
 
 
-TOKENLIST = [(3, 1), (2, 2), (2, 1), -3, -2, -1, 1, 2, 3, 5, 7, 9]
+TOKENLIST = [(2, 2), (2, 1), -2, -1, 1, 2, 3, 5, 7]
 if "TOKENLIST" in os.environ:
     def _simple_cast(x):
         if isinstance(x, list):
@@ -108,7 +108,7 @@ if "TOKENLIST" in os.environ:
             return x
     TOKENLIST = [_simple_cast(x) for x in json.loads(os.environ["TOKENLIST"])]
 
-MAX_TOKENLIST = os.environ.get("MAX_TOKENLIST", len(TOKENLIST)//2 + 1)
+MAXTOKENLIST = os.environ.get("MAXTOKENLIST", len(TOKENLIST)//2 + 1)
 
 
 DefaultParams = dict(
@@ -116,7 +116,7 @@ DefaultParams = dict(
     usr_option=Option(),
     url_option=Option(),
     emo_option=Option(),
-    # ent_option=Option(),
+
     ent_option=Fixed(OPTION_NONE),
     hashtag_option=Fixed(OPTION_NONE),
 
@@ -129,15 +129,15 @@ DefaultParams = dict(
     del_punc=Boolean(),
     del_diac=Boolean(),
     
-    token_list=PowersetVariable(TOKENLIST, max_size=MAX_TOKENLIST),
+    token_list=PowersetVariable(TOKENLIST, max_size=MAXTOKENLIST),
     # negative values means for absolute frequencies, positive values between 0 and 1 means for ratio
-    token_min_filter=SetVariable([-1]),
-    token_max_filter=Fixed(1.0),
-    # token_max_filter=SetVariable([0.9, 0.95, 0.99, 1.0]),
-    # token_min_filter=SetVariable([-1, -3, -5, -10]),
-    tfidf=Fixed(True),
-    # dist_vector=SetVariable([OPTION_NONE, 'plain', 'plain+100', 'plain+1000', 'entropy+100', 'entropy+1000'])
-    dist_vector=Fixed(OPTION_NONE)
+    # token_min_filter=SetVariable([-1]),
+    # token_max_filter=Fixed(1.0),
+    token_max_filter=SetVariable([0.5, 0.9, 1.0]),
+    token_min_filter=SetVariable([-1, -5]),
+    tfidf=Boolean(),
+    dist_vector=SetVariable([OPTION_NONE, 'plain+1', 'entropy+3', 'entropy+1', 'entropy+3'])
+    # dist_vector=Fixed(OPTION_NONE)
 )
 
 if "PARAMS" in os.environ:
