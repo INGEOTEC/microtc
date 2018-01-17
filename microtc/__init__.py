@@ -12,9 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import pickle
-
-__version__ = "1.4.0"
+__version__ = "1.4.1"
 
 
 # class WorkerTC:
