@@ -94,7 +94,7 @@ def test_train_regression():
     fname = os.path.dirname(__file__) + '/text.json'
     params('-o', output, '-k', '2', '-s', '2', '-S', 'r2', fname)
     with open(output) as fpt:
-        print(fpt.read())
+        print("XXXXX>", output, fpt.read())
 
     train('-o', output + '.model', '-R', '-m', output, fname)
     for x in predict('-m', output + '.model', fname, '-o', output + '.predicted'):

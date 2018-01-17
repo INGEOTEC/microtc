@@ -177,7 +177,8 @@ class CommandLine(object):
                 pool=pool,
                 best_list=best_list
             )
-
+    
+        best_list = list(filter(lambda x: '_error' not in x, best_list))
         with open(self.get_output(), 'w') as fpt:
             fpt.write(json.dumps(best_list, indent=2, sort_keys=True))
 
