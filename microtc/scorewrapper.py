@@ -18,11 +18,10 @@ import os
 from time import time
 from sklearn.metrics import f1_score, accuracy_score, recall_score, precision_score
 from sklearn import preprocessing
-from sklearn import cross_validation
+from sklearn import model_selection
 from microtc.params import OPTION_NONE
 from microtc.textmodel import TextModel, DistTextModel
 from microtc.wrappers import ClassifierWrapper
-
 
 
 class ScoreSampleWrapper(object):
@@ -128,14 +127,14 @@ class ScoreKFoldWrapper(ScoreSampleWrapper):
             self.ystatic = []
         self.test_y = self.y
         self.create_classifier = classifier
-        self.kfolds = cross_validation.StratifiedKFold(y, n_folds=nfolds, shuffle=True, random_state=random_state)
+        self.kfolds = model_selection.StratifiedKFold(n_splits=nfolds, shuffle=True, random_state=random_state)
 
     def __call__(self, conf_code):
         conf, code = conf_code
         st = time()
         predY = np.zeros(len(self.y))
         # X = np.array(self.X)
-        for train, test in self.kfolds:
+        for train, test in self.kfolds.split(self.X, self.y):
             # A = X[train]
             A = [self.X[i] for i in train]
             if len(self.Xstatic) > 0:

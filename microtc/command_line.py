@@ -281,6 +281,8 @@ class CommandLinePredict(CommandLine):
         pa('--verbose', dest='verbose', type=int,
            help='Logging level default: INFO + 1',
            default=logging.INFO+1)
+        pa('--ordinal', dest='ordinal', default=False, action='store_true',
+           help="rounds a regression prediction to an integer")
 
     def main(self, args=None, model_svc_le=None):
         self.data = self.parser.parse_args(args=args)
@@ -300,17 +302,36 @@ class CommandLinePredict(CommandLine):
         if le is None:
             hy = svc.predict(veclist)
 
-            for tweet, pred in zip(tweet_iterator(self.data.test_set), hy):
-                # klass = le.inverse_transform(svc.svc.classes_[index])
-                tweet[VALUE] = pred
-                L.append(tweet)
+            if self.data.ordinal:
+                for tweet, pred in zip(tweet_iterator(self.data.test_set), hy):
+                    tweet[VALUE] = round(pred)
+                    L.append(tweet)
+            else:
+                for tweet, pred in zip(tweet_iterator(self.data.test_set), hy):
+                    tweet[VALUE] = pred
+                    L.append(tweet)
         else:
-            hy = svc.decision_function(veclist)
+            decision_function = None
+            predict_proba = None
+            try:
+                decision_function = svc.decision_function(veclist).tolist()
+            except AttributeError:
+                try:
+                    predict_proba = svc.predict_proba(veclist).tolist()
+                except AttributeError:
+                    pass
+
             hyy = le.inverse_transform(svc.predict(veclist))
 
-            for tweet, scores, klass, aff in zip(tweet_iterator(self.data.test_set), hy, hyy, afflist):
-                # klass = le.inverse_transform(svc.svc.classes_[index])
-                tweet['decision_function'] = scores.tolist()
+            for i, tweet in enumerate(tweet_iterator(self.data.test_set)):
+                if decision_function is not None:
+                    tweet['decision_function'] = decision_function[i]
+                if predict_proba is not None:
+                    tweet['predict_proba'] = predict_proba[i]
+
+                klass = hyy[i]
+                aff = afflist[i]
+
                 tweet['voc_affinity'] = aff
                 tweet[KLASS] = str(klass)
                 tweet['predicted'] = tweet[KLASS]

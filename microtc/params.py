@@ -99,13 +99,14 @@ def Boolean():
     return SetVariable([False, True])
 
 
-TOKENLIST = [(2, 2), (2, 1), -2, -1, 1, 2, 3, 5, 7]
+TOKENLIST = [(3, 1), (2, 2), (2, 1), -3, -2, -1, 1, 2, 3, 5, 7, 9]
 if "TOKENLIST" in os.environ:
     def _simple_cast(x):
         if isinstance(x, list):
             return tuple(x)
         else:
             return x
+    
     TOKENLIST = [_simple_cast(x) for x in json.loads(os.environ["TOKENLIST"])]
 
 MAXTOKENLIST = os.environ.get("MAXTOKENLIST", len(TOKENLIST)//2 + 1)
@@ -118,7 +119,8 @@ DefaultParams = dict(
     emo_option=Option(),
 
     ent_option=Fixed(OPTION_NONE),
-    hashtag_option=Fixed(OPTION_NONE),
+    # hashtag_option=Fixed(OPTION_NONE),
+    hashtag_option=Option(),
 
     select_ent=Fixed(False),
     select_suff=Fixed(False),
@@ -134,9 +136,9 @@ DefaultParams = dict(
     # token_min_filter=SetVariable([-1]),
     # token_max_filter=Fixed(1.0),
     token_max_filter=SetVariable([0.5, 0.9, 1.0]),
-    token_min_filter=SetVariable([-1, -5]),
+    token_min_filter=SetVariable([-1, -5, -10]),
     tfidf=Boolean(),
-    dist_vector=SetVariable([OPTION_NONE, 'plain+1', 'entropy+3', 'entropy+1', 'entropy+3'])
+    dist_vector=SetVariable([OPTION_NONE, 'plain+1', 'plain+3', 'entropy+1', 'entropy+3'])
     # dist_vector=Fixed(OPTION_NONE)
 )
 

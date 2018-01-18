@@ -16,12 +16,17 @@
 from sklearn.svm import LinearSVC, LinearSVR
 from gensim.matutils import corpus2csc
 import logging
+import numpy as np
 logging.basicConfig(format='%(asctime)s : %(levelname)s :%(message)s')
 
 
 class ClassifierWrapper(object):
-    def __init__(self, classifier=LinearSVC):
-        self.svc = classifier()
+    def __init__(self, algo=LinearSVC):
+        # from sklearn.neighbors.nearest_centroid import NearestCentroid
+        # self.svc = NearestCentroid(metric='cosine', shrink_threshold=None)
+        # from sklearn.neighbors import KNeighborsClassifier
+        # self.svc = KNeighborsClassifier(3, metric='cosine')
+        self.svc = algo()
         self.num_terms = -1
 
     def fit(self, X, y):
@@ -34,6 +39,10 @@ class ClassifierWrapper(object):
         Xnew = corpus2csc(Xnew, num_terms=self.num_terms).T
         return self.svc.decision_function(Xnew)
 
+    def predict_proba(self, Xnew):
+        Xnew = corpus2csc(Xnew, num_terms=self.num_terms).T
+        return self.svc.predict_proba(Xnew)
+
     def predict(self, Xnew):
         Xnew = corpus2csc(Xnew, num_terms=self.num_terms).T
         ynew = self.svc.predict(Xnew)
@@ -41,8 +50,8 @@ class ClassifierWrapper(object):
 
 
 class RegressorWrapper(object):
-    def __init__(self, classifier=LinearSVR):
-        self.svc = classifier()
+    def __init__(self, algo=LinearSVR):
+        self.svc = algo()
         self.num_terms = -1
 
     def fit(self, X, y):
@@ -53,5 +62,4 @@ class RegressorWrapper(object):
 
     def predict(self, Xnew):
         Xnew = corpus2csc(Xnew, num_terms=self.num_terms).T
-        ynew = self.svc.predict(Xnew)
-        return ynew
+        return self.svc.predict(Xnew)
