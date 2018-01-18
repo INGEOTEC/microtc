@@ -22,7 +22,7 @@ from microtc.utils import read_data, read_data_labels, read_data_values, tweet_i
 from multiprocessing import cpu_count, Pool
 from .params import ParameterSelection, OPTION_NONE
 from .scorewrapper import ScoreKFoldWrapper, ScoreSampleWrapper
-from .regcorewrapper import RegressionScoreKFoldWrapper, RegressionScoreSampleWrapper
+from .regscorewrapper import RegressionScoreKFoldWrapper, RegressionScoreSampleWrapper
 from .textmodel import TextModel, DistTextModel
 from .utils import KLASS, TEXT, VALUE
 from sklearn.preprocessing import LabelEncoder
@@ -178,11 +178,15 @@ class CommandLine(object):
                 best_list=best_list
             )
     
-        best_list = list(filter(lambda x: '_error' not in x, best_list))
+        best_list0 = list(filter(lambda x: '_error' not in x, best_list))
+        if len(best_list0) == 0:
+            raise Exception("ERROR best_list is empty" + repr(best_list))
+    
+        best_list = best_list0    
         with open(self.get_output(), 'w') as fpt:
-            fpt.write(json.dumps(best_list, indent=2, sort_keys=True))
+            fpt.write(json.dumps(best_list0, indent=2, sort_keys=True))
 
-        return best_list
+        return best_list0
 
 
 class CommandLineTrain(CommandLine):

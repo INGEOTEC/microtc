@@ -133,10 +133,10 @@ DefaultParams = dict(
     
     token_list=PowersetVariable(TOKENLIST, max_size=MAXTOKENLIST),
     # negative values means for absolute frequencies, positive values between 0 and 1 means for ratio
-    # token_min_filter=SetVariable([-1]),
-    # token_max_filter=Fixed(1.0),
-    token_max_filter=SetVariable([0.5, 0.9, 1.0]),
-    token_min_filter=SetVariable([-1, -5, -10]),
+    token_min_filter=Fixed(-1),
+    token_max_filter=Fixed(1.0),
+    # token_max_filter=SetVariable([0.5, 0.9, 1.0]),
+    # token_min_filter=SetVariable([-1, -5, -10]),
     tfidf=Boolean(),
     dist_vector=SetVariable([OPTION_NONE, 'plain+1', 'plain+3', 'entropy+1', 'entropy+3'])
     # dist_vector=Fixed(OPTION_NONE)
