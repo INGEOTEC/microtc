@@ -285,8 +285,8 @@ class CommandLinePredict(CommandLine):
         pa('--verbose', dest='verbose', type=int,
            help='Logging level default: INFO + 1',
            default=logging.INFO+1)
-        pa('--ordinal', dest='ordinal', default=False, action='store_true',
-           help="rounds a regression prediction to an integer")
+        pa('--ordinal', dest='ordinal', default=None,
+           help="rounds a regression prediction to the nearest integer among the given start:end range")
 
     def main(self, args=None, model_svc_le=None):
         self.data = self.parser.parse_args(args=args)
@@ -307,8 +307,21 @@ class CommandLinePredict(CommandLine):
             hy = svc.predict(veclist)
 
             if self.data.ordinal:
+                start, end = self.data.ordinal.split(':')
+                start = int(start)
+                end = int(end)
+                
                 for tweet, pred in zip(tweet_iterator(self.data.test_set), hy):
-                    tweet[VALUE] = round(pred)
+                    c = round(pred)
+                    if c < start:
+                        c = start
+                    elif c > end:
+                        c = end
+
+                    if c == 0:  # handles IEEE's negative cero -0.0
+                        c = 0
+                
+                    tweet[VALUE] = int(c)
                     L.append(tweet)
             else:
                 for tweet, pred in zip(tweet_iterator(self.data.test_set), hy):
