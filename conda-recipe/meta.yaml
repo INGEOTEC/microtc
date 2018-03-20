@@ -1,0 +1,38 @@
+package:
+  name: microtc
+  version: "1.4.2"
+
+requirements:
+  build:
+    - python
+    - setuptools
+    - numpy
+    - scipy
+    - scikit-learn
+    - gensim
+  run:
+    - python
+    - scikit-learn
+    - gensim
+test:
+    requires:
+        - nose
+        - numpy
+        - scipy
+        - scikit-learn
+        - gensim
+        - coverage
+
+    imports:
+        - microtc
+
+    commands:
+        - nosetests --verbose -exe microtc
+        - microtc-predict --help
+        - microtc-train --help
+
+
+about:
+  home: https://github.com/ingeotec/microtc
+  summary: "A generic minimal text classifier."
+  license: Apache
