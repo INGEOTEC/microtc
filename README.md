@@ -17,19 +17,21 @@ Eric S. Tellez, Daniela Moctezuma, Sabino Miranda-JÃ­menez, Mario Graff. Pre-p
 
 ```bibtex
 
-@ARTICLE{2017arXiv170401975T,
-   author = {{Tellez}, E.~S. and {Moctezuma}, D. and {Miranda-J{\'{\i}}menez}, S. and 
-	{Graff}, M.},
-    title = "{An Automated Text Categorization Framework based on Hyperparameter Optimization}",
-  journal = {ArXiv e-prints},
-archivePrefix = "arXiv",
-   eprint = {1704.01975},
- primaryClass = "cs.CL",
- keywords = {Computer Science - Computation and Language, Computer Science - Artificial Intelligence, Statistics - Machine Learning},
-     year = 2017,
-    month = apr,
-   adsurl = {http://adsabs.harvard.edu/abs/2017arXiv170401975T},
-  adsnote = {Provided by the SAO/NASA Astrophysics Data System}
+@article{Tellez2018110,
+title = "An automated text categorization framework based on hyperparameter optimization ",
+journal = "Knowledge-Based Systems ",
+volume = "149",
+number = "",
+pages = "110 - 123",
+year = "2018",
+note = "",
+issn = "0950-7051",
+doi = "https://doi.org/10.1016/j.knosys.2018.03.003",
+url = "https://www.sciencedirect.com/science/article/pii/S0950705118301217",
+author = "Eric S. Tellez and Daniela Moctezuma and Sabino Miranda-Jiménez and Mario Graff",
+keywords = "Text classification",
+keywords = "Hyperparameter optimization",
+keywords = "Text modelling "
 }
 ```
 
