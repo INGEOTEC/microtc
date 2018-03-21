@@ -1,6 +1,14 @@
 [![Build Status](https://travis-ci.org/INGEOTEC/microTC.svg?branch=master)](https://travis-ci.org/INGEOTEC/microTC)
+[![Build Status](https://travis-ci.org/INGEOTEC/microTC.svg?branch=develop)](https://travis-ci.org/INGEOTEC/microTC)
+[![Build status](https://ci.appveyor.com/api/projects/status/afcwh0d9sw6g937h?svg=true)](https://ci.appveyor.com/project/mgraffg/microtc)
+[![Build status](https://ci.appveyor.com/api/projects/status/afcwh0d9sw6g937h/branch/master?svg=true)](https://ci.appveyor.com/project/mgraffg/microtc/branch/master)
 [![Coverage Status](https://coveralls.io/repos/github/INGEOTEC/microTC/badge.svg?branch=master)](https://coveralls.io/github/INGEOTEC/microTC?branch=master)
-
+[![Anaconda-Server Badge](https://anaconda.org/mgraffg/microtc/badges/version.svg)](https://anaconda.org/mgraffg/microtc)
+[![Anaconda-Server Badge](https://anaconda.org/mgraffg/microtc/badges/latest_release_date.svg)](https://anaconda.org/mgraffg/microtc)
+[![Anaconda-Server Badge](https://anaconda.org/mgraffg/microtc/badges/platforms.svg)](https://anaconda.org/mgraffg/microtc)
+[![Anaconda-Server Badge](https://anaconda.org/mgraffg/microtc/badges/installer/conda.svg)](https://conda.anaconda.org/mgraffg)
+[![PyPI version](https://badge.fury.io/py/microtc.svg)](https://badge.fury.io/py/microtc)
+[![Anaconda-Server Badge](https://anaconda.org/mgraffg/microtc/badges/license.svg)](https://anaconda.org/mgraffg/microtc)
 # What is microTC? #
 
 MicroTC follows a minimalist approach to text classification. It is designed to tackle text-classification problems in an agnostic way,
@@ -13,7 +21,7 @@ $\mu$TC is intentionally simple, so only a small number of features where implem
 If you find $\mu$TC useful for any academic/scientific purpose, we would appreciate citations to the following pre-print:
 
 [An Automated Text Categorization Framework based on Hyperparameter Optimization](https://arxiv.org/abs/1704.01975)
-Eric S. Tellez, Daniela Moctezuma, Sabino Miranda-JÃ­menez, Mario Graff. Pre-print arXiv:1704.01975
+Eric S. Tellez, Daniela Moctezuma, Sabino Miranda-Jímenez, Mario Graff. Pre-print arXiv:1704.01975
 
 ```bibtex
 
