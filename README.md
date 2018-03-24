@@ -3,12 +3,12 @@
 [![Build status](https://ci.appveyor.com/api/projects/status/afcwh0d9sw6g937h?svg=true)](https://ci.appveyor.com/project/mgraffg/microtc)
 [![Build status](https://ci.appveyor.com/api/projects/status/afcwh0d9sw6g937h/branch/master?svg=true)](https://ci.appveyor.com/project/mgraffg/microtc/branch/master)
 [![Coverage Status](https://coveralls.io/repos/github/INGEOTEC/microTC/badge.svg?branch=master)](https://coveralls.io/github/INGEOTEC/microTC?branch=master)
-[![Anaconda-Server Badge](https://anaconda.org/mgraffg/microtc/badges/version.svg)](https://anaconda.org/mgraffg/microtc)
-[![Anaconda-Server Badge](https://anaconda.org/mgraffg/microtc/badges/latest_release_date.svg)](https://anaconda.org/mgraffg/microtc)
-[![Anaconda-Server Badge](https://anaconda.org/mgraffg/microtc/badges/platforms.svg)](https://anaconda.org/mgraffg/microtc)
-[![Anaconda-Server Badge](https://anaconda.org/mgraffg/microtc/badges/installer/conda.svg)](https://conda.anaconda.org/mgraffg)
+[![Anaconda-Server Badge](https://anaconda.org/INGEOTEC/microtc/badges/version.svg)](https://anaconda.org/INGEOTEC/microtc)
+[![Anaconda-Server Badge](https://anaconda.org/INGEOTEC/microtc/badges/latest_release_date.svg)](https://anaconda.org/INGEOTEC/microtc)
+[![Anaconda-Server Badge](https://anaconda.org/INGEOTEC/microtc/badges/platforms.svg)](https://anaconda.org/INGEOTEC/microtc)
+[![Anaconda-Server Badge](https://anaconda.org/INGEOTEC/microtc/badges/installer/conda.svg)](https://conda.anaconda.org/INGEOTEC)
 [![PyPI version](https://badge.fury.io/py/microtc.svg)](https://badge.fury.io/py/microtc)
-[![Anaconda-Server Badge](https://anaconda.org/mgraffg/microtc/badges/license.svg)](https://anaconda.org/mgraffg/microtc)
+[![Anaconda-Server Badge](https://anaconda.org/INGEOTEC/microtc/badges/license.svg)](https://anaconda.org/INGEOTEC/microtc)
 # What is microTC? #
 
 MicroTC follows a minimalist approach to text classification. It is designed to tackle text-classification problems in an agnostic way,
