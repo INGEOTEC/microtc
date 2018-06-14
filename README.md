@@ -20,8 +20,10 @@ $\mu$TC is intentionally simple, so only a small number of features where implem
 
 If you find $\mu$TC useful for any academic/scientific purpose, we would appreciate citations to the following pre-print:
 
-[An Automated Text Categorization Framework based on Hyperparameter Optimization](https://arxiv.org/abs/1704.01975)
-Eric S. Tellez, Daniela Moctezuma, Sabino Miranda-Jímenez, Mario Graff. Pre-print arXiv:1704.01975
+[An Automated Text Categorization Framework based on Hyperparameter Optimization](https://www.sciencedirect.com/science/article/pii/S0950705118301217)
+Eric S. Tellez, Daniela Moctezuma, Sabino Miranda-Jímenez, Mario Graff. Knowledge-Based Systems
+Volume 149, 1 June 2018, Pages 110-123
+
 
 ```bibtex
 
