@@ -1,4 +1,4 @@
-# Copyright 2016 Eric S. Tellez <eric.tellez@infotec.mx>
+# Copyright 2016-2018 Eric S. Tellez <eric.tellez@infotec.mx>
 
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -15,8 +15,6 @@ from setuptools import setup
 import microtc
 
 
-# with open('README.rst') as fpt:
-#    long_desc = fpt.read()
 long_desc = ''
 
 setup(

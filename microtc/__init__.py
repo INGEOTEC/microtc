@@ -1,4 +1,4 @@
-# Copyright 2016 Mario Graff (https://github.com/mgraffg)
+# Copyright 2016-2018 Mario Graff (https://github.com/mgraffg)
 
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-__version__ = "1.4.2"
+__version__ = "1.4.3"
 
 
 # class WorkerTC:
