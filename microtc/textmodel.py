@@ -277,7 +277,15 @@ class TextModel:
         return L
 
 
+class TokenData:
+    """ A struct that contains the klass' distribution and weight of the represented token """
+    def __init__(self, w, h):
+        self.weight = w
+        self.hist = h
+
+
 class DistTextModel:
+    """ A text model based on how tokens distribute along classes """
     def __init__(self, model, texts, labels, numlabels, kind):
         H = {}
         self.kind = kind
@@ -285,64 +293,70 @@ class DistTextModel:
 
         for text, label in zip(texts, labels):
             for token, weight in model[text]:
-                hist = H.get(token, None)
-                if hist is None:
-                    hist = [0 for i in range(numlabels)]
-                    H[token] = hist
+                m = H.get(token, None)
+                if m is None:
+                    m = TokenData(0.0, [0 for i in range(numlabels)])
+                    H[token] = m
 
-                hist[label] += weight
+                m.hist[label] += weight
 
-        if '+' in self.kind:
-            a = self.kind.split('+')
-            if len(a) == 2:
-                lowerent = 0.0
-                base = int(self.kind.split('+')[1])
-            else:
-                lowerent = float(a[1])
-                base = int(a[2])
+        if '+' in kind:
+            kind, base = kind.split('+')
+            base = int(base)
         else:
-            base = 0
-            lowerent = 0.0
+            base = 1
 
-        sizes = np.zeros(numlabels)
-        for token, hist in H.items():
-            sizes += hist
+        maxent = np.log2(self.numlabels)
+        for token, m in H.items():
+            s = sum(m.hist) + base * len(m.hist)
+            for i in range(len(m.hist)):
+                m.hist[i] = (m.hist[i] + base) / s
 
-        minsize = np.median(sizes)
-        for token, hist in H.items():
-            for i in range(len(sizes)):
-                hist[i] *= minsize / sizes[i]
+            m.weight = maxent + sum(x * np.log2(x) for x in m.hist if x > 0)
 
-        for token, hist in H.items():
-            s = sum(hist) + base * len(hist)
-            for i in range(numlabels):
-                hist[i] = (hist[i] + base) / s
-        
-        if self.kind.startswith('entropy'):
-            maxent = np.log2(self.numlabels)
-            for token, hist in H.items():
-                H[token] = maxent + sum(x * np.log2(x) for x in hist if x > 0)
-            
-            H = {k: v for k, v in H.items() if v >= lowerent}
-        
-        self.H = H
+        self.voc = H
         self.numlabels = numlabels
         self.model = model
+
+    def prune(self, method='slope', tol=0.01, step=1000, percentile=1):
+        """ Receives a DistTextModel object and prunes the vocabulary to keep the best tokens.
+            - `method`: 'slope' or 'percentile'
+            - `tol`: the tolerance value to stop (for `method == "slope"`)
+            - `step`: a number of values to compute the change (for `method == "slope"`)
+            - `percentile`: if `method == "percentile"` then the vocabulary is pruned keeping the top `percentile` tokens.
+        """
+        X = self.voc.items()
+        X.sort(by=lambda x: x[1].weight, reversed=True)
+
+        if method not in ('slope', 'percentile'):
+            raise Exception(
+                "Unknown method {0} only 'slope' and 'percentile' methods are known".format(method))
+
+        if method == 'slope':
+            for i in range(0, len(X), step):
+                endpoint = min(len(X), i + step)
+                diff = abs(X[endpoint - 1].weight - X[i].weight)
+                if diff <= tol:
+                    break
+
+        elif method == 'percentile':
+            p = int(len(X) * percentile / 100.0)
+            self.voc = dict(X[:p])
 
     def __getitem__(self, text):
         vec = []
         if self.kind.startswith('plain'):
             for token, weight in self.model[text]:
                 x = token * self.numlabels
-                for i, w in enumerate(self.H[token]):
+                for i, w in enumerate(self.voc[token].hist):
                     vec.append((x + i, w))
         else:
             for token, weight in self.model[text]:
-                w = self.H.get(token, 0.0)
-                if w > 0:
-                    vec.append((token, w))
+                m = self.voc.get(token, None)
+                if m:
+                    vec.append((token, m.weight))
 
         return vec
-    
+
     def vectorize(self, text):
         return self[text], 1.0

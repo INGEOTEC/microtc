@@ -1,6 +1,7 @@
 # author: Eric S. Tellez <eric.tellez@infotec.mx>
 
 import os
+import sys
 import json
 import numpy as np
 import logging
@@ -135,8 +136,8 @@ DefaultParams = dict(
     # negative values means for absolute frequencies, positive values between 0 and 1 means for ratio
     token_min_filter=Fixed(-1),
     token_max_filter=Fixed(1.0),
-    # token_max_filter=SetVariable([0.5, 0.9, 1.0]),
-    # token_min_filter=SetVariable([-1, -5, -10]),
+    #token_max_filter=SetVariable([0.5, 0.9, 0.95, 0.99, 1.0]),
+    #token_min_filter=SetVariable([-1, -2, -3, -5, -7, -9]),
     tfidf=Boolean(),
     dist_vector=SetVariable([OPTION_NONE, 'plain+1', 'plain+3', 'entropy+1', 'entropy+3'])
     # dist_vector=Fixed(OPTION_NONE)
@@ -148,6 +149,9 @@ if "PARAMS" in os.environ:
 
 
 class ParameterSelection:
+    MINIMUM_IMPROVEMENT = 0.001
+    IMPROVEMENT_FAILURES = 2
+
     def __init__(self, params=None):
         if (params is None) or (0 == len(params)):
             params = DefaultParams
@@ -195,10 +199,34 @@ class ParameterSelection:
         X.sort(key=lambda x: x['_score'], reverse=True)
         return X
 
-    def search(self, fun_score, bsize=32, hill_climbing=True, pool=None, best_list=None):
+    def search(self, fun_score, bsize=32, hill_climbing=True, best_list=None, tabu=None, pool=None):
+        if tabu is None:
+            tabu = set()
+        
+        best_list = []
+        prev = 0.0
+        restarts = 0
+
+        while restarts < ParameterSelection.IMPROVEMENT_FAILURES:
+            b = self._search(fun_score, bsize=bsize, hill_climbing=hill_climbing, tabu=tabu, pool=pool)
+            best_list.extend(b)
+            curr = best_list[0]['_score']
+            if curr - prev < ParameterSelection.MINIMUM_IMPROVEMENT:
+                restarts += 1
+            
+            prev = curr
+
+            print("*** best configuration found (restart failures: {0} of {1})".format(restarts, ParameterSelection.IMPROVEMENT_FAILURES), file=sys.stderr)
+            print(json.dumps(best_list[0], sort_keys=True), file=sys.stderr)
+
+        best_list.sort(key=lambda x: x['_score'], reverse=True)
+        return best_list
+    
+    def _search(self, fun_score, bsize=32, hill_climbing=True, best_list=None, tabu=None, pool=None):
         # initial approximation, montecarlo based procesess
 
-        tabu = set()  # memory for tabu search
+        if tabu is None:
+            tabu = set()  # memory for tabu search
 
         if best_list is None:
             L = []
@@ -220,7 +248,7 @@ class ParameterSelection:
             i = 0
             while True:
                 i += 1
-                bscore = best_list[0]['_score']
+                prev = best_list[0]['_score']
                 L = []
 
                 for conf in self.expand_neighbors(best_list[0], keywords=keywords):
@@ -231,12 +259,20 @@ class ParameterSelection:
                     tabu.add(code)
                     L.append((conf, code))
 
+                if len(L) > bsize:
+                    print("Selecting {0} random configuration from a neighborhood of {1}".format(bsize, len(L)), file=sys.stderr)
+                    np.random.shuffle(L)
+                    L = L[:bsize]
+        
                 best_list.extend(self.get_best(fun_score, L, desc=desc + " {0}".format(i), pool=pool))
                 best_list.sort(key=lambda x: x['_score'], reverse=True)
-                if bscore == best_list[0]['_score']:
+                curr = best_list[0]['_score']
+                if curr - prev < ParameterSelection.MINIMUM_IMPROVEMENT:
                     break
 
         if hill_climbing:
+            print("starting hill climbing with configuration", file=sys.stderr)
+            print(json.dumps(best_list[0], sort_keys=True), file=sys.stderr)
             _hill_climbing(['token_list'], "optimizing token_list")
             # _hill_climbing(['token_min_filter', 'token_max_filter'], "optimizing token max and min filters")
 
