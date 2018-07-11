@@ -20,6 +20,7 @@ from microtc.wrappers import ClassifierWrapper, RegressorWrapper
 from microtc.utils import read_data, read_data_labels, read_data_values, tweet_iterator
 # from microtc.params import OPTION_DELETE
 from multiprocessing import cpu_count, Pool
+from collections import defaultdict
 from .params import ParameterSelection, OPTION_NONE
 from .scorewrapper import ScoreKFoldWrapper, ScoreSampleWrapper
 from .regscorewrapper import RegressionScoreKFoldWrapper, RegressionScoreSampleWrapper
@@ -370,6 +371,7 @@ class CommandLineTextModel(CommandLinePredict):
                 fpt.write(json.dumps(tw) + "\n")
         return L
 
+
 class CommandLineVoc(CommandLinePredict):
     def __init__(self):
         self.parser = argparse.ArgumentParser(description='microtc')
@@ -379,6 +381,7 @@ class CommandLineVoc(CommandLinePredict):
         pa('-p', '--percentile', default=0, type=float, dest='percentile', help='prunes the vocabulary keeping the given percentile of best weighted tokens')
         pa('-o', '--output', default='', type=str, dest='output', help='save the modified model to the given output file')
         pa('--print-voc', default=False, action="store_true", dest="print_voc", help='print to stdout the resulting vocabulary (after modifications) of the give model')
+        pa('-c', '--print-cluster-voc', default=False, action="store_true", dest="cluster_print", help="cluster the modified vocabulary by histogram and prints the clusters")
         # pa('training_set', default=None, nargs='+', help="The trainset, it can be used to retrain a model or readjust the model")
 
     def main(self, args=None):
@@ -404,6 +407,68 @@ class CommandLineVoc(CommandLinePredict):
                 L.append({"token": token, "weight": t.weight, "hist": t.hist})
                 print(json.dumps(L[-1], sort_keys=True))
         
+        if self.data.cluster_print:
+            D = textmodel.model.dictionary
+            C = {}
+            for token_id, t in textmodel.voc.items():
+                token = D[token_id]
+                data = str(tuple(t.hist))
+                e = C.get(data, None)
+                if e is None:
+                    C[data] = {"token": [token], "weight": t.weight, "hist": t.hist}
+                else:
+                    e["token"].append(token)
+            
+            C = sorted(C.values(), key=lambda x: x["weight"], reverse=True)
+            for c in C:
+                print(json.dumps(c, sort_keys=1))
+
+        if len(self.data.output) > 0:
+            with open(self.data.output, "wb") as f:
+                pickle.dump((textmodel, svc, le), f)
+
+
+class CommandLineRetrain(CommandLinePredict):
+    def __init__(self):
+        self.parser = argparse.ArgumentParser(description='microtc')
+        pa = self.parser.add_argument
+        pa('-m', '--model', default=None, type=str,
+           dest='model', help='specifies the input model')
+        pa('-o', '--output', default='', type=str, dest='output',
+           help='save the modified model to the given output file')
+        pa('training_set', default=None, nargs='+', help="The trainset, it can be used to retrain a model or readjust the model")
+
+    def main(self, args=None):
+        self.data = self.parser.parse_args(args=args)
+        # logging.basicConfig(level=self.data.verbose)
+        textmodel, svc, le = load_pickle(self.data.model)
+        L = []
+        if not hasattr(textmodel, "model"):
+            raise Exception(
+                "Only DistTextModel models can be manipulated with this tool")
+
+        top = int(self.data.top)
+        if top > 0:
+            textmodel.prune(method="top", k=top)
+
+        percentile = max(0, min(100, float(self.data.percentile)))
+        if percentile > 0:
+            textmodel.prune(method="percentile", percentile=percentile)
+
+        if self.data.print_voc:
+            D = textmodel.model.dictionary
+            for token_id, t in textmodel.voc.items():
+                token = D[token_id]
+                L.append({"token": token, "weight": t.weight, "hist": t.hist})
+                print(json.dumps(L[-1], sort_keys=True))
+
+        if self.data.cluster_print:
+            D = textmodel.model.dictionary
+            for token_id, t in textmodel.voc.items():
+                token = D[token_id]
+                L.append({"token": token, "weight": t.weight, "hist": t.hist})
+                print(json.dumps(L[-1], sort_keys=True))
+
         if len(self.data.output) > 0:
             with open(self.data.output, "wb") as f:
                 pickle.dump((textmodel, svc, le), f)
