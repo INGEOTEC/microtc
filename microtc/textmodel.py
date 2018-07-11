@@ -318,19 +318,20 @@ class DistTextModel:
         self.numlabels = numlabels
         self.model = model
 
-    def prune(self, method='slope', tol=0.01, step=1000, percentile=1):
+    def prune(self, method='slope', tol=0.01, step=1000, percentile=1, k=10000):
         """ Receives a DistTextModel object and prunes the vocabulary to keep the best tokens.
-            - `method`: 'slope' or 'percentile'
+            - `method`: 'slope', 'percentile', or 'top'
             - `tol`: the tolerance value to stop (for `method == "slope"`)
             - `step`: a number of values to compute the change (for `method == "slope"`)
             - `percentile`: if `method == "percentile"` then the vocabulary is pruned keeping the top `percentile` tokens.
+            
         """
-        X = self.voc.items()
-        X.sort(by=lambda x: x[1].weight, reversed=True)
+        X = list(self.voc.items())
+        X.sort(key=lambda x: x[1].weight, reverse=True)
 
-        if method not in ('slope', 'percentile'):
+        if method not in ('slope', 'percentile', 'top'):
             raise Exception(
-                "Unknown method {0} only 'slope' and 'percentile' methods are known".format(method))
+                "Unknown method {0} only 'slope', 'top', and 'percentile' methods are known".format(method))
 
         if method == 'slope':
             for i in range(0, len(X), step):
@@ -338,10 +339,12 @@ class DistTextModel:
                 diff = abs(X[endpoint - 1].weight - X[i].weight)
                 if diff <= tol:
                     break
-
         elif method == 'percentile':
             p = int(len(X) * percentile / 100.0)
             self.voc = dict(X[:p])
+        elif method == "top":
+            self.voc = dict(X[:k])
+
 
     def __getitem__(self, text):
         vec = []

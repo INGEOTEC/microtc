@@ -51,6 +51,7 @@ setup(
         'microtc/tools/microtc-predict',
         'microtc/tools/microtc-params',
         'microtc/tools/microtc-textModel',
+        'microtc/tools/microtc-voc',
         'microtc/tools/microtc-perf',
         'microtc/tools/microtc-ensemble',
         'microtc/tools/microtc-kfolds'

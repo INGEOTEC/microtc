@@ -87,16 +87,11 @@ class CommandLine(object):
 
     def param_search(self):
         pa = self.parser.add_argument
-        pa('-s', '--sample', dest='samplesize', type=int,
-           default=32,
-           help="The sample size of the parameter")
-        pa('-H', '--hillclimbing', dest='hill_climbing', default=False,
-           action='store_true',
-           help="Determines if hillclimbing search is also perfomed to improve the selection of parameters")
-        pa('-r', '--resume', dest='best_list', default=None,
-           help="Loads the given file and resumes the search process")
-        pa('-n', '--numprocs', dest='numprocs', type=int, default=1,
-           help="Number of processes to compute the best setup")
+        pa('-s', '--sample', dest='samplesize', type=int, default=32, help="The sample size of the parameter")
+        pa('-H', '--hillclimbing', dest='hill_climbing', default=False, action='store_true',
+            help="Determines if hillclimbing search is also perfomed to improve the selection of parameters")
+        pa('-r', '--resume', dest='best_list', default=None, help="Loads the given file and resumes the search process")
+        pa('-n', '--numprocs', dest='numprocs', type=int, default=1, help="Number of processes to compute the best setup")
         pa('-S', '--score', dest='score', type=str, default='macrof1',
            help="The name of the score to be optimized (classification scores: {0}); (regression scores: {1}) it defaults to macrof1".format(
                ScoreSampleWrapper.valid_scores,
@@ -375,6 +370,44 @@ class CommandLineTextModel(CommandLinePredict):
                 fpt.write(json.dumps(tw) + "\n")
         return L
 
+class CommandLineVoc(CommandLinePredict):
+    def __init__(self):
+        self.parser = argparse.ArgumentParser(description='microtc')
+        pa = self.parser.add_argument
+        pa('-m', '--model', default=None, type=str, dest='model', help='specifies the input model')
+        pa('-t', '--top', default=0, type=int, dest='top', help='prunes the vocabulary keeping the top weighted tokens')
+        pa('-p', '--percentile', default=0, type=float, dest='percentile', help='prunes the vocabulary keeping the given percentile of best weighted tokens')
+        pa('-o', '--output', default='', type=str, dest='output', help='save the modified model to the given output file')
+        pa('--print-voc', default=False, action="store_true", dest="print_voc", help='print to stdout the resulting vocabulary (after modifications) of the give model')
+        # pa('training_set', default=None, nargs='+', help="The trainset, it can be used to retrain a model or readjust the model")
+
+    def main(self, args=None):
+        self.data = self.parser.parse_args(args=args)
+        # logging.basicConfig(level=self.data.verbose)
+        textmodel, svc, le = load_pickle(self.data.model)
+        L = []
+        if not hasattr(textmodel, "model"):
+            raise Exception("Only DistTextModel models can be manipulated with this tool")
+
+        top = int(self.data.top)
+        if top > 0:
+            textmodel.prune(method="top", k=top)
+
+        percentile = max(0, min(100, float(self.data.percentile)))
+        if percentile > 0:
+            textmodel.prune(method="percentile", percentile=percentile)
+       
+        if self.data.print_voc:
+            D = textmodel.model.dictionary
+            for token_id, t in textmodel.voc.items():
+                token = D[token_id]
+                L.append({"token": token, "weight": t.weight, "hist": t.hist})
+                print(json.dumps(L[-1], sort_keys=True))
+        
+        if len(self.data.output) > 0:
+            with open(self.data.output, "wb") as f:
+                pickle.dump((textmodel, svc, le), f)
+
 
 class CommandLineKfolds(CommandLineTrain):
     def __init__(self):
@@ -476,6 +509,13 @@ def textmodel(*args, **kwargs):
         args = None
     return c.main(args, **kwargs)
 
+
+def vocabulary(*args, **kwargs):
+    c = CommandLineVoc()
+    if len(args) == 0:
+        args = None
+    
+    return c.main(args, **kwargs)
 
 def kfolds(*args, **kwargs):
     c = CommandLineKfolds()
