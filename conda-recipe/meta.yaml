@@ -1,6 +1,6 @@
 package:
   name: microtc
-  version: "1.4.2"
+  version: "1.4.4"
 
 requirements:
   build:
