@@ -302,16 +302,16 @@ class DistTextModel:
 
         if '+' in kind:
             kind, base = kind.split('+')
-            base = int(base)
+            self.b = int(base)
         else:
-            base = 1
+            self.b = 1
 
         maxent = np.log2(self.numlabels)
         for token, m in H.items():
-            s = sum(m.hist) + base * len(m.hist)
+            s = sum(m.hist) + self.b * len(m.hist)
             e = maxent
             for i in range(len(m.hist)):
-                p = (m.hist[i] + base) / s
+                p = (m.hist[i] + self.b) / s
                 if p > 0:
                     e += p * np.log2(p)
                 # m.hist[i] = (m.hist[i] + base) / s

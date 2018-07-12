@@ -389,7 +389,7 @@ class CommandLineVoc(CommandLinePredict):
         # logging.basicConfig(level=self.data.verbose)
         textmodel, svc, le = load_pickle(self.data.model)
         L = []
-        if not hasattr(textmodel, "model"):
+        if not isinstance(textmodel, DistTextModel):
             raise Exception("Only DistTextModel models can be manipulated with this tool")
 
         top = int(self.data.top)
@@ -405,7 +405,9 @@ class CommandLineVoc(CommandLinePredict):
             items = sorted(textmodel.voc.items(), key=lambda x: x[1].weight, reverse=True)
             for token_id, t in items:
                 token = D[token_id]
-                L.append({"token": token, "weight": t.weight, "hist": t.hist})
+                den = textmodel.b * textmodel.numlabels + np.sum(t.hist)
+                dist = [(x + textmodel.b) / den for x in t.hist]
+                L.append({"token": token, "weight": t.weight, "hist": t.hist, "dist": dist})
                 print(json.dumps(L[-1], sort_keys=True))
         
         if self.data.cluster_print:
@@ -416,7 +418,9 @@ class CommandLineVoc(CommandLinePredict):
                 data = str(tuple(t.hist))
                 e = C.get(data, None)
                 if e is None:
-                    C[data] = {"token": [token], "weight": t.weight, "hist": t.hist}
+                    den = textmodel.b * textmodel.numlabels + np.sum(t.hist)
+                    dist = [(x + textmodel.b) / den for x in t.hist]
+                    C[data] = {"token": [token], "weight": t.weight, "hist": t.hist, "dist": dist}
                 else:
                     e["token"].append(token)
             
