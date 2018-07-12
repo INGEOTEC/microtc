@@ -48,6 +48,7 @@ setup(
     },
     scripts=[
         'microtc/tools/microtc-train',
+        'microtc/tools/microtc-retrain',
         'microtc/tools/microtc-predict',
         'microtc/tools/microtc-params',
         'microtc/tools/microtc-textModel',

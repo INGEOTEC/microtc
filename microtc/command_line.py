@@ -402,7 +402,8 @@ class CommandLineVoc(CommandLinePredict):
        
         if self.data.print_voc:
             D = textmodel.model.dictionary
-            for token_id, t in textmodel.voc.items():
+            items = sorted(textmodel.voc.items(), key=lambda x: x[1].weight, reverse=True)
+            for token_id, t in items:
                 token = D[token_id]
                 L.append({"token": token, "weight": t.weight, "hist": t.hist})
                 print(json.dumps(L[-1], sort_keys=True))
@@ -437,41 +438,38 @@ class CommandLineRetrain(CommandLinePredict):
         pa('-o', '--output', default='', type=str, dest='output',
            help='save the modified model to the given output file')
         pa('training_set', default=None, nargs='+', help="The trainset, it can be used to retrain a model or readjust the model")
+        pa('-R', '--regression', dest='regression', action='store_true', help="The model will be a regressor")
 
     def main(self, args=None):
         self.data = self.parser.parse_args(args=args)
         # logging.basicConfig(level=self.data.verbose)
         textmodel, svc, le = load_pickle(self.data.model)
-        L = []
-        if not hasattr(textmodel, "model"):
-            raise Exception(
-                "Only DistTextModel models can be manipulated with this tool")
+        
+        if self.data.regression:
+            _read_data = read_data_values
+            wrapper = RegressorWrapper
+        else:
+            _read_data = read_data_labels
+            wrapper = ClassifierWrapper
 
-        top = int(self.data.top)
-        if top > 0:
-            textmodel.prune(method="top", k=top)
+        corpus, values = [], []
+        for train in self.data.training_set:
+            X_, y_ = _read_data(train)
+            corpus.extend(X_)
+            values.extend(y_)
 
-        percentile = max(0, min(100, float(self.data.percentile)))
-        if percentile > 0:
-            textmodel.prune(method="percentile", percentile=percentile)
+        if self.data.regression:
+            le = None
+            y = values
+        else:
+            y = le.transform(values)
 
-        if self.data.print_voc:
-            D = textmodel.model.dictionary
-            for token_id, t in textmodel.voc.items():
-                token = D[token_id]
-                L.append({"token": token, "weight": t.weight, "hist": t.hist})
-                print(json.dumps(L[-1], sort_keys=True))
-
-        if self.data.cluster_print:
-            D = textmodel.model.dictionary
-            for token_id, t in textmodel.voc.items():
-                token = D[token_id]
-                L.append({"token": token, "weight": t.weight, "hist": t.hist})
-                print(json.dumps(L[-1], sort_keys=True))
-
-        if len(self.data.output) > 0:
-            with open(self.data.output, "wb") as f:
-                pickle.dump((textmodel, svc, le), f)
+        c = wrapper()
+        X = [textmodel[x] for x in corpus]
+        c.fit(X, y)
+        with open(self.get_output(), 'wb') as fpt:
+            pickle.dump([textmodel, c, le], fpt)
+        return [textmodel, c, le]
 
 
 class CommandLineKfolds(CommandLineTrain):
@@ -556,6 +554,13 @@ def params(*args, **kwargs):
 
 def train(*args, **kwargs):
     c = CommandLineTrain()
+    if len(args) == 0:
+        args = None
+    return c.main(args, **kwargs)
+
+
+def retrain(*args, **kwargs):
+    c = CommandLineRetrain()
     if len(args) == 0:
         args = None
     return c.main(args, **kwargs)
