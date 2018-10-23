@@ -210,6 +210,7 @@ class ParameterSelection:
         while restarts < ParameterSelection.IMPROVEMENT_FAILURES:
             b = self._search(fun_score, bsize=bsize, hill_climbing=hill_climbing, tabu=tabu, pool=pool)
             best_list.extend(b)
+            best_list.sort(key=lambda x: x['_score'], reverse=True)
             curr = best_list[0]['_score']
             if curr - prev < ParameterSelection.MINIMUM_IMPROVEMENT:
                 restarts += 1
@@ -219,7 +220,7 @@ class ParameterSelection:
             print("*** best configuration found (restart failures: {0} of {1})".format(restarts, ParameterSelection.IMPROVEMENT_FAILURES), file=sys.stderr)
             print(json.dumps(best_list[0], sort_keys=True), file=sys.stderr)
 
-        best_list.sort(key=lambda x: x['_score'], reverse=True)
+        # best_list.sort(key=lambda x: x['_score'], reverse=True)
         return best_list
     
     def _search(self, fun_score, bsize=32, hill_climbing=True, best_list=None, tabu=None, pool=None):
