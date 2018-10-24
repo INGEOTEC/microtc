@@ -25,7 +25,7 @@ before_install:
   - pip install coverage
   - pip install coveralls
   - conda config --append channels ingeotec
-  - conda install --yes numpy scipy scikit-learn gensim nose
+  - conda install --yes numpy scipy scikit-learn gensim=2.3.0 nose
   - python setup.py build_ext --inplace
   
 script:

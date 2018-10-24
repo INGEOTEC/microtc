@@ -54,6 +54,32 @@ def load_json(filename):
         with open(filename) as f:
             return json.load(f)
 
+
+def balance(X, y):
+    C = defaultdict(list)
+    for x, label in zip(X, y):
+        C[label].append(x)
+
+    size, label = min(map(lambda label: (len(C[label]), label), C.keys()), key=lambda x: x[0])
+    for label, xlist in C.items():
+        while len(xlist) > size:
+            last = xlist.pop()
+            i = np.random.randint(0, size)
+            if isinstance(xlist[i], list):
+                xlist[i].append(last)
+            else:
+                xlist[i] = [xlist[i], last]
+
+    X = []
+    y = []
+    for label, xlist in C.items():
+        X.extend(xlist)
+        for i in range(len(xlist)):
+            y.append(label)
+
+    return X, y
+
+
 class CommandLine(object):
     def __init__(self):
         self.parser = argparse.ArgumentParser(description='microtc')
@@ -92,6 +118,7 @@ class CommandLine(object):
         pa('-H', '--hillclimbing', dest='hill_climbing', default=False, action='store_true',
             help="Determines if hillclimbing search is also perfomed to improve the selection of parameters")
         pa('-r', '--resume', dest='best_list', default=None, help="Loads the given file and resumes the search process")
+        pa('-b', '--balanced', dest='balanced', default=False, action='store_true', help="Artificially balances the dataset to reduce bias in unbalanced number of examples per class (only works for classification)")
         pa('-n', '--numprocs', dest='numprocs', type=int, default=1, help="Number of processes to compute the best setup")
         pa('-S', '--score', dest='score', type=str, default='macrof1',
            help="The name of the score to be optimized (classification scores: {0}); (regression scores: {1}) it defaults to macrof1".format(
@@ -144,6 +171,9 @@ class CommandLine(object):
                 X_, y_ = _read_data(train)
                 X.extend(X_)
                 y.extend(y_)
+
+        if self.data.balanced:
+            X, y = balance(X, y)
 
         if ":" in self.data.kratio:
             ratio, test_ratio = self.data.kratio.split(":")
@@ -201,11 +231,14 @@ class CommandLineTrain(CommandLine):
            help="i-th model in the set of configurations (defaults to the best, i.e., 0)")
         pa('-l', '--labels', dest='labels', type=str,
            help="a comma separated list of valid labels")
+        pa('-b', '--balanced', dest='balanced', default=False, action='store_true',
+           help="Artificially balances the dataset to reduce bias in unbalanced number of examples per class")
         pa('--conf', dest='conf', type=str,
            help="Specifies the configuration in JSON-format")
-        pa('-R', '--regression', dest='regression', action='store_true', help="The model will be a regressor")
+        pa('-R', '--regression', dest='regression', action='store_true',
+           help="The model will be a regressor")
 
-    def main(self, args=None):        
+    def main(self, args=None):
         self.data = self.parser.parse_args(args=args)
         logging.basicConfig(level=self.data.verbose)
         if self.data.conf:
@@ -225,8 +258,11 @@ class CommandLineTrain(CommandLine):
             X_, y_ = _read_data(train)
             corpus.extend(X_)
             values.extend(y_)
-        
+
         best.setdefault('dist_vector', OPTION_NONE)
+
+        if self.data.balanced:
+            corpus, values = balance(corpus, values)
 
         t = TextModel(corpus, **best)
         if self.data.regression:

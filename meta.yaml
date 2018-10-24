@@ -1,6 +1,6 @@
 package:
   name: microtc
-  version: "1.2.3"
+  version: "1.4.5"
 
 build:
   number: 0
@@ -12,7 +12,7 @@ requirements:
     - numpy
     - scipy
     - scikit-learn
-    - gensim
+    - gensim ==2.3.0
     - nltk
 
   run:
