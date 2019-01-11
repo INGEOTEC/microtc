@@ -109,3 +109,34 @@ class TFIDF(object):
         r = [(i, _tf * _df) for i, _tf, _df in zip(*__)]
         n = np.sqrt(sum([x * x for _, x in r]))
         return [(i, x/n) for i, x in r]
+
+
+class TF(TFIDF):
+    @property
+    def wordWeight(self):
+        """Word associated to each word, this could be the inverse document frequency"""
+        return self._weight
+
+    @wordWeight.setter
+    def wordWeight(self, value):
+        """Inverse document frequency
+
+        :param value: weights
+        :type value: dict
+        """
+
+        self._weight = {k: 1 for k, v in value.items()}
+
+    def __getitem__(self, tokens):
+        """
+        TF, the frequency is normalised
+
+        :param tokens: list of tokens
+        :type tokens: lst
+
+        :rtype: lst
+        """
+
+        __ = self.doc2weight(tokens)
+        r = [(i, _tf) for i, _tf, _df in zip(*__)]
+        return r

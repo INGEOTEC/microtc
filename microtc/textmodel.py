@@ -13,7 +13,7 @@
 # limitations under the License.
 import re
 import unicodedata
-from .weighting import TFIDF
+from .weighting import TFIDF, TF
 import numpy as np
 from .params import OPTION_DELETE, OPTION_GROUP, OPTION_NONE
 from .emoticons import EmoticonClassifier
@@ -134,6 +134,8 @@ class TextModel:
         self.token_min_filter = token_min_filter
         self.token_max_filter = token_max_filter
         self.weighting = weighting
+        if not tfidf and weighting == TFIDF:
+            self.weighting = TF
         self.tfidf = tfidf
 
         self.kwargs = {k: v for k, v in kwargs.items() if k[0] != '_'}

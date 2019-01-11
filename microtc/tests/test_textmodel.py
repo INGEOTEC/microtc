@@ -44,6 +44,20 @@ def test_textmodel():
     assert len(text[tw[0]]) == 3
 
 
+def test_no_tfidf():
+    from microtc.textmodel import TextModel
+    from microtc.utils import tweet_iterator
+    import os
+    fname = os.path.dirname(__file__) + '/text.json'
+    tw = list(tweet_iterator(fname))
+    text = TextModel([x['text'] for x in tw], tfidf=False)
+    r = text[tw[0]]
+    print(r, text.model.wordWeight[0])
+    tokens = text.tokenize(tw[0])
+    print(text.model.doc2weight(tokens))
+    assert sum([x[1] for x in r]) == 1
+
+
 def test_params():
     import os
     import itertools
