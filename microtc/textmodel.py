@@ -235,6 +235,17 @@ class TextModel:
 
         return text[self._text]
 
+    def extra_transformations(self, text):
+        """Call before the tokens to include addional transformations
+
+        :param text: text
+        :type text: str
+
+        :rtype: str
+        """
+
+        return text
+
     def _tokenize(self, text):
         if text is None:
             text = ''
@@ -277,6 +288,7 @@ class TextModel:
             text = re.sub(r"@\S+", "_usr", text)
 
         text = norm_chars(text, del_diac=self.del_diac, del_dup=self.del_dup, del_punc=self.del_punc)
+        text = self.extra_transformations(text)
 
         L = []
         textlist = None
@@ -381,7 +393,6 @@ class DistTextModel:
             self.voc = dict(X[:p])
         elif method == "top":
             self.voc = dict(X[:k])
-
 
     def __getitem__(self, text):
         vec = []
