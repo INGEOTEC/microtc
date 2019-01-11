@@ -41,6 +41,7 @@ def test_textmodel():
     # print(text.tokenize("hola amiguitos gracias por venir :) http://hello.com @chanfle"))
     # assert False
     assert isinstance(text[tw[0]['text']], list)
+    assert len(text[tw[0]]) == 3
 
 
 def test_params():

@@ -82,7 +82,7 @@ def test_train():
     print(train('-m', output, '-o', output + ".model", fname))
     os.unlink(output)
     os.unlink(output + '.model')
-        
+
 
 def test_train_regression():
     from microtc.command_line import params, train, predict

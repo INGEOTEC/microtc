@@ -18,20 +18,20 @@ import microtc
 import gzip
 from microtc.wrappers import ClassifierWrapper, RegressorWrapper
 from microtc.utils import read_data, read_data_labels, read_data_values, tweet_iterator
-# from microtc.params import OPTION_DELETE
 from multiprocessing import cpu_count, Pool
 from collections import defaultdict
 from .params import ParameterSelection, OPTION_NONE
 from .scorewrapper import ScoreKFoldWrapper, ScoreSampleWrapper
 from .regscorewrapper import RegressionScoreKFoldWrapper, RegressionScoreSampleWrapper
 from .textmodel import TextModel, DistTextModel
-from .utils import KLASS, TEXT, VALUE
+from .utils import KLASS, VALUE
 from sklearn.preprocessing import LabelEncoder
 from sklearn.model_selection import KFold
 import numpy as np
 import os
 import json
 import pickle
+
 
 # from microtc.params import ParameterSelection
 def load_pickle(filename):
@@ -43,6 +43,7 @@ def load_pickle(filename):
     else:
         with open(filename, 'rb') as f:
             return pickle.load(f)
+
 
 def load_json(filename):
     if filename.endswith(".gz"):
@@ -186,7 +187,7 @@ class CommandLine(object):
                 fun_score = ScoreKFold(X, y, Xstatic=Xstatic, ystatic=ystatic, nfolds=int(ratio), score=self.data.score, random_state=self.data.seed)
             else:
                 fun_score = ScoreSample(X, y, Xstatic=Xstatic, ystatic=ystatic, ratio=ratio, score=self.data.score, random_state=self.data.seed)
-        
+
         if self.data.best_list:
             best_list = load_json(self.data.best_list)
         else:
@@ -203,12 +204,12 @@ class CommandLine(object):
                 pool=pool,
                 best_list=best_list
             )
-    
+
         best_list0 = list(filter(lambda x: '_error' not in x, best_list))
         if len(best_list0) == 0:
             raise Exception("ERROR best_list is empty" + repr(best_list))
-    
-        best_list = best_list0    
+
+        best_list = best_list0
         with open(self.get_output(), 'w') as fpt:
             fpt.write(json.dumps(best_list0, indent=2, sort_keys=True))
 
@@ -287,7 +288,7 @@ class CommandLineTrain(CommandLine):
             pickle.dump([t, c, le], fpt)
         return [t, c, le]
 
-    
+
 class CommandLinePredict(CommandLine):
     def __init__(self):
         self.parser = argparse.ArgumentParser(description='microtc')
@@ -328,11 +329,10 @@ class CommandLinePredict(CommandLine):
         else:
             model, svc, le = model_svc_le
 
-        veclist, afflist = [], []
+        veclist = []
         for x in read_data(self.data.test_set):
-            v, a = model.vectorize(x)
+            v = model[x]
             veclist.append(v)
-            afflist.append(a)
 
         L = []
         if le is None:
@@ -342,7 +342,7 @@ class CommandLinePredict(CommandLine):
                 start, end = self.data.ordinal.split(':')
                 start = int(start)
                 end = int(end)
-                
+
                 for tweet, pred in zip(tweet_iterator(self.data.test_set), hy):
                     c = round(pred)
                     if c < start:
@@ -352,7 +352,7 @@ class CommandLinePredict(CommandLine):
 
                     if c == 0:  # handles IEEE's negative cero -0.0
                         c = 0
-                
+
                     tweet[VALUE] = int(c)
                     L.append(tweet)
             else:
@@ -379,13 +379,10 @@ class CommandLinePredict(CommandLine):
                     tweet['predict_proba'] = predict_proba[i]
 
                 klass = hyy[i]
-                aff = afflist[i]
-
-                tweet['voc_affinity'] = aff
                 tweet[KLASS] = str(klass)
                 tweet['predicted'] = tweet[KLASS]
                 L.append(tweet)
-    
+
         with open(self.get_output(), 'w') as fpt:
             for tweet in L:
                 fpt.write(json.dumps(tweet)+"\n")
@@ -401,7 +398,7 @@ class CommandLineTextModel(CommandLinePredict):
         L = []
         with open(self.get_output(), 'w') as fpt:
             for tw in tweet_iterator(self.data.test_set):
-                tw["vec"] = textmodel[tw['text']]
+                tw["vec"] = [[int(a), float(b)] for a, b in textmodel[tw['text']]]
                 tw["vecsize"] = svc.num_terms
                 L.append(tw)
                 fpt.write(json.dumps(tw) + "\n")
@@ -435,7 +432,7 @@ class CommandLineVoc(CommandLinePredict):
         percentile = max(0, min(100, float(self.data.percentile)))
         if percentile > 0:
             textmodel.prune(method="percentile", percentile=percentile)
-       
+
         if self.data.print_voc:
             D = textmodel.model.dictionary
             items = sorted(textmodel.voc.items(), key=lambda x: x[1].weight, reverse=True)
@@ -445,7 +442,7 @@ class CommandLineVoc(CommandLinePredict):
                 dist = [(x + textmodel.b) / den for x in t.hist]
                 L.append({"token": token, "weight": t.weight, "hist": t.hist, "dist": dist})
                 print(json.dumps(L[-1], sort_keys=True))
-        
+
         if self.data.cluster_print:
             D = textmodel.model.dictionary
             C = {}
@@ -459,7 +456,7 @@ class CommandLineVoc(CommandLinePredict):
                     C[data] = {"token": [token], "weight": t.weight, "hist": t.hist, "dist": dist}
                 else:
                     e["token"].append(token)
-            
+
             C = sorted(C.values(), key=lambda x: x["weight"], reverse=True)
             for c in C:
                 print(json.dumps(c, sort_keys=1))
@@ -484,7 +481,7 @@ class CommandLineRetrain(CommandLinePredict):
         self.data = self.parser.parse_args(args=args)
         # logging.basicConfig(level=self.data.verbose)
         textmodel, svc, le = load_pickle(self.data.model)
-        
+
         if self.data.regression:
             _read_data = read_data_values
             wrapper = RegressorWrapper
@@ -624,8 +621,9 @@ def vocabulary(*args, **kwargs):
     c = CommandLineVoc()
     if len(args) == 0:
         args = None
-    
+
     return c.main(args, **kwargs)
+
 
 def kfolds(*args, **kwargs):
     c = CommandLineKfolds()

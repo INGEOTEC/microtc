@@ -13,15 +13,12 @@
 # limitations under the License.
 import re
 import unicodedata
-from gensim import corpora
-from gensim.models.tfidfmodel import TfidfModel
+from .weighting import TFIDF
 import numpy as np
 from .params import OPTION_DELETE, OPTION_GROUP, OPTION_NONE
-# from .emoticons import get_compiled_map, transform_del, transform_replace_by_klass, EmoticonClassifier
 from .emoticons import EmoticonClassifier
-# from .lang_dependency import LangDependency
-import logging
 import os
+import logging
 
 logging.basicConfig(format='%(asctime)s : %(levelname)s :%(message)s')
 
@@ -110,28 +107,15 @@ def expand_skipgrams_word_list(wlist, qsize, output, sep='~'):
 
 
 class TextModel:
-    def __init__(
-            self,
-            docs,
-            num_option=OPTION_GROUP,
-            usr_option=OPTION_GROUP,
-            url_option=OPTION_GROUP,
-            emo_option=OPTION_GROUP,
-            hashtag_option=OPTION_NONE,
-            lc=True,
-            del_dup=True,
-            del_punc=False,
-            del_diac=True,
-            token_list=[-1],
-            token_min_filter=-1,
-            token_max_filter=1.0,
-            tfidf=True,
-            ent_option=OPTION_NONE,
-            select_ent=False,
-            select_suff=False,
-            select_conn=False,
-            **kwargs
-    ):
+    def __init__(self, docs, num_option=OPTION_GROUP,
+                 usr_option=OPTION_GROUP, url_option=OPTION_GROUP,
+                 emo_option=OPTION_GROUP, hashtag_option=OPTION_NONE,
+                 lc=True, del_dup=True, del_punc=False, del_diac=True,
+                 token_list=[-1], token_min_filter=-1,
+                 token_max_filter=1.0, tfidf=True, ent_option=OPTION_NONE,
+                 select_ent=False, select_suff=False, select_conn=False,
+                 weighting=TFIDF, **kwargs):
+        self._text = os.getenv('TEXT', default='text')
         self.del_diac = del_diac
         self.num_option = num_option
         self.usr_option = usr_option
@@ -149,6 +133,7 @@ class TextModel:
         self.token_list = token_list
         self.token_min_filter = token_min_filter
         self.token_max_filter = token_max_filter
+        self.weighting = weighting
         self.tfidf = tfidf
 
         self.kwargs = {k: v for k, v in kwargs.items() if k[0] != '_'}
@@ -156,47 +141,80 @@ class TextModel:
         if emo_option == OPTION_NONE:
             self.emo_map = None
         else:
-            # self.emo_map = get_compiled_map(os.path.join(os.path.dirname(__file__), 'resources', 'emoticons.json'))
             self.emo_map = EmoticonClassifier()
 
-        docs = [self.tokenize(d) for d in docs]
-        self.dictionary = corpora.Dictionary(docs)
-        corpus = [self.dictionary.doc2bow(d) for d in docs]
-        if self.token_min_filter != 1 or self.token_max_filter != 1.0:
-            if self.token_min_filter < 0:
-                self.token_min_filter = abs(self.token_min_filter)
-            else:
-                self.token_min_filter = int(len(corpus) * self.token_min_filter)
+        if docs is not None and len(docs):
+            self.fit(docs)
 
-            if self.token_max_filter < 0:
-                self.token_max_filter = abs(self.token_max_filter)/len(corpus)
+        # docs = [self.tokenize(d) for d in docs]
+        # self.dictionary = corpora.Dictionary(docs)
+        # corpus = [self.dictionary.doc2bow(d) for d in docs]
+        # if self.token_min_filter != 1 or self.token_max_filter != 1.0:
+        #     if self.token_min_filter < 0:
+        #         self.token_min_filter = abs(self.token_min_filter)
+        #     else:
+        #         self.token_min_filter = int(len(corpus) * self.token_min_filter)
 
-            self.dictionary.filter_extremes(no_below=self.token_min_filter, no_above=self.token_max_filter, keep_n=None)
+        #     if self.token_max_filter < 0:
+        #         self.token_max_filter = abs(self.token_max_filter)/len(corpus)
 
-        if self.tfidf:
-            self.model = TfidfModel(corpus)
-        else:
-            self.model = None
+        #     self.dictionary.filter_extremes(no_below=self.token_min_filter, no_above=self.token_max_filter, keep_n=None)
+
+        # if self.tfidf:
+        #     self.model = TfidfModel(corpus)
+        # else:
+        #     self.model = None
+
+    def fit(self, X):
+        """
+        Train the model
+
+        :param X: Corpus
+        :type X: lst
+        :rtype: instance
+        """
+
+        tokens = [self.tokenize(d) for d in X]
+        self.model = self.get_class(self.weighting)(tokens, token_min_filter=self.token_min_filter)
+        return self
+
+    def get_class(self, m):
+        """Import class from string
+
+        :param m: string or class to be imported
+        :type m: str or class
+        :rtype: class
+        """
+        import importlib
+
+        if isinstance(m, str):
+            a = m.split('.')
+            p = importlib.import_module('.'.join(a[:-1]))
+            return getattr(p, a[-1])
+        return m
 
     def __getitem__(self, text):
-        vec, affinity = self.vectorize(text)
-        return vec
+        """Convert test into a vector
+
+        :param text: Text to be transformed
+        :type text: str
+
+        :rtype: lst
+        """
+        return self.model[self.tokenize(text)]
 
     def vectorize(self, text):
-        tok = self.tokenize(text)
-        bow = self.dictionary.doc2bow(tok)
-
-        if self.tfidf:
-            m = self.model[bow]
-        else:
-            m = bow
-        
-        try:
-            return m, len(bow) / len(tok)
-        except ZeroDivisionError:
-            return m, 0.0
+        raise RuntimeError('Not implemented')
 
     def tokenize(self, text):
+        """Transform text to tokens
+
+        :param text: Text
+        :type text: str
+
+        :rtype: lst
+        """
+
         if isinstance(text, (list, tuple)):
             tokens = []
             for _text in text:
@@ -206,9 +224,21 @@ class TextModel:
         else:
             return self._tokenize(text)
 
+    def get_text(self, text):
+        """Return self._text key from text
+
+        :param text: Text
+        :type text: dict
+        """
+
+        return text[self._text]
+
     def _tokenize(self, text):
         if text is None:
             text = ''
+
+        if isinstance(text, dict):
+            text = self.get_text(text)
 
         if self.emo_map:
             text = self.emo_map.replace(text, option=self.emo_option)

@@ -1,0 +1,9 @@
+name: microtc
+channels:
+  - ingeotec
+dependencies:
+  - python
+  - setuptools
+  - numpy
+  - scipy
+  - scikit-learn
