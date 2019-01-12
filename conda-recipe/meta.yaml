@@ -1,6 +1,6 @@
 package:
   name: microtc
-  version: "1.4.4"
+  version: "1.5"
 
 requirements:
   build:
@@ -9,18 +9,15 @@ requirements:
     - numpy
     - scipy
     - scikit-learn
-    - gensim
   run:
     - python
     - scikit-learn
-    - gensim
 test:
     requires:
         - nose
         - numpy
         - scipy
         - scikit-learn
-        - gensim
         - coverage
 
     imports:
