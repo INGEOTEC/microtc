@@ -166,8 +166,8 @@ class TextModel:
                  usr_option=OPTION_GROUP, url_option=OPTION_GROUP,
                  emo_option=OPTION_GROUP, hashtag_option=OPTION_NONE,
                  lc=True, del_dup=True, del_punc=False, del_diac=True,
-                 token_list=[-1], token_min_filter=-1,
-                 token_max_filter=1.0, tfidf=True, ent_option=OPTION_NONE,
+                 token_list=[-1], token_min_filter=0,
+                 token_max_filter=1, tfidf=True, ent_option=OPTION_NONE,
                  select_ent=False, select_suff=False, select_conn=False,
                  weighting=TFIDF, **kwargs):
         self._text = os.getenv('TEXT', default='text')

@@ -47,11 +47,12 @@ class TFIDF(object):
                 token_min_filter = int(self._ndocs * token_min_filter)
                 if token_min_filter < 1:
                     token_min_filter = 1
-            w2id = [(k, v) for k, v in w2id.items() if weight[v] > token_min_filter]
+            if token_min_filter > 0:
+                w2id = [(k, v) for k, v in w2id.items() if weight[v] > token_min_filter]
             if token_max_filter != 1:
                 if token_max_filter < 1:
                     token_max_filter = int(self._ndocs * token_max_filter)
-            w2id = [(k, v) for k, v in w2id if weight[v] < token_max_filter]
+                w2id = [(k, v) for k, v in w2id if weight[v] < token_max_filter]
             w2id.sort(key=lambda x: x[1])
             mm = {k: v[1] for k, v in enumerate(w2id)}
             w2id = {v[0]: k for k, v in enumerate(w2id)}
