@@ -137,7 +137,7 @@ def test_textmodel_token_max_filter():
     text = TextModel(tw, token_max_filter=0.5, token_list=[-2, -1, 3, 4])
     print(len(text.model._w2id))
     assert len(text.model._w2id) == 27
-    text = TextModel(tw, token_max_filter=10, threshold=0.01)
-    
+    text = TextModel(tw, token_max_filter=2, threshold=0.01)
+    print(len(text.model._w2id))
 
 
