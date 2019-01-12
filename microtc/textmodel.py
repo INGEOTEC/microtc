@@ -111,28 +111,36 @@ class TextModel:
 
     :param docs: Corpus
     :type docs: lst
-    :param del_diac: Remove diacritics
-    :type del_diac: bool
-    :param num_option: Transformations on numbers
+    :param num_option: Transformations on numbers (none | group | delete)
     :type num_option: str
-    :param usr_option: Transformations on users
+    :param usr_option: Transformations on users (none | group | delete)
     :type usr_option: str
-    :param url_option: Transformations on urls
+    :param url_option: Transformations on urls (none | group | delete)
     :type url_option: str
-    :param emo_option: Transformations on emojis and emoticons
+    :param emo_option: Transformations on emojis and emoticons (none | group | delete)
     :type emo_option: str
+    :param hashtag_option: Transformations on hashtag (none | group | delete)
+    :type hashtag_option: str
+    :param ent_option: Transformations on entities (none | group | delete)
+    :type ent_option: str
+
     :param lc: Lower case
     :type lc: bool
     :param del_dup: Remove duplicates e.g. hooola -> hola
     :type del_dup: bool
+    :param del_punc: Remove punctuation symbols
+    :type del_punc: True
+    :param del_diac: Remove diacritics
+    :type del_diac: bool
     :param token_list: Tokens > 0 qgrams < 0 word-grams
     :type token_list: lst
-    :param lang: Language
-    :type lang: str
-    :param weighting: Weighting scheme
-    :type weighting: class or str
     :param token_min_filter: Keep those tokens that appear more times than the parameter (used in weighting class)
     :type token_min_filter: int or float
+    :param tfidf: Replace TFIDF with TF
+    :type tfidf: bool
+    
+    :param weighting: Weighting scheme
+    :type weighting: class or str
 
     Usage:
 
