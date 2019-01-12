@@ -136,9 +136,12 @@ class TextModel:
     :type token_list: lst
     :param token_min_filter: Keep those tokens that appear more times than the parameter (used in weighting class)
     :type token_min_filter: int or float
+    :param token_max_filter: Keep those tokens that appear less times than the parameter (used in weighting class)
+    :type token_max_filter: int or float
+
     :param tfidf: Replace TFIDF with TF
     :type tfidf: bool
-    
+
     :param weighting: Weighting scheme
     :type weighting: class or str
 
@@ -200,25 +203,6 @@ class TextModel:
         if docs is not None and len(docs):
             self.fit(docs)
 
-        # docs = [self.tokenize(d) for d in docs]
-        # self.dictionary = corpora.Dictionary(docs)
-        # corpus = [self.dictionary.doc2bow(d) for d in docs]
-        # if self.token_min_filter != 1 or self.token_max_filter != 1.0:
-        #     if self.token_min_filter < 0:
-        #         self.token_min_filter = abs(self.token_min_filter)
-        #     else:
-        #         self.token_min_filter = int(len(corpus) * self.token_min_filter)
-
-        #     if self.token_max_filter < 0:
-        #         self.token_max_filter = abs(self.token_max_filter)/len(corpus)
-
-        #     self.dictionary.filter_extremes(no_below=self.token_min_filter, no_above=self.token_max_filter, keep_n=None)
-
-        # if self.tfidf:
-        #     self.model = TfidfModel(corpus)
-        # else:
-        #     self.model = None
-
     def fit(self, X):
         """
         Train the model
@@ -229,7 +213,7 @@ class TextModel:
         """
 
         tokens = [self.tokenize(d) for d in X]
-        self.model = self.get_class(self.weighting)(tokens, token_min_filter=self.token_min_filter)
+        self.model = self.get_class(self.weighting)(tokens, token_min_filter=self.token_min_filter, token_max_filter=self.token_max_filter)
         return self
 
     def get_class(self, m):

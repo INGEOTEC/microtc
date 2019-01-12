@@ -110,6 +110,34 @@ def test_lang():
     assert a == b, "got: {0}, expected: {1}".format(a, b)
 
 
+def test_textmodel_token_min_filter():
+    from microtc.textmodel import TextModel
+    from microtc.utils import tweet_iterator
+    import os
+    fname = os.path.dirname(__file__) + '/text.json'
+    tw = list(tweet_iterator(fname))
+    text = TextModel(tw, token_min_filter=1, token_list=[-2, -1, 3, 4])
+    print(len(text.model._w2id))
+    assert len(text.model._w2id) == 28
+    text = TextModel(tw, token_min_filter=0.01, token_list=[-2, -1, 3, 4])
+    print(len(text.model._w2id))
+    assert len(text.model._w2id) == 28
+    text = TextModel(tw, token_min_filter=1, threshold=0.01)
 
+
+def test_textmodel_token_max_filter():
+    from microtc.textmodel import TextModel
+    from microtc.utils import tweet_iterator
+    import os
+    fname = os.path.dirname(__file__) + '/text.json'
+    tw = list(tweet_iterator(fname))
+    text = TextModel(tw, token_max_filter=len(tw) / 2, token_list=[-2, -1, 3, 4])
+    print(len(text.model._w2id))
+    assert len(text.model._w2id) == 28
+    text = TextModel(tw, token_max_filter=0.5, token_list=[-2, -1, 3, 4])
+    print(len(text.model._w2id))
+    assert len(text.model._w2id) == 27
+    text = TextModel(tw, token_max_filter=10, threshold=0.01)
+    
 
 

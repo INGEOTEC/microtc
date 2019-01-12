@@ -22,11 +22,14 @@ class TFIDF(object):
 
     :param docs: corpus as a list of list of tokens
     :type docs: lst
-    :param token_min_filter: Keep those tokens that appear more times than  the parameter
+    :param token_min_filter: Keep those tokens that appear more times than the parameter
     :type token_min_filter: int or float
+
+    :param token_max_filter: Keep those tokens that appear less times than the parameter
+    :type token_max_filter: int or float
     """
 
-    def __init__(self, docs, token_min_filter=0):
+    def __init__(self, docs, token_min_filter=0, token_max_filter=1):
         w2id = {}
         weight = {}
         self._ndocs = len(docs)
@@ -39,10 +42,16 @@ class TFIDF(object):
                     ident = len(w2id)
                     w2id[x] = ident
                     weight[ident] = 1
-        if token_min_filter > 0:
+        if token_min_filter > 0 or token_max_filter != 1:
             if token_min_filter < 1:
                 token_min_filter = int(self._ndocs * token_min_filter)
+                if token_min_filter < 1:
+                    token_min_filter = 1
             w2id = [(k, v) for k, v in w2id.items() if weight[v] > token_min_filter]
+            if token_max_filter != 1:
+                if token_max_filter < 1:
+                    token_max_filter = int(self._ndocs * token_max_filter)
+            w2id = [(k, v) for k, v in w2id if weight[v] < token_max_filter]
             w2id.sort(key=lambda x: x[1])
             mm = {k: v[1] for k, v in enumerate(w2id)}
             w2id = {v[0]: k for k, v in enumerate(w2id)}
