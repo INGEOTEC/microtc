@@ -14,7 +14,7 @@
 MicroTC follows a minimalist approach to text classification. It is designed to tackle text-classification problems in an agnostic way,
 being both domain and language independent.  Currently, we only produce single-label classifiers; but support for multi-labeled problems is in the roadmap.
 
-$\mu$TC is intentionally simple, so only a small number of features where implemented. However, it uses a some complex tools from gensim, numpy and scikit-lean. The number of dependencies is limited and fullfilled by almost any Scientific Python distributions, e.g., [Anaconda](https://www.continuum.io/downloads).
+$\mu$TC is intentionally simple, so only a small number of features where implemented. However, it uses a some complex tools from numpy and scikit-lean. The number of dependencies is limited and fullfilled by almost any Scientific Python distributions, e.g., [Anaconda](https://www.continuum.io/downloads).
 
 ## Citing ##
 
@@ -64,7 +64,6 @@ $ export PATH=$HOME/miniconda3/bin:$PATH
 $ pip install numpy
 $ pip install scipy
 $ pip install scikit-learn
-$ pip install gensim
 $ pip install nose
 $ git clone https://github.com/INGEOTEC/microTC.git
 $ cd microTC
@@ -191,7 +190,6 @@ pip install coverage
 pip install numpy
 pip install scipy
 pip install scikit-learn
-pip install gensim
 pip install nose
 pip install nltk
 ```

@@ -107,6 +107,50 @@ def expand_skipgrams_word_list(wlist, qsize, output, sep='~'):
 
 
 class TextModel:
+    """
+
+    :param docs: Corpus
+    :type docs: lst
+    :param del_diac: Remove diacritics
+    :type del_diac: bool
+    :param num_option: Transformations on numbers
+    :type num_option: str
+    :param usr_option: Transformations on users
+    :type usr_option: str
+    :param url_option: Transformations on urls
+    :type url_option: str
+    :param emo_option: Transformations on emojis and emoticons
+    :type emo_option: str
+    :param lc: Lower case
+    :type lc: bool
+    :param del_dup: Remove duplicates e.g. hooola -> hola
+    :type del_dup: bool
+    :param token_list: Tokens > 0 qgrams < 0 word-grams
+    :type token_list: lst
+    :param lang: Language
+    :type lang: str
+    :param weighting: Weighting scheme
+    :type weighting: class or str
+    :param token_min_filter: Keep those tokens that appear more times than the parameter (used in weighting class)
+    :type token_min_filter: int or float
+
+    Usage:
+
+    >>> from microtc.textmodel import TextModel
+    >>> textmodel = TextModel(['buenos dias', 'catedras conacyt', 'categorizacion de texto ingeotec'])
+
+    Represent a text into a vector
+
+    >>> textmodel['cat']
+    [(38, 0.24737436144422534),
+     (41, 0.24737436144422534),
+     (42, 0.4947487228884507),
+     (73, 0.6702636255239844),
+     (76, 0.24737436144422534),
+     (77, 0.24737436144422534),
+     (78, 0.24737436144422534)]
+    """
+    
     def __init__(self, docs, num_option=OPTION_GROUP,
                  usr_option=OPTION_GROUP, url_option=OPTION_GROUP,
                  emo_option=OPTION_GROUP, hashtag_option=OPTION_NONE,
