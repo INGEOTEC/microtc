@@ -19,6 +19,8 @@ from .params import OPTION_DELETE, OPTION_GROUP, OPTION_NONE
 from .emoticons import EmoticonClassifier
 import os
 import logging
+from scipy.sparse import csr_matrix
+
 
 logging.basicConfig(format='%(asctime)s : %(levelname)s :%(message)s')
 
@@ -110,7 +112,7 @@ class TextModel:
     """
 
     :param docs: Corpus
-    :type docs: lst
+    :type docs: list
     :param text: In the case corpus is a dict then text is the key containing the text
     :type text: str
     :param num_option: Transformations on numbers (none | group | delete)
@@ -135,7 +137,7 @@ class TextModel:
     :param del_diac: Remove diacritics
     :type del_diac: bool
     :param token_list: Tokens > 0 qgrams < 0 word-grams
-    :type token_list: lst
+    :type token_list: list
     :param token_min_filter: Keep those tokens that appear more times than the parameter (used in weighting class)
     :type token_min_filter: int or float
     :param token_max_filter: Keep those tokens that appear less times than the parameter (used in weighting class)
@@ -219,7 +221,7 @@ class TextModel:
         Train the model
 
         :param X: Corpus
-        :type X: lst
+        :type X: list
         :rtype: instance
         """
 
@@ -245,14 +247,24 @@ class TextModel:
         return m
 
     def __getitem__(self, text):
-        """Convert test into a vector
+        """Convert text into a vector
 
         :param text: Text to be transformed
         :type text: str
 
-        :rtype: lst
+        :rtype: list
         """
         return self.model[self.tokenize(text)]
+
+    def transform(self, texts):
+        """Convert test into a vector
+
+        :param texts: List of text to be transformed
+        :type text: list
+
+        :rtype: list
+        """
+        return [self.__getitem__(x) for x in texts]
 
     def vectorize(self, text):
         raise RuntimeError('Not implemented')
@@ -263,7 +275,7 @@ class TextModel:
         :param text: Text
         :type text: str
 
-        :rtype: lst
+        :rtype: list
         """
 
         if isinstance(text, (list, tuple)):
@@ -368,6 +380,42 @@ class TextModel:
             L = ['~']
 
         return L
+
+    @property
+    def num_terms(self):
+        """Dimension which is the number of terms of the corpus
+
+        :rtype: int
+        """
+
+        try:
+            return self._num_terms
+        except AttributeError:
+            self._num_terms = None
+        return None
+
+    def tonp(self, X):
+        """Sparse representation to sparce matrix
+
+        :param X: Sparse representation of matrix
+        :type X: list
+        :rtype: csr_matrix
+        """
+
+        data = []
+        row = []
+        col = []
+        for r, x in enumerate(X):
+            cc = [_[0] for _ in x if np.isfinite(_[1]) and (self.num_terms is None or _[0] < self.num_terms)]
+            col += cc
+            data += [_[1] for _ in x if np.isfinite(_[1]) and (self.num_terms is None or _[0] < self.num_terms)]
+            _ = [r] * len(cc)
+            row += _
+        if self.num_terms is None:
+            _ = csr_matrix((data, (row, col)))
+            self._num_terms = _.shape[1]
+            return _
+        return csr_matrix((data, (row, col)), shape=(len(X), self.num_terms))
 
 
 class TokenData:

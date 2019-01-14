@@ -155,3 +155,20 @@ def test_textmodel_entropy():
     print(_)
     for k, v in _:
         assert text.model.wordWeight[k] == v
+
+
+def test_textmodel_transform_tonp():
+    from microtc.textmodel import TextModel
+    from microtc.utils import tweet_iterator
+    from sklearn.svm import LinearSVC
+    from sklearn.preprocessing import LabelEncoder
+    import os
+    fname = os.path.dirname(__file__) + '/text.json'
+    tw = list(tweet_iterator(fname))
+    text = TextModel().fit(tw)
+    X = text.transform(tw)
+    le = LabelEncoder().fit([x['klass'] for x in tw])
+    y = le.transform([x['klass'] for x in tw])
+    m = LinearSVC().fit(text.tonp(X), y)
+    assert len(m.predict(text.tonp(X))) == len(y)
+        
