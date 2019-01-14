@@ -21,7 +21,9 @@ class TFIDF(object):
     Vector Space model using TFIDF
 
     :param docs: corpus as a list of list of tokens
-    :type docs: lst
+    :type docs: list
+    :param X: original corpus, useful to pass extra information in a dict
+    :type X: list
     :param token_min_filter: Keep those tokens that appear more times than the parameter
     :type token_min_filter: int or float
 
@@ -29,7 +31,7 @@ class TFIDF(object):
     :type token_max_filter: int or float
     """
 
-    def __init__(self, docs, token_min_filter=0, token_max_filter=1):
+    def __init__(self, docs, X=None, token_min_filter=0, token_max_filter=1):
         w2id = {}
         weight = {}
         self._ndocs = len(docs)
@@ -66,6 +68,12 @@ class TFIDF(object):
         """Number of terms"""
 
         return self._num_terms
+
+    @property
+    def word2id(self):
+        """Map word to id"""
+
+        return self._w2id
 
     @property
     def wordWeight(self):
@@ -149,4 +157,83 @@ class TF(TFIDF):
 
         __ = self.doc2weight(tokens)
         r = [(i, _tf) for i, _tf, _df in zip(*__)]
+        return r
+
+
+class Entropy(TFIDF):
+    """
+    Vector Space using 1 + entropy as the weighting scheme
+    """
+    def __init__(self, docs, X=None, **kwargs):
+        assert X is not None
+        super(Entropy, self).__init__(docs, X=X, **kwargs)
+        self.wordWeight = self.entropy(docs, X, self.word2id)
+
+    @property
+    def wordWeight(self):
+        """Word associated to each word, this could be the inverse document frequency"""
+        return self._weight
+
+    @wordWeight.setter
+    def wordWeight(self, value):
+        """Inverse document frequency
+
+        :param value: weights
+        :type value: dict
+        """
+
+        if isinstance(value, dict):
+            self._weight = value
+        else:
+            self._weight = {k: v for k, v in enumerate(value)}
+
+    @staticmethod
+    def entropy(corpus, docs, word2id):
+        """
+        Compute entropy
+
+        :param corpus: Tokenized corpus, i.e., as a list of tokens list
+        :type corpus: list
+        :param docs: Original corpus is a list of dictionaries where key klass contains the class or label
+        :type docs: list
+        :param word2id: Map token to identifier
+        :type word2id: dict
+
+        :rtype: np.array
+        """
+        m = word2id
+        y = [x['klass'] for x in docs]
+        klasses = np.unique(y)
+        nklasses = klasses.shape[0]
+        ntokens = len(m)
+        weight = np.zeros((klasses.shape[0], ntokens))
+        for ki, klass in enumerate(klasses):
+            for _y, tokens in zip(y, corpus):
+                if _y != klass:
+                    continue
+                for x in np.unique(tokens):
+                    try:
+                        weight[ki, m[x]] += 1
+                    except KeyError:
+                        continue
+        weight = weight / weight.sum(axis=0)
+        weight[~np.isfinite(weight)] = 1.0 / nklasses
+        logc = np.log2(weight)
+        logc[~np.isfinite(logc)] = 0
+        if nklasses > 2:
+            logc = logc / np.log2(nklasses)
+        return (1 + (weight * logc).sum(axis=0))
+
+    def __getitem__(self, tokens):
+        """
+        Entropy
+
+        :param tokens: list of tokens
+        :type tokens: lst
+
+        :rtype: lst
+        """
+
+        __ = self.doc2weight(tokens)
+        r = [(i, _df) for i, _tf, _df in zip(*__)]
         return r
