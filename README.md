@@ -28,20 +28,18 @@ Volume 149, 1 June 2018, Pages 110-123
 ```bibtex
 
 @article{Tellez2018110,
-title = "An automated text categorization framework based on hyperparameter optimization ",
-journal = "Knowledge-Based Systems ",
+title = "An automated text categorization framework based on hyperparameter optimization",
+journal = "Knowledge-Based Systems",
 volume = "149",
-number = "",
-pages = "110 - 123",
+pages = "110--123",
 year = "2018",
-note = "",
 issn = "0950-7051",
-doi = "https://doi.org/10.1016/j.knosys.2018.03.003",
+doi = "10.1016/j.knosys.2018.03.003",
 url = "https://www.sciencedirect.com/science/article/pii/S0950705118301217",
 author = "Eric S. Tellez and Daniela Moctezuma and Sabino Miranda-Jiménez and Mario Graff",
 keywords = "Text classification",
 keywords = "Hyperparameter optimization",
-keywords = "Text modelling "
+keywords = "Text modelling"
 }
 ```
 
