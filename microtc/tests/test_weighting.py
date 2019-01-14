@@ -61,3 +61,27 @@ def test_getitem():
     bow = sp.doc2weight(tok)
     ids, tf, df = bow
     assert len(ids) == len(sp[tok])
+
+
+def test_entropy():
+    from microtc.textmodel import TextModel
+    from microtc.weighting import Entropy, TFIDF
+    from microtc.utils import tweet_iterator
+    import os
+    fname = os.path.dirname(__file__) + '/text.json'
+    tw = list(tweet_iterator(fname))
+    docs = [x['text'] for x in tw]
+    text = TextModel(token_list=[-1, 3])
+    # print(text['buenos dias'])
+    docs = [text.tokenize(d) for d in docs]
+    sp = Entropy(docs, X=tw)
+    print(sp.wordWeight)
+    tfidf = TFIDF(docs)
+    for k in sp.wordWeight.keys():
+        if sp.wordWeight[k] != tfidf.wordWeight[k]:
+            return
+    print(sp.w)
+    assert False
+
+
+    

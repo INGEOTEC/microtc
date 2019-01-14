@@ -140,3 +140,18 @@ def test_textmodel_token_max_filter():
     text = TextModel(tw, token_max_filter=2, threshold=0.01)
     print(len(text.model._w2id))
 
+
+def test_textmodel_entropy():
+    from microtc.textmodel import TextModel
+    from microtc.utils import tweet_iterator
+    import os
+    fname = os.path.dirname(__file__) + '/text.json'
+    tw = list(tweet_iterator(fname))
+    text = TextModel(tw, weighting='microtc.weighting.Entropy', token_list=[-1, 3])
+    # print(text.tokenize("hola amiguitos gracias por venir :) http://hello.com @chanfle"))
+    # assert False
+    assert isinstance(text[tw[0]['text']], list)
+    _ = text[tw[0]]
+    print(_)
+    for k, v in _:
+        assert text.model.wordWeight[k] == v

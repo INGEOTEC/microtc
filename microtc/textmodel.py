@@ -111,6 +111,8 @@ class TextModel:
 
     :param docs: Corpus
     :type docs: lst
+    :param text: In the case corpus is a dict then text is the key containing the text
+    :type text: str
     :param num_option: Transformations on numbers (none | group | delete)
     :type num_option: str
     :param usr_option: Transformations on users (none | group | delete)
@@ -142,35 +144,44 @@ class TextModel:
     :param tfidf: Replace TFIDF with TF
     :type tfidf: bool
 
+    :param select_ent:
+    :type select_ent: bool
+    :param select_suff:
+    :type select_suff: bool
+    :param select_conn:
+    :type select_conn: bool
+
     :param weighting: Weighting scheme
     :type weighting: class or str
 
     Usage:
 
     >>> from microtc.textmodel import TextModel
-    >>> textmodel = TextModel(['buenos dias', 'catedras conacyt', 'categorizacion de texto ingeotec'])
+    >>> corpus = ['buenos dias', 'catedras conacyt', 'categorizacion de texto ingeotec']
+    Using default parameters
+    >>> textmodel = TextModel().fit(corpus)
 
-    Represent a text into a vector
+    Represent a text whose words are in the corpus and one that does not
 
-    >>> textmodel['cat']
-    [(38, 0.24737436144422534),
-     (41, 0.24737436144422534),
-     (42, 0.4947487228884507),
-     (73, 0.6702636255239844),
-     (76, 0.24737436144422534),
-     (77, 0.24737436144422534),
-     (78, 0.24737436144422534)]
+    >>> print(textmodel['categorizacion ingoetec'], textmodel['cat'])
+    [(4, 1.0)] []
+
+    Using a different token_list
+
+    >>> textmodel = TextModel(token_list=[[2, 1], -1, 3, 4]).fit(corpus)
+    >>> print(textmodel['categorizacion ingoetec'], '--', textmodel['cat'])
+    [(25, 0.06774376041676866), (27, 0.06774376041676866), (28, 0.06774376041676866), (50, 0.06774376041676866), (51, 0.06774376041676866), (54, 0.1835524837678424), (55, 0.1835524837678424), (56, 0.1835524837678424), (57, 0.1835524837678424), (59, 0.1835524837678424), (60, 0.1835524837678424), (65, 0.1835524837678424), (66, 0.1835524837678424), (67, 0.1835524837678424), (76, 0.1835524837678424), (77, 0.1835524837678424), (78, 0.1835524837678424), (81, 0.1835524837678424), (82, 0.1835524837678424), (83, 0.1835524837678424), (84, 0.1835524837678424), (89, 0.1835524837678424), (91, 0.1835524837678424), (92, 0.1835524837678424), (97, 0.1835524837678424), (98, 0.1835524837678424), (99, 0.1835524837678424), (100, 0.1835524837678424), (101, 0.1835524837678424), (102, 0.1835524837678424), (110, 0.1835524837678424), (111, 0.1835524837678424), (114, 0.1835524837678424), (115, 0.1835524837678424)] -- [(27, 0.816496580927726), (50, 0.408248290463863), (51, 0.408248290463863)]
     """
-    
-    def __init__(self, docs, num_option=OPTION_GROUP,
+
+    def __init__(self, docs=None, text='text', num_option=OPTION_GROUP,
                  usr_option=OPTION_GROUP, url_option=OPTION_GROUP,
                  emo_option=OPTION_GROUP, hashtag_option=OPTION_NONE,
-                 lc=True, del_dup=True, del_punc=False, del_diac=True,
+                 ent_option=OPTION_NONE, lc=True, del_dup=True, del_punc=False, del_diac=True,
                  token_list=[-1], token_min_filter=0,
-                 token_max_filter=1, tfidf=True, ent_option=OPTION_NONE,
+                 token_max_filter=1, tfidf=True,
                  select_ent=False, select_suff=False, select_conn=False,
                  weighting=TFIDF, **kwargs):
-        self._text = os.getenv('TEXT', default='text')
+        self._text = os.getenv('TEXT', default=text)
         self.del_diac = del_diac
         self.num_option = num_option
         self.usr_option = usr_option
@@ -213,7 +224,9 @@ class TextModel:
         """
 
         tokens = [self.tokenize(d) for d in X]
-        self.model = self.get_class(self.weighting)(tokens, token_min_filter=self.token_min_filter, token_max_filter=self.token_max_filter)
+        self.model = self.get_class(self.weighting)(tokens, X=X,
+                                                    token_min_filter=self.token_min_filter,
+                                                    token_max_filter=self.token_max_filter)
         return self
 
     def get_class(self, m):
