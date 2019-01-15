@@ -171,4 +171,19 @@ def test_textmodel_transform_tonp():
     y = le.transform([x['klass'] for x in tw])
     m = LinearSVC().fit(text.tonp(X), y)
     assert len(m.predict(text.tonp(X))) == len(y)
-        
+
+
+def test_textmodel_compute_tokens():
+    from microtc.textmodel import TextModel
+    from microtc.utils import tweet_iterator
+    import os
+    fname = os.path.dirname(__file__) + '/text.json'
+    tw = list(tweet_iterator(fname))
+    tm = TextModel(token_list=[-2, -1])
+    text = tm.text_trasformations(tw[0]['text'])
+    L = tm.compute_tokens(text)
+    assert len(L) == 2
+    r = []
+    [r.__iadd__(x) for x in L]
+    for a, b in zip(tm.tokenize(tw[0]), r):
+        assert a == b
