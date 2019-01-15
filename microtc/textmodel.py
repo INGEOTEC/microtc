@@ -296,7 +296,7 @@ class TextModel:
 
         return text[self._text]
 
-    def text_trasformations(self, text):
+    def text_transformations(self, text):
         """
         Text transformations
 
@@ -395,7 +395,7 @@ class TextModel:
         return L
 
     def _tokenize(self, text):
-        text = self.text_trasformations(text)
+        text = self.text_transformations(text)
         L = []
         for _ in self.compute_tokens(text):
             L += _
