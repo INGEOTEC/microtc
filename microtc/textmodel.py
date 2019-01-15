@@ -296,18 +296,14 @@ class TextModel:
 
         return text[self._text]
 
-    def extra_transformations(self, text):
-        """Call before the tokens to include addional transformations
+    def text_trasformations(self, text):
+        """
+        Text transformations
 
-        :param text: text
+        :param text:
         :type text: str
-
-        :rtype: str
         """
 
-        return text
-
-    def _tokenize(self, text):
         if text is None:
             text = ''
 
@@ -348,9 +344,15 @@ class TextModel:
         elif self.usr_option == OPTION_GROUP:
             text = re.sub(r"@\S+", "_usr", text)
 
-        text = norm_chars(text, del_diac=self.del_diac, del_dup=self.del_dup, del_punc=self.del_punc)
-        text = self.extra_transformations(text)
+        return norm_chars(text, del_diac=self.del_diac, del_dup=self.del_dup, del_punc=self.del_punc)
 
+    def compute_tokens(self, text):
+        """
+        :param text:
+        :type text: str
+
+        :rtype: list
+        """
         L = []
         textlist = None
 
@@ -360,22 +362,44 @@ class TextModel:
                 if q < 0:
                     if textlist is None:
                         textlist = get_word_list(text)
-
-                    expand_qgrams_word_list(textlist, abs(q), L)
+                    _ = list()
+                    expand_qgrams_word_list(textlist, abs(q), _)
+                    L.append(_)
                 else:
-                    expand_qgrams(_text, q, L)
+                    _ = list()
+                    expand_qgrams(_text, q, _)
+                    L.append(_)
             else:
                 if textlist is None:
                     textlist = get_word_list(text)
 
-                expand_skipgrams_word_list(textlist, q, L)
+                _ = list()
+                expand_skipgrams_word_list(textlist, q, _)
+                L.append(_)
+
+        return L
+
+    def select_tokens(self, L):
+        """
+        :param L: list of tokens
+        :type L: list
+
+        :rtype: list
+        """
 
         if self.select_suff:
             L = [tok for tok in L if tok[-1] in SKIP_SYMBOLS_AND_SPACES]
             
         if self.select_conn:
             L = [tok for tok in L if '~' in tok and tok[0] != '~' and tok[-1] != '~']
+        return L
 
+    def _tokenize(self, text):
+        text = self.text_trasformations(text)
+        L = []
+        for _ in self.compute_tokens(text):
+            L += _
+        L = self.select_tokens(L)
         if len(L) == 0:
             L = ['~']
 
