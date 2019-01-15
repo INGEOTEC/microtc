@@ -296,17 +296,6 @@ class TextModel:
 
         return text[self._text]
 
-    def extra_transformations(self, text):
-        """Call before the tokens to include addional transformations
-
-        :param text: text
-        :type text: str
-
-        :rtype: str
-        """
-
-        return text
-
     def text_trasformations(self, text):
         """
         Text transformations
@@ -407,7 +396,6 @@ class TextModel:
 
     def _tokenize(self, text):
         text = self.text_trasformations(text)
-        text = self.extra_transformations(text)
         L = []
         for _ in self.compute_tokens(text):
             L += _
