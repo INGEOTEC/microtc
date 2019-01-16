@@ -180,7 +180,7 @@ def test_textmodel_compute_tokens():
     fname = os.path.dirname(__file__) + '/text.json'
     tw = list(tweet_iterator(fname))
     tm = TextModel(token_list=[-2, -1])
-    text = tm.text_trasformations(tw[0]['text'])
+    text = tm.text_transformations(tw[0]['text'])
     L = tm.compute_tokens(text)
     assert len(L) == 2
     r = []

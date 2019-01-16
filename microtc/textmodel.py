@@ -160,7 +160,9 @@ class TextModel:
 
     >>> from microtc.textmodel import TextModel
     >>> corpus = ['buenos dias', 'catedras conacyt', 'categorizacion de texto ingeotec']
+
     Using default parameters
+
     >>> textmodel = TextModel().fit(corpus)
 
     Represent a text whose words are in the corpus and one that does not
@@ -173,6 +175,14 @@ class TextModel:
     >>> textmodel = TextModel(token_list=[[2, 1], -1, 3, 4]).fit(corpus)
     >>> print(textmodel['categorizacion ingoetec'], '--', textmodel['cat'])
     [(25, 0.06774376041676866), (27, 0.06774376041676866), (28, 0.06774376041676866), (50, 0.06774376041676866), (51, 0.06774376041676866), (54, 0.1835524837678424), (55, 0.1835524837678424), (56, 0.1835524837678424), (57, 0.1835524837678424), (59, 0.1835524837678424), (60, 0.1835524837678424), (65, 0.1835524837678424), (66, 0.1835524837678424), (67, 0.1835524837678424), (76, 0.1835524837678424), (77, 0.1835524837678424), (78, 0.1835524837678424), (81, 0.1835524837678424), (82, 0.1835524837678424), (83, 0.1835524837678424), (84, 0.1835524837678424), (89, 0.1835524837678424), (91, 0.1835524837678424), (92, 0.1835524837678424), (97, 0.1835524837678424), (98, 0.1835524837678424), (99, 0.1835524837678424), (100, 0.1835524837678424), (101, 0.1835524837678424), (102, 0.1835524837678424), (110, 0.1835524837678424), (111, 0.1835524837678424), (114, 0.1835524837678424), (115, 0.1835524837678424)] -- [(27, 0.816496580927726), (50, 0.408248290463863), (51, 0.408248290463863)]
+
+    Train a classifier
+    >>> from sklearn.svm import LinearSVC
+    >>> y = [1, 0, 0]
+    >>> textmodel = TextModel().fit(corpus)
+    >>> m = LinearSVC().fit(textmodel.transform(corpus), y)
+    >>> m.predict(textmodel.transform(corpus))
+    array([1, 0, 0])
     """
 
     def __init__(self, docs=None, text='text', num_option=OPTION_GROUP,
@@ -264,7 +274,7 @@ class TextModel:
 
         :rtype: list
         """
-        return [self.__getitem__(x) for x in texts]
+        return self.tonp([self.__getitem__(x) for x in texts])
 
     def vectorize(self, text):
         raise RuntimeError('Not implemented')
@@ -296,7 +306,7 @@ class TextModel:
 
         return text[self._text]
 
-    def text_trasformations(self, text):
+    def text_transformations(self, text):
         """
         Text transformations
 
@@ -395,7 +405,7 @@ class TextModel:
         return L
 
     def _tokenize(self, text):
-        text = self.text_trasformations(text)
+        text = self.text_transformations(text)
         L = []
         for _ in self.compute_tokens(text):
             L += _
@@ -426,6 +436,8 @@ class TextModel:
         :rtype: csr_matrix
         """
 
+        if not isinstance(X, list):
+            return X
         data = []
         row = []
         col = []
