@@ -29,6 +29,9 @@ SYMBOLS = "()[]¿?¡!{}~<>|"
 SKIP_SYMBOLS = set(PUNCTUACTION + SYMBOLS)
 SKIP_SYMBOLS_AND_SPACES = set(PUNCTUACTION + SYMBOLS + '\t\n\r ')
 # SKIP_WORDS = set(["…", "..", "...", "...."])
+WEIGHTING = dict(tfidf="microtc.weighting.TFIDF",
+                 tf="microtc.weighting.TFIDF",
+                 entropy="microtc.weighting.Entropy")
 
 
 def get_word_list(text):
@@ -143,9 +146,6 @@ class TextModel:
     :param token_max_filter: Keep those tokens that appear less times than the parameter (used in weighting class)
     :type token_max_filter: int or float
 
-    :param tfidf: Replace TFIDF with TF
-    :type tfidf: bool
-
     :param select_ent:
     :type select_ent: bool
     :param select_suff:
@@ -153,7 +153,7 @@ class TextModel:
     :param select_conn:
     :type select_conn: bool
 
-    :param weighting: Weighting scheme
+    :param weighting: Weighting scheme (tfidf | tf | entropy)
     :type weighting: class or str
 
     Usage:
@@ -191,8 +191,7 @@ class TextModel:
                  emo_option=OPTION_GROUP, hashtag_option=OPTION_NONE,
                  ent_option=OPTION_NONE, lc=True, del_dup=True, del_punc=False, del_diac=True,
                  token_list=[-1], token_min_filter=0,
-                 token_max_filter=1, tfidf=True,
-                 select_ent=False, select_suff=False, select_conn=False,
+                 token_max_filter=1, select_ent=False, select_suff=False, select_conn=False,
                  weighting=TFIDF, **kwargs):
         self._text = os.getenv('TEXT', default=text)
         self.del_diac = del_diac
@@ -213,9 +212,7 @@ class TextModel:
         self.token_min_filter = token_min_filter
         self.token_max_filter = token_max_filter
         self.weighting = weighting
-        if not tfidf and weighting == TFIDF:
-            self.weighting = TF
-        self.tfidf = tfidf
+        self.weighting = WEIGHTING.get(weighting, weighting)
 
         self.kwargs = {k: v for k, v in kwargs.items() if k[0] != '_'}
 

@@ -138,7 +138,7 @@ DefaultParams = dict(
     token_max_filter=Fixed(1.0),
     #token_max_filter=SetVariable([0.5, 0.9, 0.95, 0.99, 1.0]),
     #token_min_filter=SetVariable([-1, -2, -3, -5, -7, -9]),
-    tfidf=Boolean(),
+    tfidf=SetVariable(['tfidf', 'tf', 'entropy']),
     dist_vector=SetVariable([OPTION_NONE, 'plain+1', 'plain+3', 'entropy+1', 'entropy+3'])
     # dist_vector=Fixed(OPTION_NONE)
 )
