@@ -29,6 +29,14 @@ class TFIDF(object):
 
     :param token_max_filter: Keep those tokens that appear less times than the parameter
     :type token_max_filter: int or float
+
+    Usage:
+
+    >>> from microtc.weighting import TFIDF
+    >>> tokens = [['buenos', 'dia', 'microtc'], ['excelente', 'dia'], ['buenas', 'tardes'], ['las', 'vacas', 'me', 'deprimen'], ['odio', 'los', 'lunes'], ['odio', 'el', 'trafico'], ['la', 'computadora'], ['la', 'mesa'], ['la', 'ventana']]
+    >>> tfidf = TFIDF(tokens)
+    >>> tfidf['buenos', 'X', 'trafico']
+    [(0, 0.7071067811865476), (14, 0.7071067811865476)]
     """
 
     def __init__(self, docs, X=None, token_min_filter=0, token_max_filter=1):
@@ -162,7 +170,17 @@ class TF(TFIDF):
 
 class Entropy(TFIDF):
     """
-    Vector Space using 1 + entropy as the weighting scheme
+    Vector Space using 1 - entropy as the weighting scheme
+
+    Usage:
+
+    >>> from microtc.weighting import Entropy
+    >>> tokens = [['buenos', 'dia', 'microtc'], ['excelente', 'dia'], ['buenas', 'tardes'], ['las', 'vacas', 'me', 'deprimen', 'al', 'dia'], ['odio', 'los', 'lunes'], ['odio', 'el', 'trafico'], ['la', 'computadora'], ['la', 'mesa'], ['la', 'ventana']]
+    >>> y = [0, 0, 0, 2, 2, 2, 1, 1, 1]
+    >>> ent = Entropy(tokens, X=[dict(text=t, klass=k) for t, k in zip(tokens, y)])
+    >>> ent['buenos', 'X', 'dia']
+    [(0, 1.0), (1, 0.42061983571430495)]
+
     """
     def __init__(self, docs, X=None, **kwargs):
         assert X is not None

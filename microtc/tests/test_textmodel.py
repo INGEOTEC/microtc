@@ -44,20 +44,6 @@ def test_textmodel():
     assert len(text[tw[0]]) == 3
 
 
-def test_no_tfidf():
-    from microtc.textmodel import TextModel
-    from microtc.utils import tweet_iterator
-    import os
-    fname = os.path.dirname(__file__) + '/text.json'
-    tw = list(tweet_iterator(fname))
-    text = TextModel([x['text'] for x in tw], tfidf=False)
-    r = text[tw[0]]
-    print(r, text.model.wordWeight[0])
-    tokens = text.tokenize(tw[0])
-    print(text.model.doc2weight(tokens))
-    assert sum([x[1] for x in r]) == 1
-
-
 def test_params():
     import os
     import itertools
@@ -187,3 +173,14 @@ def test_textmodel_compute_tokens():
     [r.__iadd__(x) for x in L]
     for a, b in zip(tm.tokenize(tw[0]), r):
         assert a == b
+
+
+def test_textmodel_weighting_key():
+    from microtc.textmodel import TextModel
+    from microtc.utils import tweet_iterator
+    import os
+    fname = os.path.dirname(__file__) + '/text.json'
+    tw = list(tweet_iterator(fname))
+    for w in ['tfidf', 'tf', 'entropy']:
+        TextModel(token_list=[-2, -1], weighting=w).fit(tw)
+        
