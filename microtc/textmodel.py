@@ -419,9 +419,6 @@ class TextModel:
 
         >>> from microtc.textmodel import TextModel
         >>> corpus = ['buenos dias', 'catedras conacyt', 'categorizacion de texto ingeotec']
-
-        Using default parameters
-
         >>> textmodel = TextModel().fit(corpus)
         >>> _ = textmodel.transform(corpus)
         >>> textmodel.num_terms
