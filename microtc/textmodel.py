@@ -417,6 +417,16 @@ class TextModel:
     def num_terms(self):
         """Dimension which is the number of terms of the corpus
 
+        >>> from microtc.textmodel import TextModel
+        >>> corpus = ['buenos dias', 'catedras conacyt', 'categorizacion de texto ingeotec']
+
+        Using default parameters
+
+        >>> textmodel = TextModel().fit(corpus)
+        >>> _ = textmodel.transform(corpus)
+        >>> textmodel.num_terms
+        8
+
         :rtype: int
         """
 
