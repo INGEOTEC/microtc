@@ -12,10 +12,10 @@
 [![Documentation Status](https://readthedocs.org/projects/microtc/badge/?version=latest)](https://microtc.readthedocs.io/en/latest/?badge=latest)
 # What is microTC? #
 
-MicroTC follows a minimalist approach to text classification. It is designed to tackle text-classification problems in an agnostic way,
-being both domain and language independent.  Currently, we only produce single-label classifiers; but support for multi-labeled problems is in the roadmap.
+microTC follows a minimalist approach to text classification. It is designed to tackle text-classification problems in an agnostic way,
+being both domain and language independent. 
 
-$\mu$TC is intentionally simple, so only a small number of features where implemented. However, it uses a some complex tools from numpy and scikit-lean. The number of dependencies is limited and fullfilled by almost any Scientific Python distributions, e.g., [Anaconda](https://www.continuum.io/downloads).
+microTC is intentionally simple, so only a small number of features where implemented. However, it uses a some complex tools from numpy and scikit-lean. The number of dependencies is limited and fullfilled by almost any Scientific Python distributions, e.g., [Anaconda](https://www.continuum.io/downloads).
 
 ## Citing ##
 

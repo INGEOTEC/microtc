@@ -85,7 +85,7 @@ class TFIDF(object):
 
     @property
     def wordWeight(self):
-        """Word associated to each word, this could be the inverse document frequency"""
+        """Weight associated to each word, this could be the inverse document frequency"""
         return self._weight
 
     @wordWeight.setter
@@ -140,7 +140,7 @@ class TFIDF(object):
 class TF(TFIDF):
     @property
     def wordWeight(self):
-        """Word associated to each word, this could be the inverse document frequency"""
+        """Weight associated to each word, this is one on TF"""
         return self._weight
 
     @wordWeight.setter
