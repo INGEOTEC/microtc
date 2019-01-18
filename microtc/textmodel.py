@@ -13,13 +13,13 @@
 # limitations under the License.
 import re
 import unicodedata
-from .weighting import TFIDF, TF
 import numpy as np
 from .params import OPTION_DELETE, OPTION_GROUP, OPTION_NONE
 from .emoticons import EmoticonClassifier
 import os
 import logging
 from scipy.sparse import csr_matrix
+from .utils import get_class
 
 
 logging.basicConfig(format='%(asctime)s : %(levelname)s :%(message)s')
@@ -192,7 +192,7 @@ class TextModel:
                  ent_option=OPTION_NONE, lc=True, del_dup=True, del_punc=False, del_diac=True,
                  token_list=[-1], token_min_filter=0,
                  token_max_filter=1, select_ent=False, select_suff=False, select_conn=False,
-                 weighting=TFIDF, **kwargs):
+                 weighting='tfidf', **kwargs):
         self._text = os.getenv('TEXT', default=text)
         self.del_diac = del_diac
         self.num_option = num_option
@@ -234,25 +234,10 @@ class TextModel:
         """
 
         tokens = [self.tokenize(d) for d in X]
-        self.model = self.get_class(self.weighting)(tokens, X=X,
-                                                    token_min_filter=self.token_min_filter,
-                                                    token_max_filter=self.token_max_filter)
+        self.model = get_class(self.weighting)(tokens, X=X,
+                                               token_min_filter=self.token_min_filter,
+                                               token_max_filter=self.token_max_filter)
         return self
-
-    def get_class(self, m):
-        """Import class from string
-
-        :param m: string or class to be imported
-        :type m: str or class
-        :rtype: class
-        """
-        import importlib
-
-        if isinstance(m, str):
-            a = m.split('.')
-            p = importlib.import_module('.'.join(a[:-1]))
-            return getattr(p, a[-1])
-        return m
 
     def __getitem__(self, text):
         """Convert text into a vector

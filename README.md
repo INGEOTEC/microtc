@@ -10,12 +10,18 @@
 [![PyPI version](https://badge.fury.io/py/microtc.svg)](https://badge.fury.io/py/microtc)
 [![Anaconda-Server Badge](https://anaconda.org/INGEOTEC/microtc/badges/license.svg)](https://anaconda.org/INGEOTEC/microtc)
 [![Documentation Status](https://readthedocs.org/projects/microtc/badge/?version=latest)](https://microtc.readthedocs.io/en/latest/?badge=latest)
-# What is microTC? #
+# microTC #
 
-microTC follows a minimalist approach to text classification. It is designed to tackle text-classification problems in an agnostic way,
+microTC is a minimalist text classifier, that is, it is designed to tackle text-classification problems in an agnostic way,
 being both domain and language independent. 
 
-microTC is intentionally simple, so only a small number of features where implemented. However, it uses a some complex tools from numpy and scikit-lean. The number of dependencies is limited and fullfilled by almost any Scientific Python distributions, e.g., [Anaconda](https://www.continuum.io/downloads).
+microTC is intentionally simple, so only a small number of features
+where implemented. However, it uses a some complex tools from numpy
+and scikit-lean. The number of dependencies is limited and fulfilled
+by almost any Scientific Python distributions, e.g.,
+[Anaconda](https://www.continuum.io/downloads).
+
+The documentation is on [readthedocs](https://microtc.readthedocs.io).
 
 ## Citing ##
 
