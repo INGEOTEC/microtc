@@ -19,9 +19,9 @@ from sklearn.metrics import r2_score
 from scipy.stats import pearsonr, spearmanr
 from sklearn import preprocessing
 from sklearn import model_selection
-from microtc.params import OPTION_NONE
-from microtc.textmodel import TextModel, DistTextModel
+from microtc.textmodel import TextModel
 from microtc.wrappers import RegressorWrapper
+
 
 class RegressionScoreSampleWrapper(object):
     valid_scores = ['r2', 'pearsonr', 'spearmanr']
@@ -56,7 +56,6 @@ class RegressionScoreSampleWrapper(object):
         conf, code = conf_code
         st = time()
         textmodel = TextModel(self.train_corpus, **conf)
-        conf['dist_vector'] = OPTION_NONE  # dist_vector is designed to work with classes
         train_X = [textmodel[doc] for doc in self.train_corpus]
         c = self.create_classifier()
         # c.fit(train_X, self.train_y)
@@ -114,7 +113,6 @@ class RegressionScoreKFoldWrapper(RegressionScoreSampleWrapper):
                 trainY = np.hstack((trainY, self.ystatic))
 
             textmodel = TextModel(A, **conf)
-            conf['dist_vector'] = OPTION_NONE
             trainX = [textmodel[x] for x in A]
 
             c = self.create_classifier()

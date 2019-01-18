@@ -14,12 +14,14 @@
 import numpy as np
 import sys
 
+
 def test_nparams():
     from microtc.command_line import params
     import os
     fname = os.path.dirname(__file__) + '/text.json'
     params('-k', '2', '-s', '11', '-o', fname + ".tmp", fname)
     os.unlink(fname + ".tmp")
+
 
 def test_main():
     from microtc.command_line import params
@@ -195,7 +197,6 @@ def test_numeric_klass():
         [fpt.write(json.dumps(x) + '\n') for x in D]
 
     P = DefaultParams.copy()
-    P["dist_vector"] = Fixed("entropy+0")
     params('-o', output, '-k', '2', numeric, '-s', '2', **P)
     train('-m', output, numeric, '-o', output)
     output2 = tempfile.mktemp()

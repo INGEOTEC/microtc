@@ -67,8 +67,7 @@ class TFIDF(object):
             mm = {k: v[1] for k, v in enumerate(w2id)}
             w2id = {v[0]: k for k, v in enumerate(w2id)}
             weight = {ident: weight[mm[ident]] for ident in w2id.values()}
-        self._w2id = w2id
-        self._num_terms = len(w2id)
+        self.word2id = w2id
         self.wordWeight = weight
 
     @property
@@ -82,6 +81,11 @@ class TFIDF(object):
         """Map word to id"""
 
         return self._w2id
+
+    @word2id.setter
+    def word2id(self, value):
+        self._num_terms = len(value)
+        self._w2id = value
 
     @property
     def wordWeight(self):
@@ -189,12 +193,12 @@ class Entropy(TFIDF):
 
     @property
     def wordWeight(self):
-        """Word associated to each word, this could be the inverse document frequency"""
+        """Weight associated to each word, entropy per token"""
         return self._weight
 
     @wordWeight.setter
     def wordWeight(self, value):
-        """Inverse document frequency
+        """Entropy
 
         :param value: weights
         :type value: dict

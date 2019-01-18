@@ -20,10 +20,10 @@ from microtc.wrappers import ClassifierWrapper, RegressorWrapper
 from microtc.utils import read_data, read_data_labels, read_data_values, tweet_iterator
 from multiprocessing import cpu_count, Pool
 from collections import defaultdict
-from .params import ParameterSelection, OPTION_NONE
+from .params import ParameterSelection
 from .scorewrapper import ScoreKFoldWrapper, ScoreSampleWrapper
 from .regscorewrapper import RegressionScoreKFoldWrapper, RegressionScoreSampleWrapper
-from .textmodel import TextModel, DistTextModel
+from .textmodel import TextModel
 from .utils import KLASS, VALUE
 from sklearn.preprocessing import LabelEncoder
 from sklearn.model_selection import KFold
@@ -260,8 +260,6 @@ class CommandLineTrain(CommandLine):
             corpus.extend(X_)
             values.extend(y_)
 
-        best.setdefault('dist_vector', OPTION_NONE)
-
         if self.data.balanced:
             corpus, values = balance(corpus, values)
 
@@ -277,9 +275,6 @@ class CommandLineTrain(CommandLine):
                 le.fit(values)
 
             y = le.transform(values)
-
-            if best['dist_vector'] != OPTION_NONE:
-                t = DistTextModel(t, corpus, y, le.classes_.shape[0], best['dist_vector'])
 
         c = wrapper()
         X = [t[x] for x in corpus]
@@ -405,67 +400,6 @@ class CommandLineTextModel(CommandLinePredict):
         return L
 
 
-class CommandLineVoc(CommandLinePredict):
-    def __init__(self):
-        self.parser = argparse.ArgumentParser(description='microtc')
-        pa = self.parser.add_argument
-        pa('-m', '--model', default=None, type=str, dest='model', help='specifies the input model')
-        pa('-t', '--top', default=0, type=int, dest='top', help='prunes the vocabulary keeping the top weighted tokens')
-        pa('-p', '--percentile', default=0, type=float, dest='percentile', help='prunes the vocabulary keeping the given percentile of best weighted tokens')
-        pa('-o', '--output', default='', type=str, dest='output', help='save the modified model to the given output file')
-        pa('--print-voc', default=False, action="store_true", dest="print_voc", help='print to stdout the resulting vocabulary (after modifications) of the give model')
-        pa('-c', '--print-cluster-voc', default=False, action="store_true", dest="cluster_print", help="cluster the modified vocabulary by histogram and prints the clusters")
-        # pa('training_set', default=None, nargs='+', help="The trainset, it can be used to retrain a model or readjust the model")
-
-    def main(self, args=None):
-        self.data = self.parser.parse_args(args=args)
-        # logging.basicConfig(level=self.data.verbose)
-        textmodel, svc, le = load_pickle(self.data.model)
-        L = []
-        if not isinstance(textmodel, DistTextModel):
-            raise Exception("Only DistTextModel models can be manipulated with this tool")
-
-        top = int(self.data.top)
-        if top > 0:
-            textmodel.prune(method="top", k=top)
-
-        percentile = max(0, min(100, float(self.data.percentile)))
-        if percentile > 0:
-            textmodel.prune(method="percentile", percentile=percentile)
-
-        if self.data.print_voc:
-            D = textmodel.model.dictionary
-            items = sorted(textmodel.voc.items(), key=lambda x: x[1].weight, reverse=True)
-            for token_id, t in items:
-                token = D[token_id]
-                den = textmodel.b * textmodel.numlabels + np.sum(t.hist)
-                dist = [(x + textmodel.b) / den for x in t.hist]
-                L.append({"token": token, "weight": t.weight, "hist": t.hist, "dist": dist})
-                print(json.dumps(L[-1], sort_keys=True))
-
-        if self.data.cluster_print:
-            D = textmodel.model.dictionary
-            C = {}
-            for token_id, t in textmodel.voc.items():
-                token = D[token_id]
-                data = str(tuple(t.hist))
-                e = C.get(data, None)
-                if e is None:
-                    den = textmodel.b * textmodel.numlabels + np.sum(t.hist)
-                    dist = [(x + textmodel.b) / den for x in t.hist]
-                    C[data] = {"token": [token], "weight": t.weight, "hist": t.hist, "dist": dist}
-                else:
-                    e["token"].append(token)
-
-            C = sorted(C.values(), key=lambda x: x["weight"], reverse=True)
-            for c in C:
-                print(json.dumps(c, sort_keys=1))
-
-        if len(self.data.output) > 0:
-            with open(self.data.output, "wb") as f:
-                pickle.dump((textmodel, svc, le), f)
-
-
 class CommandLineRetrain(CommandLinePredict):
     def __init__(self):
         self.parser = argparse.ArgumentParser(description='microtc')
@@ -545,7 +479,6 @@ class CommandLineKfolds(CommandLineTrain):
         y = le.transform(labels)
         model_klasses = os.environ.get('TEXTMODEL_KLASSES')
 
-        best.setdefault('dist_vector', OPTION_NONE)
         if model_klasses:
             model_klasses = le.transform(model_klasses.split(','))
             docs_ = []
@@ -556,12 +489,8 @@ class CommandLineKfolds(CommandLineTrain):
                     labels_.append(y[i])
 
             t = TextModel(docs_, **best)
-            if best['dist_vector'] != OPTION_NONE:
-                t = DistTextModel(t, docs_, labels_, le.classes_.shape[0], best['dist_vector'])
         else:
             t = TextModel(corpus, **best)
-            if best['dist_vector'] != OPTION_NONE:
-                t = DistTextModel(t, corpus, y, le.classes_.shape[0], best['dist_vector'])
 
         X = [t[x] for x in corpus]
         hy = [None for x in y]
@@ -614,14 +543,6 @@ def textmodel(*args, **kwargs):
     c = CommandLineTextModel()
     if len(args) == 0:
         args = None
-    return c.main(args, **kwargs)
-
-
-def vocabulary(*args, **kwargs):
-    c = CommandLineVoc()
-    if len(args) == 0:
-        args = None
-
     return c.main(args, **kwargs)
 
 
