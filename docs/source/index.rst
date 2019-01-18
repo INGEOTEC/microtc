@@ -46,6 +46,26 @@ would appreciate citations to the following reference:
 	  keywords = "Text modelling"
 	  }
 
+Installing :math:`\mu\text{TC}`
+===============================
+
+:math:`\mu\text{TC}` can be easly install using anaconda
+
+.. code:: bash
+
+	  conda install -c ingeotec microtc
+
+or can be install using pip, it depends on numpy, scipy and
+scikit-learn.
+
+.. code:: bash
+	  
+	  pip install numpy
+	  pip install scipy
+	  pip install scikit-learn
+	  pip install microtc
+
+
 Text Model
 =============
 
@@ -62,3 +82,4 @@ Modules
    :maxdepth: 2
 
    weighting
+   utils

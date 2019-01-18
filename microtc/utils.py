@@ -94,6 +94,7 @@ def read_data_values(filename, get_tweet=TEXT, get_value=VALUE, maxitems=1e100):
 
     return data, values
 
+
 def read_data(filename, get_tweet=TEXT, maxitems=1e100):
     data = []
     count = 0
@@ -105,3 +106,23 @@ def read_data(filename, get_tweet=TEXT, maxitems=1e100):
             break
 
     return data
+
+
+def get_class(m):
+    """Import class from string
+
+    :param m: string or class to be imported
+    :type m: str or class
+    :rtype: class
+
+    >>> get_class('microtc.textmodel.TextModel')
+    <class 'microtc.textmodel.TextModel'>
+    """
+    import importlib
+
+    if isinstance(m, str):
+        a = m.split('.')
+        p = importlib.import_module('.'.join(a[:-1]))
+        return getattr(p, a[-1])
+    return m
+
