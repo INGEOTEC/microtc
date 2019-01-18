@@ -48,7 +48,10 @@ would appreciate citations to the following reference:
 
 Text Model
 =============
-	
+
+This is class is :math:`\mu\text{TC}` main entry, it receives a
+corpus, i.e., a list of text and builds a text model from it.
+
 .. autoclass:: microtc.textmodel.TextModel
    :members:
 

@@ -19,8 +19,7 @@ from time import time
 from sklearn.metrics import f1_score, accuracy_score, recall_score, precision_score
 from sklearn import preprocessing
 from sklearn import model_selection
-from microtc.params import OPTION_NONE
-from microtc.textmodel import TextModel, DistTextModel
+from microtc.textmodel import TextModel
 from microtc.wrappers import ClassifierWrapper
 
 
@@ -63,13 +62,8 @@ class ScoreSampleWrapper(object):
             _train = [self.train_corpus[i] for i in len(self.train_corpus) if self.train_y[i] in model_klass]
             textmodel = TextModel(_train, **conf)
 
-            if conf['dist_vector'] != OPTION_NONE:
-                _train_y = [self.train_y[i] for i in len(self.train_corpus) if self.train_y[i] in model_klass]
-                textmodel = DistTextModel(textmodel, _train, _train_y, self.le.classes_.shape[0], conf['dist_vector'])
         else:
             textmodel = TextModel(self.train_corpus, **conf)
-            if conf['dist_vector'] != OPTION_NONE:
-                textmodel = DistTextModel(textmodel, self.train_corpus, self.train_y, self.le.classes_.shape[0], conf['dist_vector'])
 
         train_X = [textmodel[doc] for doc in self.train_corpus]
         c = self.create_classifier()
@@ -112,6 +106,7 @@ class ScoreSampleWrapper(object):
         conf['_score'] = conf['_' + self.score]
         # print(conf)
 
+
 class ScoreKFoldWrapper(ScoreSampleWrapper):
     def __init__(self, X, y, Xstatic=[], ystatic=[], nfolds=5, score='macrof1', classifier=ClassifierWrapper, random_state=None):
         self.nfolds = nfolds
@@ -145,8 +140,6 @@ class ScoreKFoldWrapper(ScoreSampleWrapper):
                 trainY = np.hstack((trainY, self.ystatic))
 
             textmodel = TextModel(A, **conf)
-            if conf['dist_vector'] != OPTION_NONE:
-                textmodel = DistTextModel(textmodel, A, trainY, self.le.classes_.shape[0], conf['dist_vector'])
             
             # textmodel = TextModel([X[i] for i in train], **conf)
             trainX = [textmodel[x] for x in A]

@@ -271,6 +271,16 @@ class TextModel:
         :type text: list
 
         :rtype: list
+
+        Example:
+
+        >>> from microtc.textmodel import TextModel
+        >>> corpus = ['buenos dias catedras', 'catedras conacyt']
+        >>> textmodel = TextModel().fit(corpus)
+        >>> X = textmodel.transform(corpus)
+        >>> X.toarray()
+        array([[0.70710678, 0.        , 0.70710678, 0.        ],
+               [0.        , 0.        , 0.        , 1.        ]])
         """
         return self.tonp([self.__getitem__(x) for x in texts])
 
@@ -281,9 +291,18 @@ class TextModel:
         """Transform text to tokens
 
         :param text: Text
-        :type text: str
+        :type text: str or list
 
         :rtype: list
+
+        Example:
+
+        >>> from microtc.textmodel import TextModel
+        >>> tm = TextModel()
+        >>> tm.tokenize("buenos dias")
+        ['buenos', 'dias']
+        >>> tm.tokenize(["buenos", "dias", "tenga usted"])
+        ['buenos', 'dias', 'tenga', 'usted']
         """
 
         if isinstance(text, (list, tuple)):
@@ -439,6 +458,18 @@ class TextModel:
         :param X: Sparse representation of matrix
         :type X: list
         :rtype: csr_matrix
+
+        Example:
+
+        >>> from microtc.textmodel import TextModel
+        >>> tm = TextModel()
+        >>> matrix = [[(1, 0.5), (3, -0.2)], [(2, 0.3)], [(0, 1), (3, -1.2)]]
+        >>> r = tm.tonp(matrix)
+        >>> r.toarray()
+        array([[ 0. ,  0.5,  0. , -0.2],
+               [ 0. ,  0. ,  0.3,  0. ],
+               [ 1. ,  0. ,  0. , -1.2]])
+
         """
 
         if not isinstance(X, list):
@@ -457,95 +488,3 @@ class TextModel:
             self._num_terms = _.shape[1]
             return _
         return csr_matrix((data, (row, col)), shape=(len(X), self.num_terms))
-
-
-class TokenData:
-    """ A struct that contains the klass' distribution and weight of the represented token """
-    def __init__(self, w, h):
-        self.weight = w
-        self.hist = h
-
-
-class DistTextModel:
-    """ A text model based on how tokens distribute along classes """
-    def __init__(self, model, texts, labels, numlabels, kind):
-        H = {}
-        self.kind = kind
-        self.numlabels = numlabels
-
-        for text, label in zip(texts, labels):
-            for token, weight in model[text]:
-                m = H.get(token, None)
-                if m is None:
-                    m = TokenData(0.0, [0 for i in range(numlabels)])
-                    H[token] = m
-
-                m.hist[label] += weight
-
-        if '+' in kind:
-            kind, base = kind.split('+')
-            self.b = int(base)
-        else:
-            self.b = 1
-
-        maxent = np.log2(self.numlabels)
-        for token, m in H.items():
-            s = sum(m.hist) + self.b * len(m.hist)
-            e = maxent
-            for i in range(len(m.hist)):
-                p = (m.hist[i] + self.b) / s
-                if p > 0:
-                    e += p * np.log2(p)
-                # m.hist[i] = (m.hist[i] + base) / s
-
-            #m.weight = maxent + sum(x * np.log2(x) for x in m.hist if x > 0)
-            m.weight = e
-
-        self.voc = H
-        self.numlabels = numlabels
-        self.model = model
-
-    def prune(self, method='slope', tol=0.01, step=1000, percentile=1, k=10000):
-        """ Receives a DistTextModel object and prunes the vocabulary to keep the best tokens.
-            - `method`: 'slope', 'percentile', or 'top'
-            - `tol`: the tolerance value to stop (for `method == "slope"`)
-            - `step`: a number of values to compute the change (for `method == "slope"`)
-            - `percentile`: if `method == "percentile"` then the vocabulary is pruned keeping the top `percentile` tokens.
-            
-        """
-        X = list(self.voc.items())
-        X.sort(key=lambda x: x[1].weight, reverse=True)
-
-        if method not in ('slope', 'percentile', 'top'):
-            raise Exception(
-                "Unknown method {0} only 'slope', 'top', and 'percentile' methods are known".format(method))
-
-        if method == 'slope':
-            for i in range(0, len(X), step):
-                endpoint = min(len(X), i + step)
-                diff = abs(X[endpoint - 1].weight - X[i].weight)
-                if diff <= tol:
-                    break
-        elif method == 'percentile':
-            p = int(len(X) * percentile / 100.0)
-            self.voc = dict(X[:p])
-        elif method == "top":
-            self.voc = dict(X[:k])
-
-    def __getitem__(self, text):
-        vec = []
-        if self.kind.startswith('plain'):
-            for token, weight in self.model[text]:
-                x = token * self.numlabels
-                for i, w in enumerate(self.voc[token].hist):
-                    vec.append((x + i, w))
-        else:
-            for token, weight in self.model[text]:
-                m = self.voc.get(token, None)
-                if m:
-                    vec.append((token, m.weight))
-
-        return vec
-
-    def vectorize(self, text):
-        return self[text], 1.0
