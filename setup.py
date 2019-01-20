@@ -14,8 +14,9 @@
 from setuptools import setup
 import microtc
 
+with open('README.rst') as fpt:
+    long_desc = fpt.read()
 
-long_desc = ''
 
 setup(
     name="microtc",
@@ -23,7 +24,7 @@ setup(
     long_description=long_desc,
     version=microtc.__version__,
     classifiers=[
-        "Development Status :: 3 - Alpha",
+        "Development Status :: 4 - Beta",
         "Environment :: Console",
         "Intended Audience :: Science/Research",
         "License :: OSI Approved :: Apache Software License",
