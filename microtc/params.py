@@ -136,9 +136,9 @@ DefaultParams = dict(
     # negative values means for absolute frequencies, positive values between 0 and 1 means for ratio
     token_min_filter=Fixed(-1),
     token_max_filter=Fixed(1.0),
-    #token_max_filter=SetVariable([0.5, 0.9, 0.95, 0.99, 1.0]),
-    #token_min_filter=SetVariable([-1, -2, -3, -5, -7, -9]),
-    tfidf=SetVariable(['tfidf', 'tf', 'entropy']),
+    # token_max_filter=SetVariable([0.5, 0.9, 0.95, 0.99, 1.0]),
+    # token_min_filter=SetVariable([-1, -2, -3, -5, -7, -9]),
+    weighting=SetVariable(['tfidf', 'tf', 'entropy']),
 )
 
 if "PARAMS" in os.environ:
@@ -277,7 +277,7 @@ class ParameterSelection:
 
             do_vectorizing_opt = len(self.params['token_min_filter'].valid_values) > 1 or len(self.params['token_max_filter'].valid_values) > 1
             if do_vectorizing_opt:
-                _hill_climbing(['token_list', 'token_min_filter', 'token_max_filter', 'tfidf'], "optimizing all token parameters")
+                _hill_climbing(['token_list', 'token_min_filter', 'token_max_filter'], "optimizing all token parameters")
 
             ks = list(self.params.keys())
 
@@ -285,7 +285,6 @@ class ParameterSelection:
                 ks.remove('token_list')
                 ks.remove('token_min_filter')
                 ks.remove('token_max_filter')
-                ks.remove('tfidf')
 
             _hill_climbing(ks, "optimizing the rest of params")
 
