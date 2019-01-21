@@ -23,7 +23,7 @@ microTC is a minimalist text classifier, that is, it is designed to tackle text-
 being both domain and language independent. 
 
 microTC is intentionally simple, so only a small number of features
-where implemented. However, it uses a some complex tools from numpy
+were implemented. However, it uses a some complex tools from numpy
 and scikit-lean. The number of dependencies is limited and fulfilled
 by almost any Scientific Python distributions, e.g., `Anaconda <https://www.continuum.io/downloads>`_.
 
