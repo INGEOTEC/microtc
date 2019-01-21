@@ -478,7 +478,7 @@ class CommandLineKfolds(CommandLineTrain):
         corpus, labels = [], []
         for train in self.data.training_set:
             X_, y_ = read_data_labels(train)
-            corpus.extend(X_)
+            corpus.extend([x for x in tweet_iterator(train)])
             labels.extend(y_)
         le = LabelEncoder()
         if self.data.labels:
