@@ -81,6 +81,13 @@ def balance(X, y):
     return X, y
 
 
+def clean_params(kw):
+    import inspect
+    sig = inspect.signature(TextModel)
+    params = sig.parameters.keys()
+    return {k: v for k, v in kw.items() if k in params}
+
+
 class CommandLine(object):
     def __init__(self):
         self.parser = argparse.ArgumentParser(description='microtc')
@@ -119,7 +126,9 @@ class CommandLine(object):
         pa('-H', '--hillclimbing', dest='hill_climbing', default=False, action='store_true',
             help="Determines if hillclimbing search is also perfomed to improve the selection of parameters")
         pa('-r', '--resume', dest='best_list', default=None, help="Loads the given file and resumes the search process")
-        pa('-b', '--balanced', dest='balanced', default=False, action='store_true', help="Artificially balances the dataset to reduce bias in unbalanced number of examples per class (only works for classification)")
+        pa('-b', '--balanced', dest='balanced', default=False,
+           action='store_true',
+           help="Artificially balances the dataset to reduce bias in unbalanced number of examples per class (only works for classification)")
         pa('-n', '--numprocs', dest='numprocs', type=int, default=1, help="Number of processes to compute the best setup")
         pa('-S', '--score', dest='score', type=str, default='macrof1',
            help="The name of the score to be optimized (classification scores: {0}); (regression scores: {1}) it defaults to macrof1".format(
@@ -166,11 +175,11 @@ class CommandLine(object):
         for train in self.data.training_set:
             if train.startswith("static:"):
                 X_, y_ = _read_data(train[7:])
-                Xstatic.extend(X_)
+                Xstatic.extend([x for x in tweet_iterator(train[7:])])
                 ystatic.extend(y_)
             else:
                 X_, y_ = _read_data(train)
-                X.extend(X_)
+                X.extend([x for x in tweet_iterator(train)])
                 y.extend(y_)
 
         if self.data.balanced:
@@ -246,7 +255,7 @@ class CommandLineTrain(CommandLine):
             best = json.loads(self.data.conf)
         else:
             best = load_json(self.data.params_fname)[self.data.position]
-
+        best = clean_params(best)
         if self.data.regression:
             _read_data = read_data_values
             wrapper = RegressorWrapper
@@ -257,7 +266,7 @@ class CommandLineTrain(CommandLine):
         corpus, values = [], []
         for train in self.data.training_set:
             X_, y_ = _read_data(train)
-            corpus.extend(X_)
+            corpus.extend([x for x in tweet_iterator(train)])
             values.extend(y_)
 
         if self.data.balanced:
@@ -465,11 +474,11 @@ class CommandLineKfolds(CommandLineTrain):
             best = json.loads(self.data.conf)
         else:
             best = load_json(self.data.params_fname)[0]
-
+        best = clean_params(best)
         corpus, labels = [], []
         for train in self.data.training_set:
             X_, y_ = read_data_labels(train)
-            corpus.extend(X_)
+            corpus.extend([x for x in tweet_iterator(train)])
             labels.extend(y_)
         le = LabelEncoder()
         if self.data.labels:
