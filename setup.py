@@ -39,13 +39,7 @@ setup(
     zip_safe=False,
     package_data={
         'microtc/tests': ['text.json'],
-        'microtc/resources': ['emoticons.json',
-                              "english.neg.stopwords",
-                              "english.stopwords",
-                              "italian.neg.stopwords",
-                              "italian.stopwords",
-                              "spanish.neg.stopwords",
-                              "spanish.stopwords"],
+        'microtc/resources': ['emoticons.json'],
     },
     scripts=[
         'microtc/tools/microtc-train',
@@ -53,7 +47,6 @@ setup(
         'microtc/tools/microtc-predict',
         'microtc/tools/microtc-params',
         'microtc/tools/microtc-textModel',
-        'microtc/tools/microtc-voc',
         'microtc/tools/microtc-perf',
         'microtc/tools/microtc-ensemble',
         'microtc/tools/microtc-kfolds'
