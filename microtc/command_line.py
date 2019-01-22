@@ -82,9 +82,7 @@ def balance(X, y):
 
 
 def clean_params(kw):
-    import inspect
-    sig = inspect.signature(TextModel)
-    params = sig.parameters.keys()
+    params = TextModel.params()
     return {k: v for k, v in kw.items() if k in params}
 
 
