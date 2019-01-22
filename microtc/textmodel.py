@@ -258,7 +258,7 @@ class TextModel:
         """
 
         import inspect
-        sig = inspect.signature(TextModel)
+        sig = inspect.signature(cls)
         params = sig.parameters.keys()
         return params
 
