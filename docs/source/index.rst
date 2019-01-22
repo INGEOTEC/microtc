@@ -98,6 +98,8 @@ Modules
 
 .. toctree::
    :maxdepth: 2
-
+   
+   cli	      
    weighting
    utils
+   
