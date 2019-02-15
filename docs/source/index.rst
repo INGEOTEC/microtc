@@ -35,6 +35,23 @@ syntactic analysis, etc. Contrary to traditional approaches,
 :math:`\mu\text{TC}` is a minimalist and multi-propose text-classifier able to tackle
 tasks independently of domain and language.
 
+:math:`\mu\text{TC}` core entry point is :py:class:`microtc.textmodel.TextModel` which
+can be seen as a function with the form
+:math:`m(\text{text}) \rightarrow \Re ^d` where :math:`d`
+is the vocabulary, i.e., the dimension of the *vector space*. As can
+be seen, :math:`m` can be used to transform a text into a vector, and,
+consequently, it can be used to transform a training set of pairs,
+text and label, into a training set of pairs, vectors and label, which
+can be directly used by any supervised
+learning algorithm to obtain a **text classifier**.
+
+:py:class:`microtc.textmodel.TextModel` follows the idea of http://scikit-learn.org
+transformers. That is, it implements a method
+:py:func:`microtc.textmodel.TextModel.fit` that receives the training
+set and a method :py:func:`microtc.textmodel.TextModel.transform` that
+receives a list of texts and returns and sparse matrix that correspond
+to the representation of the given texts in the vector space.
+
 :math:`\mu\text{TC}` is described in
 `An Automated Text Categorization Framework based on Hyperparameter Optimization <https://www.sciencedirect.com/science/article/pii/S0950705118301217>`_.
 Eric S. Tellez, Daniela Moctezuma, Sabino Miranda-Jímenez, Mario Graff. Knowledge-Based Systems
