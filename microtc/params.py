@@ -4,7 +4,6 @@ import os
 import sys
 import json
 import numpy as np
-import logging
 from itertools import combinations
 
 
@@ -13,8 +12,6 @@ try:
 except ImportError:
     def tqdm(x, **kwargs):
         return x
-
-logging.basicConfig(format='%(asctime)s : %(levelname)s :%(message)s')
 
 
 class Fixed:

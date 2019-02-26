@@ -15,8 +15,6 @@
 import os
 import json
 import gzip
-import logging
-logging.basicConfig(format='%(asctime)s : %(levelname)s :%(message)s')
 
 
 def line_iterator(filename):
@@ -70,7 +68,6 @@ def read_data_labels(filename, get_tweet=TEXT,
             if count == maxitems:
                 break
         except KeyError as e:
-            logging.warn("error at line {0}, input: {1}".format(count, tweet))
             raise e
 
     return data, labels
@@ -89,7 +86,6 @@ def read_data_values(filename, get_tweet=TEXT, get_value=VALUE, maxitems=1e100):
             if count == maxitems:
                 break
         except KeyError as e:
-            logging.warn("error at line {0}, input: {1}".format(count, tweet))
             raise e
 
     return data, values

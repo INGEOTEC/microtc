@@ -1,6 +1,6 @@
 package:
   name: microtc
-  version: "2.0.0"
+  version: "2.0.2"
 
 requirements:
   build:
@@ -32,4 +32,4 @@ test:
 about:
   home: https://github.com/ingeotec/microtc
   summary: "A generic minimal text classifier."
-  license: Apache
+  license: APACHE

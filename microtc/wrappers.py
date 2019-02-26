@@ -16,8 +16,6 @@
 from sklearn.svm import LinearSVC, LinearSVR
 import numpy as np
 from scipy.sparse import csr_matrix
-import logging
-logging.basicConfig(format='%(asctime)s : %(levelname)s :%(message)s')
 
 
 class ClassifierWrapper(object):
