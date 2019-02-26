@@ -13,7 +13,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 import argparse
-import logging
 import microtc
 import gzip
 from microtc.wrappers import ClassifierWrapper, RegressorWrapper
@@ -114,9 +113,6 @@ class CommandLine(object):
            nargs='+',
            default=None,
            help=cdn)
-        pa('--verbose', dest='verbose', type=int,
-           help='Logging level default: INFO + 1',
-           default=logging.INFO+1)
 
     def param_search(self):
         pa = self.parser.add_argument
@@ -149,7 +145,6 @@ class CommandLine(object):
     def main(self, args=None, params=None):
         self.data = self.parser.parse_args(args=args)
         np.random.seed(self.data.seed)
-        logging.basicConfig(level=self.data.verbose)
         if self.data.numprocs == 1:
             pool = None
         elif self.data.numprocs == 0:
@@ -248,7 +243,6 @@ class CommandLineTrain(CommandLine):
 
     def main(self, args=None):
         self.data = self.parser.parse_args(args=args)
-        logging.basicConfig(level=self.data.verbose)
         if self.data.conf:
             best = json.loads(self.data.conf)
         else:
@@ -317,15 +311,11 @@ class CommandLinePredict(CommandLine):
         pa('test_set',
            default=None,
            help=cdn)
-        pa('--verbose', dest='verbose', type=int,
-           help='Logging level default: INFO + 1',
-           default=logging.INFO+1)
         pa('--ordinal', dest='ordinal', default=None,
            help="rounds a regression prediction to the nearest integer among the given start:end range")
 
     def main(self, args=None, model_svc_le=None):
         self.data = self.parser.parse_args(args=args)
-        logging.basicConfig(level=self.data.verbose)
         if model_svc_le is None:
             model, svc, le = load_pickle(self.data.model)
         else:
@@ -395,7 +385,6 @@ class CommandLinePredict(CommandLine):
 class CommandLineTextModel(CommandLinePredict):
     def main(self, args=None):
         self.data = self.parser.parse_args(args=args)
-        logging.basicConfig(level=self.data.verbose)
         textmodel, svc, le = load_pickle(self.data.model)
         L = []
         with open(self.get_output(), 'w') as fpt:
@@ -467,7 +456,6 @@ class CommandLineKfolds(CommandLineTrain):
     def main(self, args=None):
         self.data = self.parser.parse_args(args=args)
         assert not self.data.update_klass
-        logging.basicConfig(level=self.data.verbose)
         if self.data.conf:
             best = json.loads(self.data.conf)
         else:

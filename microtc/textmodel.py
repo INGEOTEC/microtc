@@ -17,12 +17,9 @@ import numpy as np
 from .params import OPTION_DELETE, OPTION_GROUP, OPTION_NONE
 from .emoticons import EmoticonClassifier
 import os
-import logging
 from scipy.sparse import csr_matrix
 from .utils import get_class
 
-
-logging.basicConfig(format='%(asctime)s : %(levelname)s :%(message)s')
 
 PUNCTUACTION = ";:,.@\\-\"'/"
 SYMBOLS = "()[]¿?¡!{}~<>|"
