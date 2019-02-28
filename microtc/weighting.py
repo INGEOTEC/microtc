@@ -14,6 +14,7 @@
 
 
 import numpy as np
+from collections import Counter
 
 
 class TFIDF(object):
@@ -44,7 +45,7 @@ class TFIDF(object):
         weight = {}
         self._ndocs = len(docs)
         for tokens in docs:
-            for x, freq in zip(*np.unique(tokens, return_counts=True)):
+            for x, freq in Counter(tokens).items():
                 try:
                     ident = w2id[x]
                     weight[ident] = weight[ident] + 1
@@ -120,7 +121,10 @@ class TFIDF(object):
                 lst.append(id)
             except KeyError:
                 continue
-        ids, tf = np.unique(lst, return_counts=True)
+        ids_tf = [(a, b) for a, b in Counter(lst).items()]
+        # ids, tf = np.unique(lst, return_counts=True)
+        ids = [x[0] for x in ids_tf]
+        tf = np.array([x[1] for x in ids_tf])
         tf = tf / tf.sum()
         df = np.array([weight[x] for x in ids])
         return ids, tf, df
@@ -233,7 +237,7 @@ class Entropy(TFIDF):
             for _y, tokens in zip(y, corpus):
                 if _y != klass:
                     continue
-                for x in np.unique(tokens):
+                for x in Counter(tokens).keys():
                     try:
                         weight[ki, m[x]] += 1
                     except KeyError:

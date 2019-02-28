@@ -131,7 +131,7 @@ def load_model(fname):
     """
     import gzip
     import pickle
-    with gzip.open(fname, 'rb') as fpt:
+    with gzip.open(fname, 'r') as fpt:
         _ = pickle.load(fpt)
     return _
 
