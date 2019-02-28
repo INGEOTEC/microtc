@@ -122,3 +122,31 @@ def get_class(m):
         return getattr(p, a[-1])
     return m
 
+
+def load_model(fname):
+    """Read model from file. The model must be stored using gzip and pickle
+
+    :param fname: filename
+    :type fname: str (path)
+    """
+    import gzip
+    import pickle
+    with gzip.open(fname, 'r') as fpt:
+        _ = pickle.load(fpt)
+    return _
+
+
+def save_model(obj, fname):
+    """Store model from file. The model is stored using gzip and pickle
+
+    :param obj: object to store
+    :type obj: object
+    :param fname: filename
+    :type fname: str (path)
+    """
+    
+    import gzip
+    import pickle
+    with gzip.open(fname, 'w') as fpt:
+        pickle.dump(obj, fpt)
+

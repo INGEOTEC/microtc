@@ -183,4 +183,17 @@ def test_textmodel_weighting_key():
     tw = list(tweet_iterator(fname))
     for w in ['tfidf', 'tf', 'entropy']:
         TextModel(token_list=[-2, -1], weighting=w).fit(tw)
-        
+
+
+def test_textmodel_save_load():
+    import os
+    from microtc.textmodel import TextModel
+    from microtc.utils import tweet_iterator, save_model, load_model
+    fname = os.path.dirname(__file__) + '/text.json'
+    tw = list(tweet_iterator(fname))
+    tm = TextModel().fit(tw)
+    save_model(tm, 't.model')
+    assert isinstance(load_model('t.model'), TextModel)
+    os.unlink('t.model')
+    
+    
