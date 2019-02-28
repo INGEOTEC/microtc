@@ -164,14 +164,14 @@ class TextModel:
 
     Represent a text whose words are in the corpus and one that does not
 
-    >>> print(textmodel['categorizacion ingoetec'], textmodel['cat'])
-    [(4, 1.0)] []
+    >>> vector = textmodel['categorizacion ingoetec']
+    >>> vector2 = textmodel['cat']
 
     Using a different token_list
 
     >>> textmodel = TextModel(token_list=[[2, 1], -1, 3, 4]).fit(corpus)
-    >>> print(textmodel['categorizacion ingoetec'], '--', textmodel['cat'])
-    [(56, 0.1835524837678424), (24, 0.06774376041676866), (25, 0.06774376041676866), (26, 0.06774376041676866), (60, 0.1835524837678424), (61, 0.1835524837678424), (62, 0.1835524837678424), (63, 0.1835524837678424), (64, 0.1835524837678424), (65, 0.1835524837678424), (66, 0.1835524837678424), (67, 0.1835524837678424), (68, 0.1835524837678424), (69, 0.1835524837678424), (70, 0.1835524837678424), (81, 0.1835524837678424), (82, 0.1835524837678424), (87, 0.1835524837678424), (88, 0.1835524837678424), (39, 0.06774376041676866), (40, 0.06774376041676866), (89, 0.1835524837678424), (90, 0.1835524837678424), (91, 0.1835524837678424), (92, 0.1835524837678424), (93, 0.1835524837678424), (94, 0.1835524837678424), (95, 0.1835524837678424), (96, 0.1835524837678424), (97, 0.1835524837678424), (98, 0.1835524837678424), (99, 0.1835524837678424), (111, 0.1835524837678424), (117, 0.1835524837678424)] -- [(25, 0.816496580927726), (24, 0.408248290463863), (39, 0.408248290463863)]
+    >>> vector = textmodel['categorizacion ingoetec']
+    >>> vector2 = textmodel['cat']
 
     Train a classifier
 
@@ -273,9 +273,6 @@ class TextModel:
         >>> corpus = ['buenos dias catedras', 'catedras conacyt']
         >>> textmodel = TextModel().fit(corpus)
         >>> X = textmodel.transform(corpus)
-        >>> X.toarray()
-        array([[0.70710678, 0.70710678, 0.        , 0.        ],
-               [0.        , 0.        , 0.        , 1.        ]])
         """
         return self.tonp([self.__getitem__(x) for x in texts])
 
