@@ -29,19 +29,7 @@ from sklearn.model_selection import KFold
 import numpy as np
 import os
 import json
-import pickle
-
-
-# from microtc.params import ParameterSelection
-def load_pickle(filename):
-    if filename.endswith(".gz"):
-        f = gzip.GzipFile(filename)
-        X = pickle.load(f)
-        f.close()
-        return X
-    else:
-        with open(filename, 'rb') as f:
-            return pickle.load(f)
+from .utils import save_model, load_model
 
 
 def load_json(filename):
@@ -280,8 +268,7 @@ class CommandLineTrain(CommandLine):
         c = wrapper()
         X = [t[x] for x in corpus]
         c.fit(X, y)
-        with open(self.get_output(), 'wb') as fpt:
-            pickle.dump([t, c, le], fpt)
+        save_model([t, c, le], self.get_output())
         return [t, c, le]
 
 
@@ -317,7 +304,7 @@ class CommandLinePredict(CommandLine):
     def main(self, args=None, model_svc_le=None):
         self.data = self.parser.parse_args(args=args)
         if model_svc_le is None:
-            model, svc, le = load_pickle(self.data.model)
+            model, svc, le = load_model(self.data.model)
         else:
             model, svc, le = model_svc_le
 
@@ -385,7 +372,7 @@ class CommandLinePredict(CommandLine):
 class CommandLineTextModel(CommandLinePredict):
     def main(self, args=None):
         self.data = self.parser.parse_args(args=args)
-        textmodel, svc, le = load_pickle(self.data.model)
+        textmodel, svc, le = load_model(self.data.model)
         L = []
         with open(self.get_output(), 'w') as fpt:
             for tw in tweet_iterator(self.data.test_set):
@@ -410,7 +397,7 @@ class CommandLineRetrain(CommandLinePredict):
     def main(self, args=None):
         self.data = self.parser.parse_args(args=args)
         # logging.basicConfig(level=self.data.verbose)
-        textmodel, svc, le = load_pickle(self.data.model)
+        textmodel, svc, le = load_model(self.data.model)
 
         if self.data.regression:
             _read_data = read_data_values
@@ -434,8 +421,7 @@ class CommandLineRetrain(CommandLinePredict):
         c = wrapper()
         X = [textmodel[x] for x in corpus]
         c.fit(X, y)
-        with open(self.get_output(), 'wb') as fpt:
-            pickle.dump([textmodel, c, le], fpt)
+        save_model([textmodel, c, le], self.get_output())
         return [textmodel, c, le]
 
 
