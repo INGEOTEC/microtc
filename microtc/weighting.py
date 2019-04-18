@@ -14,6 +14,7 @@
 
 
 import numpy as np
+from .utils import KLASS 
 from collections import Counter
 
 
@@ -225,7 +226,7 @@ class Entropy(TFIDF):
         :rtype: np.array
         """
         m = word2id
-        y = [x['klass'] for x in docs]
+        y = [x[KLASS] for x in docs]
         klasses = np.unique(y)
         nklasses = klasses.shape[0]
         ntokens = len(m)

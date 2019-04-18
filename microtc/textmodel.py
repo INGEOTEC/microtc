@@ -189,7 +189,7 @@ class TextModel:
                  ent_option=OPTION_NONE, lc=True, del_dup=True, del_punc=False, del_diac=True,
                  token_list=[-1], token_min_filter=0,
                  token_max_filter=1, select_ent=False, select_suff=False, select_conn=False,
-                 weighting='tfidf'):
+                 weighting='tfidf', **kwargs):
         self._text = os.getenv('TEXT', default=text)
         self.del_diac = del_diac
         self.num_option = num_option
