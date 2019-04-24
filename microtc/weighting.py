@@ -175,7 +175,7 @@ class TF(TFIDF):
         return r
 
 
-class Entropy(TFIDF):
+class Entropy(TF):
     """
     Vector Space using 1 - entropy as the weighting scheme
 
@@ -229,23 +229,27 @@ class Entropy(TFIDF):
         klasses = np.unique(y)
         nklasses = klasses.shape[0]
         ntokens = len(m)
-        weight = np.zeros((klasses.shape[0], ntokens))
+        # hist = np.ones((klasses.shape[0], ntokens))
+        hist = np.full((klasses.shape[0], ntokens), 1)
+
         for ki, klass in enumerate(klasses):
             for _y, tokens in zip(y, corpus):
                 if _y != klass:
                     continue
                 for x in Counter(tokens).keys():
                     try:
-                        weight[ki, m[x]] += 1
+                        hist[ki, m[x]] += 1
                     except KeyError:
                         continue
-        weight = weight / weight.sum(axis=0)
-        weight[~np.isfinite(weight)] = 1.0 / nklasses
-        logc = np.log2(weight)
+
+        # hist = np.log2(hist + 1)
+        hist = hist / hist.sum(axis=0)
+        # hist[~np.isfinite(hist)] = 1.0 / nklasses
+        logc = np.log2(hist)
         logc[~np.isfinite(logc)] = 0
         if nklasses > 2:
             logc = logc / np.log2(nklasses)
-        return (1 + (weight * logc).sum(axis=0))
+        return (1 + (hist * logc).sum(axis=0))
 
     def __getitem__(self, tokens):
         """
