@@ -15,6 +15,12 @@
 
 import numpy as np
 from collections import Counter
+import os
+
+
+TEXT = os.environ.get("TEXT", 'text')
+KLASS = os.environ.get("KLASS", 'klass')
+VALUE = os.environ.get("VALUE", 'value')
 
 
 class TFIDF(object):
@@ -225,12 +231,12 @@ class Entropy(TF):
         :rtype: np.array
         """
         m = word2id
-        y = [x['klass'] for x in docs]
+        y = [x[KLASS] for x in docs]
         klasses = np.unique(y)
         nklasses = klasses.shape[0]
         ntokens = len(m)
         # hist = np.ones((klasses.shape[0], ntokens))
-        hist = np.full((klasses.shape[0], ntokens), 1)
+        hist = np.full((klasses.shape[0], ntokens), 3)
 
         for ki, klass in enumerate(klasses):
             for _y, tokens in zip(y, corpus):
