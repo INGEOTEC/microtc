@@ -54,7 +54,7 @@ def balance(X, y):
             last = xlist.pop()
             i = np.random.randint(0, size)
             if isinstance(xlist[i], list):
-                xlist[i].append(last)
+                xlist[i] = last
             else:
                 xlist[i] = [xlist[i], last]
 
