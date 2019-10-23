@@ -16,6 +16,9 @@ microTC
 .. image:: https://badge.fury.io/py/microtc.svg
    :target: https://badge.fury.io/py/microtc
 
+.. image:: https://anaconda.org/ingeotec/microtc/badges/downloads.svg   
+   :target: https://anaconda.org/ingeotec/microtc
+
 .. image:: https://readthedocs.org/projects/microtc/badge/?version=latest 	    
    :target: https://microtc.readthedocs.io/en/latest/?badge=latest
 
