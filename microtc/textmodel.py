@@ -451,6 +451,9 @@ class TextModel:
 
         >>> from microtc.textmodel import TextModel
         >>> tm = TextModel()
+        >>> class A: pass
+        >>> tm.model = A()
+        >>> tm.model.num_terms = 4
         >>> matrix = [[(1, 0.5), (3, -0.2)], [(2, 0.3)], [(0, 1), (3, -1.2)]]
         >>> r = tm.tonp(matrix)
         >>> r.toarray()
