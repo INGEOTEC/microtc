@@ -438,11 +438,7 @@ class TextModel:
         :rtype: int
         """
 
-        try:
-            return self._num_terms
-        except AttributeError:
-            self._num_terms = None
-        return None
+        return self.model.num_terms
 
     def tonp(self, X):
         """Sparse representation to sparce matrix
@@ -455,6 +451,9 @@ class TextModel:
 
         >>> from microtc.textmodel import TextModel
         >>> tm = TextModel()
+        >>> class A: pass
+        >>> tm.model = A()
+        >>> tm.model.num_terms = 4
         >>> matrix = [[(1, 0.5), (3, -0.2)], [(2, 0.3)], [(0, 1), (3, -1.2)]]
         >>> r = tm.tonp(matrix)
         >>> r.toarray()
@@ -475,8 +474,4 @@ class TextModel:
             data += [_[1] for _ in x if np.isfinite(_[1]) and (self.num_terms is None or _[0] < self.num_terms)]
             _ = [r] * len(cc)
             row += _
-        if self.num_terms is None:
-            _ = csr_matrix((data, (row, col)))
-            self._num_terms = _.shape[1]
-            return _
         return csr_matrix((data, (row, col)), shape=(len(X), self.num_terms))
