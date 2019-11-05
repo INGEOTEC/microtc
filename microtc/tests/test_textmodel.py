@@ -197,3 +197,14 @@ def test_textmodel_save_load():
     os.unlink('t.model')
     
     
+def test_textmodel_num_terms():
+    from microtc.textmodel import TextModel
+    from microtc.utils import tweet_iterator
+    import os
+    fname = os.path.dirname(__file__) + '/text.json'
+    tw = list(tweet_iterator(fname))
+    text = TextModel(token_list=[-2, -1, 3, 4]).fit(tw)
+    assert text.num_terms is not None
+    text.transform(["buenos"])
+    print(text.num_terms)
+    assert text.num_terms == text.model.num_terms
