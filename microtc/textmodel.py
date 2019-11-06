@@ -23,28 +23,12 @@ from .utils import get_class
 
 PUNCTUACTION = ";:,.@\\-\"'/"
 SYMBOLS = "()[]¿?¡!{}~<>|"
-SKIP_SYMBOLS = set(PUNCTUACTION + SYMBOLS)
-SKIP_SYMBOLS_AND_SPACES = set(PUNCTUACTION + SYMBOLS + '\t\n\r ')
+SKIP_SYMBOLS = set(";:,.@\\-\"/" + SYMBOLS)
+SKIP_SYMBOLS_AND_SPACES = set(";:,.@\\-\"/" + SYMBOLS + '\t\n\r ')
 # SKIP_WORDS = set(["…", "..", "...", "...."])
 WEIGHTING = dict(tfidf="microtc.weighting.TFIDF",
                  tf="microtc.weighting.TFIDF",
                  entropy="microtc.weighting.Entropy")
-
-
-def get_word_list(text):
-    L = []
-    prev = ' '
-    for u in text[1:len(text)-1]:
-        if u in SKIP_SYMBOLS:
-            u = ' '
-
-        if prev == ' ' and u == ' ':
-            continue
-
-        L.append(u)
-        prev = u
-
-    return ("".join(L)).split()
 
 
 def norm_chars(text, del_diac=True, del_dup=True, del_punc=False):
@@ -71,6 +55,41 @@ def norm_chars(text, del_diac=True, del_dup=True, del_punc=False):
     L.append('~')
 
     return "".join(L)
+
+
+def get_word_list(text):
+    """
+    Transform a text (begining and ending with ~) to list words.
+    It is called after :py:func:`microtc.textmodel.norm_chars`.
+
+    Example
+
+    >>> from microtc.textmodel import get_word_list
+    >>> get_word_list("~Someone's house.~")
+    ["Someone's", 'house']
+
+    :param text: text
+    :type text: str
+
+    :rtype: list
+    """
+
+    L = []
+    prev = ' '
+    for u in text[1:len(text)-1]:
+        if u in SKIP_SYMBOLS:
+            u = ' '
+
+        if prev == ' ' and u == ' ':
+            continue
+
+        if prev == ' ' and u == "'":
+            continue
+
+        L.append(u)
+        prev = u
+
+    return ("".join(L)).split()
 
 
 def expand_qgrams(text, qsize, output):
@@ -263,7 +282,7 @@ class TextModel:
         """Convert test into a vector
 
         :param texts: List of text to be transformed
-        :type text: list
+        :type texts: list
 
         :rtype: list
 
