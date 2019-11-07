@@ -113,6 +113,12 @@ corpus, i.e., a list of text and builds a text model from it.
 .. autoclass:: microtc.textmodel.TextModel
    :members:
 
+.. autofunction:: microtc.textmodel.norm_chars
+.. autofunction:: microtc.textmodel.get_word_list
+.. autofunction:: microtc.textmodel.expand_qgrams
+.. autofunction:: microtc.textmodel.expand_qgrams_word_list
+.. autofunction:: microtc.textmodel.expand_skipgrams_word_list		  
+		  
 Modules
 ==================	      
 

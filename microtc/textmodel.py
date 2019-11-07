@@ -23,31 +23,36 @@ from .utils import get_class
 
 PUNCTUACTION = ";:,.@\\-\"'/"
 SYMBOLS = "()[]¿?¡!{}~<>|"
-SKIP_SYMBOLS = set(PUNCTUACTION + SYMBOLS)
-SKIP_SYMBOLS_AND_SPACES = set(PUNCTUACTION + SYMBOLS + '\t\n\r ')
+SKIP_SYMBOLS = set(";:,.@\\-\"/" + SYMBOLS)
+SKIP_SYMBOLS_AND_SPACES = set(";:,.@\\-\"/" + SYMBOLS + '\t\n\r ')
 # SKIP_WORDS = set(["…", "..", "...", "...."])
 WEIGHTING = dict(tfidf="microtc.weighting.TFIDF",
                  tf="microtc.weighting.TFIDF",
                  entropy="microtc.weighting.Entropy")
 
 
-def get_word_list(text):
-    L = []
-    prev = ' '
-    for u in text[1:len(text)-1]:
-        if u in SKIP_SYMBOLS:
-            u = ' '
-
-        if prev == ' ' and u == ' ':
-            continue
-
-        L.append(u)
-        prev = u
-
-    return ("".join(L)).split()
-
-
 def norm_chars(text, del_diac=True, del_dup=True, del_punc=False):
+    """
+    Transform text by removing diacritics, duplicates, and punctuation.
+    It adds ~ at the beginning, the end, and the spaces are changed by ~.
+
+    :param text: Text
+    :type text: str
+    :param del_diac: Delete diacritics
+    :type del_diac: bool
+    :param del_dup: Delete duplicates
+    :type del_dup: bool
+    :param del_punc: Delete punctuation symbols
+    :type del_punc: bool
+    :rtype: str
+
+    Example:
+
+    >>> from microtc.textmodel import norm_chars
+    >>> norm_chars("Life is good at Méxicoo.")
+    '~Life~is~god~at~Mexico.~'
+
+    """
     L = ['~']
 
     prev = '~'
@@ -73,8 +78,62 @@ def norm_chars(text, del_diac=True, del_dup=True, del_punc=False):
     return "".join(L)
 
 
+def get_word_list(text):
+    """
+    Transform a text (begining and ending with ~) to list words.
+    It is called after :py:func:`microtc.textmodel.norm_chars`.
+
+    Example
+
+    >>> from microtc.textmodel import get_word_list
+    >>> get_word_list("~Someone's house.~")
+    ["Someone's", 'house']
+
+    :param text: text
+    :type text: str
+
+    :rtype: list
+    """
+
+    L = []
+    prev = ' '
+    for u in text[1:len(text)-1]:
+        if u in SKIP_SYMBOLS:
+            u = ' '
+
+        if prev == ' ' and u == ' ':
+            continue
+
+        if prev == ' ' and u == "'":
+            continue
+
+        L.append(u)
+        prev = u
+
+    return ("".join(L)).split()
+
+
 def expand_qgrams(text, qsize, output):
-    """Expands a text into a set of q-grams"""
+    """Expands a text into a set of q-grams
+
+    :param text: Text
+    :type text: str
+    :param qsize: q-gram size
+    :type qsize: int
+    :param output: output
+    :type output: list
+
+    :returns: output
+    :rtype: list
+
+    Example:
+
+    >>> from microtc.textmodel import expand_qgrams
+    >>> output = list()
+    >>> expand_qgrams("Good morning.", 3, output)
+    ['Goo', 'ood', 'od ', 'd m', ' mo', 'mor', 'orn', 'rni', 'nin', 'ing', 'ng.']
+    """
+    
     n = len(text)
     for start in range(n - qsize + 1):
         output.append(text[start:start+qsize])
@@ -83,9 +142,30 @@ def expand_qgrams(text, qsize, output):
 
 
 def expand_qgrams_word_list(wlist, qsize, output, sep='~'):
-    """Expands a list of words into a list of q-grams. It uses `sep` to join words"""
+    """Expands a list of words into a list of q-grams. It uses `sep` to join words
+
+    :param wlist: List of words computed by :py:func:`microtc.textmodel.get_word_list`.
+    :type wlist: list
+    :param qsize: q-gram size of words
+    :type qsize: int
+    :param output: output
+    :type output: list
+    :param sep: String used to join the words
+    :type sep: str
+
+    :returns: output
+    :rtype: list
+
+    Example:
+
+    >>> from microtc.textmodel import expand_qgrams_word_list
+    >>> wlist = ["Good", "morning", "Mexico"]
+    >>> expand_qgrams_word_list(wlist, 2, list())
+    ['Good~morning', 'morning~Mexico']
+    """
+
     n = len(wlist)
-    
+
     for start in range(n - qsize + 1):
         t = sep.join(wlist[start:start+qsize])
         output.append(t)
@@ -94,7 +174,28 @@ def expand_qgrams_word_list(wlist, qsize, output, sep='~'):
 
 
 def expand_skipgrams_word_list(wlist, qsize, output, sep='~'):
-    """Expands a list of words into a list of skipgrams. It uses `sep` to join words"""
+    """Expands a list of words into a list of skipgrams. It uses `sep` to join words
+
+    :param wlist: List of words computed by :py:func:`microtc.textmodel.get_word_list`.
+    :type wlist: list
+    :param qsize: (qsize, skip) qsize is the q-gram size and skip is the number of words ahead.
+    :type qsize: tuple
+    :param output: output
+    :type output: list
+    :param sep: String used to join the words
+    :type sep: str
+
+    :returns: output
+    :rtype: list
+
+    Example:
+
+    >>> from microtc.textmodel import expand_skipgrams_word_list
+    >>> wlist = ["Good", "morning", "Mexico"]
+    >>> expand_skipgrams_word_list(wlist, (2, 1), list())
+    ['Good~Mexico']
+
+    """
     n = len(wlist)
     qsize, skip = qsize
     for start in range(n - (qsize + (qsize - 1) * skip) + 1):
@@ -263,7 +364,7 @@ class TextModel:
         """Convert test into a vector
 
         :param texts: List of text to be transformed
-        :type text: list
+        :type texts: list
 
         :rtype: list
 
@@ -280,7 +381,12 @@ class TextModel:
         raise RuntimeError('Not implemented')
 
     def tokenize(self, text):
-        """Transform text to tokens
+        """Transform text to tokens.
+        The procedure is:
+
+        - :py:func:`microtc.textmodel.TextModel.text_transformations`.
+        - :py:func:`microtc.textmodel.TextModel.compute_tokens`.
+        - :py:func:`microtc.textmodel.TextModel.select_tokens`.
 
         :param text: Text
         :type text: str or list
@@ -317,10 +423,21 @@ class TextModel:
 
     def text_transformations(self, text):
         """
-        Text transformations
+        Text transformations. It starts by analyzing emojis, hashtags, entities,
+        lower case, numbers, URL, and users. After these transformations are applied
+        to the text, it calls :py:func:`microtc.textmodel.norm_chars`.
 
         :param text:
         :type text: str
+
+        :rtype: str
+
+        Example:
+
+        >>> from microtc.textmodel import TextModel
+        >>> tm = TextModel(del_dup=False)
+        >>> tm.text_transformations("Life is good at México @mgraffg.")
+        '~life~is~good~at~mexico~_usr~'
         """
 
         if text is None:
@@ -363,14 +480,25 @@ class TextModel:
         elif self.usr_option == OPTION_GROUP:
             text = re.sub(r"@\S+", "_usr", text)
 
-        return norm_chars(text, del_diac=self.del_diac, del_dup=self.del_dup, del_punc=self.del_punc)
+        return norm_chars(text, del_diac=self.del_diac, del_dup=self.del_dup,
+                          del_punc=self.del_punc)
 
     def compute_tokens(self, text):
         """
-        :param text:
+        Compute tokens from a text using q-grams of characters and words, and skip-grams.
+
+        :param text: Text transformed by :py:func:`microtc.textmodel.TextModel.text_transformations`.
         :type text: str
 
         :rtype: list
+
+        Example:
+
+        >>> from microtc.textmodel import TextModel
+        >>> tm = TextModel(token_list=[-2, -1])
+        >>> tm.compute_tokens("~Good morning~")
+        [['Good~morning'], ['Good', 'morning']]
+
         """
         L = []
         textlist = None
@@ -400,6 +528,8 @@ class TextModel:
 
     def select_tokens(self, L):
         """
+        Filter tokens using suffix or connections
+
         :param L: list of tokens
         :type L: list
 
