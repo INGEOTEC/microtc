@@ -8,7 +8,8 @@ env:
   matrix:
     - python=3.5  CONDA_PY=35  
     - python=3.6  CONDA_PY=36
-    - python=3.7  CONDA_PY=37    
+    - python=3.7  CONDA_PY=37
+    - python=3.8  CONDA_PY=38
 
   global:
     - secure: "8bXWr8jA07c6SKG/nN5PuQ22hf56iEjE0VHc8/pVflhJmaBUOlaHfffCfml9op3LvEKUAhUUMtO3mnKG/ICuI04dpWOETISokpw2MPFBIXl8qEeXJfKdzeu5eh0QvKEH7iCXtQIPYnmaI10p0AJ4JtAG9duGQ/A8Bej5iAe/wFqeZXRwW7SL2rKpEhWwuWJnXYiTW/nYG1g6HekXplFQpigHr2O0USz0mumxV2RyUkE3v60t+bgrKWkwjf8SrIe/LUNkaPh42w2gjGXYwantDpu0NkipJcWnNJoeH0hfMXin7kt2KUKOJ1cx0GRysKcAV8OqPoM2TykQmpTgML5X0aRSJmRXZ9SixrzYqynPQ4QFgiPlwcG8A85t/79jydetpp9acmz+6CsBE5iCyNE6pvn8T4jrXJnHgTfRYDSBq9d5GNYnSyFKkZivm1K5nwalDhrHK/+b/a4BzpR8hB2/yromKGnFc9s5vE36oUzqEthA5ywndhOeUhzzQEc+7cyTtBR+d8IERCWky+fmTGqKQSpT25a02ffAo9J7eMtUmlr8OF7iW9NRTksBeWLfO5/3e4E7w3ZM+UdJQUo2d2rjB15+cARXRlXK7J117ecRgeEyooFwE7wL8XgJmVFPgh5zasSzFSZHcK58OLH9jXzDSrGvoC2F8Jv17EwrS8vO/i4="
