@@ -42,6 +42,10 @@ def test_textmodel():
     # assert False
     assert isinstance(text[tw[0]['text']], list)
     assert len(text[tw[0]]) == 3
+    text = TextModel(token_list=[3]).fit(tw)
+    print(text.model.word2id)
+    for k, _ in text.model.word2id.items():
+        assert len(k) == 3
 
 
 def test_params():
@@ -103,11 +107,12 @@ def test_textmodel_token_min_filter():
     fname = os.path.dirname(__file__) + '/text.json'
     tw = list(tweet_iterator(fname))
     text = TextModel(tw, token_min_filter=1, token_list=[-2, -1, 3, 4])
-    print(len(text.model._w2id), 'hh', text.token_min_filter, text.token_max_filter)
-    assert len(text.model._w2id) == 28
+    print(len(text.model._w2id), 'hh', text.token_min_filter, text.token_max_filter,
+          text.model._w2id)
+    assert len(text.model._w2id) == 11
     text = TextModel(tw, token_min_filter=0.01, token_list=[-2, -1, 3, 4])
     print(len(text.model._w2id))
-    assert len(text.model._w2id) == 28
+    assert len(text.model._w2id) == 11
     text = TextModel(tw, token_min_filter=1)
 
 
@@ -119,10 +124,10 @@ def test_textmodel_token_max_filter():
     tw = list(tweet_iterator(fname))
     text = TextModel(tw, token_max_filter=len(tw) / 2, token_list=[-2, -1, 3, 4])
     print(len(text.model._w2id))
-    assert len(text.model._w2id) == 28
+    assert len(text.model._w2id) == 11
     text = TextModel(tw, token_max_filter=0.5, token_list=[-2, -1, 3, 4])
     print(len(text.model._w2id))
-    assert len(text.model._w2id) == 27
+    assert len(text.model._w2id) == 11
     text = TextModel(tw, token_max_filter=2)
     print(len(text.model._w2id))
 
