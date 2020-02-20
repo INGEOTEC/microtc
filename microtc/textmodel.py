@@ -34,7 +34,7 @@ WEIGHTING = dict(tfidf="microtc.weighting.TFIDF",
 def norm_chars(text, del_diac=True, del_dup=True, del_punc=False):
     """
     Transform text by removing diacritics, duplicates, and punctuation.
-    Spaces are changed by ~.
+    It adds ~ at the beginning, the end, and the spaces are changed by ~.
 
     :param text: Text
     :type text: str
@@ -50,10 +50,10 @@ def norm_chars(text, del_diac=True, del_dup=True, del_punc=False):
 
     >>> from microtc.textmodel import norm_chars
     >>> norm_chars("Life is good at Méxicoo.")
-    'Life~is~god~at~Mexico.'
+    '%Life~is~god~at~Mexico.%'
 
     """
-    L = []
+    L = ['%']
 
     prev = '~'
     for u in unicodedata.normalize('NFD', text):
@@ -61,6 +61,7 @@ def norm_chars(text, del_diac=True, del_dup=True, del_punc=False):
             o = ord(u)
             if 0x300 <= o and o <= 0x036F:
                 continue
+            
         if u in ('\n', '\r', ' ', '\t'):
             u = '~'
         elif del_dup and prev == u:
@@ -71,6 +72,9 @@ def norm_chars(text, del_diac=True, del_dup=True, del_punc=False):
 
         prev = u
         L.append(u)
+
+    L.append('%')
+
     return "".join(L)
 
 
@@ -82,7 +86,7 @@ def get_word_list(text):
     Example
 
     >>> from microtc.textmodel import get_word_list
-    >>> get_word_list("Someone's house.")
+    >>> get_word_list("~Someone's house.~")
     ["Someone's", 'house']
 
     :param text: text
@@ -93,7 +97,7 @@ def get_word_list(text):
 
     L = []
     prev = ' '
-    for u in text:
+    for u in text[1:len(text)-1]:
         if u in SKIP_SYMBOLS:
             u = ' '
 
@@ -127,12 +131,11 @@ def expand_qgrams(text, qsize, output):
     >>> from microtc.textmodel import expand_qgrams
     >>> output = list()
     >>> expand_qgrams("Good morning.", 3, output)
-    ['Goo', 'ood', 'od ', 'd m', ' mo', 'mor', 'orn', 'rni', 'nin', 'ing', 'ng.']
+    ['q:Goo', 'q:ood', 'q:od ', 'q:d m', 'q: mo', 'q:mor', 'q:orn', 'q:rni', 'q:nin', 'q:ing', 'q:ng.']
     """
 
-    _ = ["".join(a) for a in zip(*[text[i:] for i in range(qsize)]) if
-         a[0] != '~' and a[-1] != '~']
-    [output.append(x) for x in _]
+    _ = ["".join(a) for a in zip(*[text[i:] for i in range(qsize)])]
+    [output.append("q:" + x) for x in _]
     return output
 
 
@@ -432,7 +435,7 @@ class TextModel:
         >>> from microtc.textmodel import TextModel
         >>> tm = TextModel(del_dup=False)
         >>> tm.text_transformations("Life is good at México @mgraffg.")
-        'life~is~good~at~mexico~_usr'
+        '%life~is~good~at~mexico~_usr%'
         """
 
         if text is None:
