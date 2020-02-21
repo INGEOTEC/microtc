@@ -50,10 +50,10 @@ def norm_chars(text, del_diac=True, del_dup=True, del_punc=False):
 
     >>> from microtc.textmodel import norm_chars
     >>> norm_chars("Life is good at Méxicoo.")
-    '%Life~is~god~at~Mexico.%'
+    '~Life~is~god~at~Mexico.~'
 
     """
-    L = ['%']
+    L = ['~']
 
     prev = '~'
     for u in unicodedata.normalize('NFD', text):
@@ -73,7 +73,7 @@ def norm_chars(text, del_diac=True, del_dup=True, del_punc=False):
         prev = u
         L.append(u)
 
-    L.append('%')
+    L.append('~')
 
     return "".join(L)
 
@@ -435,7 +435,7 @@ class TextModel:
         >>> from microtc.textmodel import TextModel
         >>> tm = TextModel(del_dup=False)
         >>> tm.text_transformations("Life is good at México @mgraffg.")
-        '%life~is~good~at~mexico~_usr%'
+        '~life~is~good~at~mexico~_usr~'
         """
 
         if text is None:
