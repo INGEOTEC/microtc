@@ -131,13 +131,11 @@ def expand_qgrams(text, qsize, output):
     >>> from microtc.textmodel import expand_qgrams
     >>> output = list()
     >>> expand_qgrams("Good morning.", 3, output)
-    ['Goo', 'ood', 'od ', 'd m', ' mo', 'mor', 'orn', 'rni', 'nin', 'ing', 'ng.']
+    ['q:Goo', 'q:ood', 'q:od ', 'q:d m', 'q: mo', 'q:mor', 'q:orn', 'q:rni', 'q:nin', 'q:ing', 'q:ng.']
     """
-    
-    n = len(text)
-    for start in range(n - qsize + 1):
-        output.append(text[start:start+qsize])
 
+    _ = ["".join(a) for a in zip(*[text[i:] for i in range(qsize)])]
+    [output.append("q:" + x) for x in _]
     return output
 
 
