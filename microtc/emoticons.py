@@ -1,3 +1,17 @@
+# Copyright 2016-2017 Eric S. Tellez
+
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+
+#     http://www.apache.org/licenses/LICENSE-2.0
+
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
 import json
 import re
 import os
@@ -96,3 +110,106 @@ class EmoticonClassifier:
                 i += 1
 
         return "".join(T)
+
+
+def convert_emoji(emoji):
+    """Convert the code points into characters
+
+    :param emoji: code point
+    :return: emoji
+    :rtype: str
+    """
+    if emoji.count(".."):
+        init, end = [int(x, base=16) for x in emoji.split("..")]
+        return [chr(x) for x in range(init, end + 1)]
+    emojis = emoji.split()
+    if len(emojis) > 1:
+        emojis = filter(len, [x.strip() for x in emojis])
+        return "".join([convert_emoji(x) for x in emojis])
+    return chr(int(emoji, base=16))
+
+    
+def read_emoji_standard(fname, emos=None):
+    """Read the emoji standard files
+
+    :param fname: Path to the file
+    :type fname: str
+    :param emos: Dictionary computed from a previous called
+    :type emos: dict
+    :return: Emoji with types as dictionary 
+    :rtype: dict
+    """
+
+    emos = dict() if emos is None else emos
+    with open(fname, encoding="utf-8") as fpt:
+        for line in fpt.readlines():
+            try:
+                line = line[:line.index("#")].strip()            
+                if len(line) == 0:
+                    continue                
+                value, tipo = [x.strip() for x in line.split(";")][:2]
+            except ValueError:
+                continue
+            value = convert_emoji(value)
+            values = value if isinstance(value, list) else [value]
+            for value in values:
+                lst = emos.get(value, list())
+                lst.append(tipo)
+                emos[value] = lst
+    return emos
+
+
+def create_data_structure(emojis):
+    """Create data structure to store the emojis
+    :param emojis: Dictionary of emoji
+    :type emojis: dict
+    :rtype: dict
+    """
+
+    head = dict()
+    for word in emojis.keys():
+        current = head
+        for char in word:
+            try:
+                current = current[char]
+            except KeyError:
+                _ = dict()
+                current[char] = _
+                current = _
+        current["__end__"] = True
+    return head
+
+
+def find_emoji(data, text):
+    """Test whether text has an emoji
+
+    :param data: Output of :py:func:`create_data_structure`
+    :type data: dict
+    :return: list of pairs, init and end of the word
+    :rtype: list
+    """
+
+    blocks = list()
+    init = i = end = 0
+    head = data
+    current = head
+    while i < len(text):
+        char = text[i]
+        try:
+            current = current[char]
+            i += 1
+            if "__end__" in current:
+                end = i
+        except KeyError:
+            current = head
+            if end > init:
+                blocks.append([init, end])
+                init = i = end
+            elif i > init:
+                init = end = i
+            else:
+                init += 1
+                i = end = init
+    if end > init:
+        blocks.append([init, end])                
+    return blocks
