@@ -141,7 +141,7 @@ def read_emoji_standard(fname, emos=None):
     """
 
     emos = dict() if emos is None else emos
-    with open(fname) as fpt:
+    with open(fname, encoding="utf-8") as fpt:
         for line in fpt.readlines():
             try:
                 line = line[:line.index("#")].strip()            
