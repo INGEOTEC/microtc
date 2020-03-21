@@ -38,3 +38,12 @@ def test_wrapper_score():
     print(conf['_avgf1:0:2'], (f1[0] + f1[2]) / 2.)
     assert conf['_avgf1:0:2'] == (f1[0] + f1[2]) / 2.
 
+
+def test_counter():
+    from microtc.utils import Counter
+    c = Counter()
+    c.update([1, 2, 3, 1])
+    c.update([3])
+    assert c[1] == 2
+    print(c.update_calls)
+    assert c.update_calls == 2

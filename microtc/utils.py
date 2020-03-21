@@ -15,6 +15,7 @@
 import os
 import json
 import gzip
+import collections
 
 
 def line_iterator(filename):
@@ -150,3 +151,24 @@ def save_model(obj, fname):
     with gzip.open(fname, 'w') as fpt:
         pickle.dump(obj, fpt)
 
+
+class Counter(collections.Counter):
+    @property
+    def update_calls(self):
+        """
+        Count the number of times :py:func:`update` has been called.
+        """
+        try:
+            return self._update_calls
+        except AttributeError:
+            self._update_calls = -1
+        return self._update_calls
+
+    @update_calls.setter
+    def update_calls(self, value):
+        self._update_calls = value
+    
+    def update(self, *args, **kwargs):
+        print(args)
+        self.update_calls += 1
+        return super().update(*args, **kwargs)
