@@ -169,6 +169,5 @@ class Counter(collections.Counter):
         self._update_calls = value
     
     def update(self, *args, **kwargs):
-        print(args)
         self.update_calls += 1
         return super().update(*args, **kwargs)
