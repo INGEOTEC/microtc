@@ -40,10 +40,16 @@ def test_wrapper_score():
 
 
 def test_counter():
-    from microtc.utils import Counter
+    from microtc.utils import Counter, save_model, load_model
+    import os
     c = Counter()
     c.update([1, 2, 3, 1])
     c.update([3])
     assert c[1] == 2
     print(c.update_calls)
     assert c.update_calls == 2
+    save_model(c, "t.voc")
+    cc = load_model("t.voc")
+    os.unlink("t.voc")
+    print(cc.update_calls, "**")
+    assert cc.update_calls ==  2
