@@ -4,11 +4,12 @@
 def test_params():
     from microtc.params import ParameterSelection
     import numpy as np
+    from numpy.random import random
     sel = ParameterSelection()
     
     def fake_score(conf_code):
-        conf, code = conf_code
-        conf['_score'] = np.random.random()
+        conf = conf_code[0]
+        conf['_score'] = random()
         conf['_time'] = 1.0
         return conf
         
