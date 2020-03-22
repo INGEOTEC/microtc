@@ -155,7 +155,7 @@ def save_model(obj, fname):
 class Counter(collections.Counter):
     def __init__(self, iter=None, update_calls=0, **kwargs):
         super().__init__(iter)
-        self._update_calls = update_calls
+        self.update_calls = update_calls
 
     @property
     def update_calls(self):
