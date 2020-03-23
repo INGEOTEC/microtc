@@ -149,6 +149,41 @@ class TFIDF(object):
         n = np.sqrt(sum([x * x for _, x in r]))
         return [(i, x/n) for i, x in r]
 
+    @classmethod
+    def counter(cls, counter, token_min_filter=0, token_max_filter=1):
+        """
+        Create from :py:class:`microtc.utils.Corpus`
+
+        :param counter: Tokens
+        :param type: :py:class:`microtc.utils.Corpus`
+        """
+
+        N = counter.update_calls
+        if token_min_filter > 0 or token_max_filter != 1:
+            if token_min_filter < 1:
+                token_min_filter = int(N * token_min_filter)
+                if token_min_filter < 1:
+                    token_min_filter = 1
+            if token_min_filter > 0:
+                keys = [k for k, v in counter.items() if v <= token_min_filter]
+                for k in keys:
+                    del counter[k]
+            if token_max_filter != 1:
+                if token_max_filter < 1:
+                    token_max_filter = int(N * token_max_filter)
+                keys = [k for k, v in counter.items() if v >= token_max_filter]
+                for k in keys:
+                    del counter[k]
+        ins = cls([])
+        ins._ndocs = N
+        words = list(counter.keys())
+        words.sort()
+        word2id = {w: i for i, w in enumerate(words)}
+        weight = {word2id[k]: np.log2(N) - np.log2(v) for k, v in counter.items()}
+        ins._weight = weight
+        ins.word2id = word2id
+        return ins
+
 
 class TF(TFIDF):
     @property
