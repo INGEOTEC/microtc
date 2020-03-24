@@ -176,6 +176,16 @@ class Counter(collections.Counter):
         self.update_calls += 1
         return super().update(*args, **kwargs)
 
+    def __add__(self, other):
+        r = super().__add__(other)
+        update_calls = self.update_calls + other.update_calls
+        return self.__class__(dict(r), update_calls=update_calls)
+
+    def __sub__(self, other):
+        r = super().__sub__(other)
+        update_calls = self.update_calls - other.update_calls
+        return self.__class__(dict(r), update_calls=update_calls)
+
     def __reduce__(self):
         _ = dict(self)
         return self.__class__, (_, self.update_calls, )

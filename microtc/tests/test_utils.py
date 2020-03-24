@@ -54,3 +54,40 @@ def test_counter():
     os.unlink("t.voc")
     print(cc.update_calls, "**")
     assert cc.update_calls ==  2
+
+
+def test_counter_add():
+    from microtc.utils import Counter
+
+    c1 = Counter()
+    c1.update(range(10))
+    c2 = Counter()
+    c2.update(range(5, 15))
+    r = c1 + c2
+    print(r)
+    assert isinstance(r, Counter)
+    for i in range(5):
+        assert r[i] == 1
+    for i in range(5, 10):
+        assert r[i] == 2
+    for i in range(10, 15):
+        assert r[i] == 1 
+    assert r.update_calls == 2
+
+
+def test_counter_sub():
+    from microtc.utils import Counter
+
+    c1 = Counter()
+    c1.update(range(10))
+    c2 = Counter()
+    c2.update(range(5, 15))
+    r = c1 + c2
+    re = r - c1
+    print(re)
+    assert isinstance(re, Counter)
+    for k, v in re.items():
+        assert c2[k] == v
+    for k, v in c2.items():
+        assert re[k] == v
+    assert re.update_calls == 1
