@@ -91,3 +91,18 @@ def test_counter_sub():
     for k, v in c2.items():
         assert re[k] == v
     assert re.update_calls == 1
+
+
+def test_counter_json():
+    from microtc.utils import Counter
+    c1 = Counter()
+    c1.update(list(map(str, range(10))))
+    print(c1)
+    js = c1.tojson()
+    print(js)
+    c2 = Counter.fromjson(js)
+    assert c1.update_calls == c2.update_calls
+    print(c2)
+    for x, v in c1.items():
+        print(x, v, c2[x])
+        assert x in c2 and v == c2[x]
