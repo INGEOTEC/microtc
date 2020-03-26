@@ -181,7 +181,8 @@ class TFIDF(object):
         cls.filter(counter, token_min_filter=token_min_filter,
                     token_max_filter=token_max_filter)
         ins = cls([])
-        ins._ndocs = counter.update_calls
+        N = counter.update_calls
+        ins._ndocs = N
         words = list(counter.keys())
         words.sort()
         word2id = {w: i for i, w in enumerate(words)}
