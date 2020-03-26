@@ -189,3 +189,22 @@ class Counter(collections.Counter):
     def __reduce__(self):
         _ = dict(self)
         return self.__class__, (_, self.update_calls, )
+
+    def tojson(self):
+        """
+        Represent class in json.
+        """
+
+        import json
+        return json.dumps(dict(update_calls=self.update_calls,
+                               dict=dict(self)))
+
+    @classmethod
+    def fromjson(cls, data):
+        """
+        Create class from json.
+        """
+
+        import json
+        data = json.loads(data)
+        return cls(data["dict"], data["update_calls"])

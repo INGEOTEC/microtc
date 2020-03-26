@@ -137,9 +137,3 @@ def test_tfidf_corpus2():
         fm = {k: v for k, v in tfidf[tokens]}
         for k, v in tfidf2[tokens]:
             assert_almost_equals(fm[tfidf.word2id[id2w2[k]]], v)
-
-    # N = counter.update_calls
-    # weight = {k: np.log2(N) - np.log2(v) for k, v in counter.items()}
-    # tfidf_w = tfidf._weight
-    # for k, v in weight.items():
-    #     print(tfidf_w[tfidf.word2id[k]], v)
