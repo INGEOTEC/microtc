@@ -16,6 +16,9 @@ import os
 import json
 import gzip
 import collections
+from abc import ABC, abstractmethod
+from scipy.sparse import csr_matrix
+import numpy as np
 
 
 def line_iterator(filename):
@@ -208,3 +211,32 @@ class Counter(collections.Counter):
         import json
         data = json.loads(data)
         return cls(data["dict"], data["update_calls"])
+
+
+class SparseMatrix(ABC):
+    @property
+    @abstractmethod
+    def num_terms(self):
+        pass
+
+    def tonp(self, X):
+        """Sparse representation to sparce matrix
+
+        :param X: Sparse representation of matrix
+        :type X: list
+        :rtype: csr_matrix
+        """
+
+        if not isinstance(X, list):
+            return X
+        data = []
+        row = []
+        col = []
+        for r, x in enumerate(X):
+            cc = [_[0] for _ in x if np.isfinite(_[1]) and (self.num_terms is None or _[0] < self.num_terms)]
+            col += cc
+            data += [_[1] for _ in x if np.isfinite(_[1]) and (self.num_terms is None or _[0] < self.num_terms)]
+            _ = [r] * len(cc)
+            row += _
+        return csr_matrix((data, (row, col)), shape=(len(X), self.num_terms))
+    
