@@ -106,3 +106,16 @@ def test_counter_json():
     for x, v in c1.items():
         print(x, v, c2[x])
         assert x in c2 and v == c2[x]
+
+
+def test_sparse_matrix():
+    from microtc.utils import SparseMatrix
+
+    class SM(SparseMatrix):
+        @property
+        def num_terms(self):
+            return 4
+
+    matrix = [[(1, 0.5), (3, -0.2)], [(2, 0.3)], [(0, 1), (3, -1.2)]]
+    r = SM().tonp(matrix)
+    assert r.toarray().shape[1] == 4

@@ -18,7 +18,7 @@ from .params import OPTION_DELETE, OPTION_GROUP, OPTION_NONE
 from .emoticons import EmoticonClassifier
 import os
 from scipy.sparse import csr_matrix
-from .utils import get_class
+from .utils import get_class, SparseMatrix
 
 
 PUNCTUACTION = ";:,.@\\-\"'/"
@@ -207,7 +207,7 @@ def expand_skipgrams_word_list(wlist, qsize, output, sep='~'):
     return output
 
 
-class TextModel:
+class TextModel(SparseMatrix):
     """
 
     :param docs: Corpus
@@ -567,39 +567,3 @@ class TextModel:
         """
 
         return self.model.num_terms
-
-    def tonp(self, X):
-        """Sparse representation to sparce matrix
-
-        :param X: Sparse representation of matrix
-        :type X: list
-        :rtype: csr_matrix
-
-        Example:
-
-        >>> from microtc.textmodel import TextModel
-        >>> tm = TextModel()
-        >>> class A: pass
-        >>> tm.model = A()
-        >>> tm.model.num_terms = 4
-        >>> matrix = [[(1, 0.5), (3, -0.2)], [(2, 0.3)], [(0, 1), (3, -1.2)]]
-        >>> r = tm.tonp(matrix)
-        >>> r.toarray()
-        array([[ 0. ,  0.5,  0. , -0.2],
-               [ 0. ,  0. ,  0.3,  0. ],
-               [ 1. ,  0. ,  0. , -1.2]])
-
-        """
-
-        if not isinstance(X, list):
-            return X
-        data = []
-        row = []
-        col = []
-        for r, x in enumerate(X):
-            cc = [_[0] for _ in x if np.isfinite(_[1]) and (self.num_terms is None or _[0] < self.num_terms)]
-            col += cc
-            data += [_[1] for _ in x if np.isfinite(_[1]) and (self.num_terms is None or _[0] < self.num_terms)]
-            _ = [r] * len(cc)
-            row += _
-        return csr_matrix((data, (row, col)), shape=(len(X), self.num_terms))
