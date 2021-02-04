@@ -30,4 +30,4 @@ The starting point is :py:class:`microtc.textmodel.TextModel`
 """
 
 
-__version__ = "2.2.6"
+__version__ = "2.2.7"
