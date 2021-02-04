@@ -401,6 +401,9 @@ class TextModel(SparseMatrix):
         ['buenos', 'dias', 'tenga', 'usted']
         """
 
+        if isinstance(text, dict):
+            text = self.get_text(text)
+
         if isinstance(text, (list, tuple)):
             tokens = []
             for _text in text:
