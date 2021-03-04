@@ -28,7 +28,7 @@
    :target: https://microtc.readthedocs.io/en/latest/?badge=latest
 
 .. image:: https://colab.research.google.com/assets/colab-badge.svg
-   :target: https://colab.research.google.com/github/INGEOTEC/EvoMSA/blob/master/docs/microTC_Quickstart.ipynb	    
+   :target: https://colab.research.google.com/github/INGEOTEC/microtc/blob/master/docs/microTC_Quickstart.ipynb	    
 
 A great variety of text tasks such as topic or spam identification,
 user profiling, and sentiment analysis can be posed as a supervised
