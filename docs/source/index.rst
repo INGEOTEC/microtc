@@ -27,6 +27,9 @@
 .. image:: https://readthedocs.org/projects/microtc/badge/?version=latest 	    
    :target: https://microtc.readthedocs.io/en/latest/?badge=latest
 
+.. image:: https://colab.research.google.com/assets/colab-badge.svg
+   :target: https://colab.research.google.com/github/INGEOTEC/EvoMSA/blob/master/docs/microTC_Quickstart.ipynb	    
+
 A great variety of text tasks such as topic or spam identification,
 user profiling, and sentiment analysis can be posed as a supervised
 learning problem and tackled using a text classifier. A text
