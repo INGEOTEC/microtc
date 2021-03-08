@@ -9,9 +9,10 @@ env:
     - python=3.6  CONDA_PY=36
     - python=3.7  CONDA_PY=37
     - python=3.8  CONDA_PY=38
+    - python=3.9  CONDA_PY=39
 
   global:
-    - secure: "OL+5v3/TNQfV210sZCX5n2CVwuqckLOVxH6lwaS9lUHCBMVpHavs10hMSxHDBbmVkqWRMNgKN618lnfQVKkN/YvxK/sVoPfmywECGuN6P47mRASMJ5+AltLdY935Ccx9C8UMtQZrGkULZ9CW8hXdCeQ34AvVWNnjST5l6+N35CF/w0WnZZrLsh+qXfxhdJfwQq4y8A2pgottKMaBmyKfG4FTq0VeGwsqYuCokNdeT0mRXWUipEkaso0CT8Q4bqPZaRKjzbxgEWnKZ/EyTs9MzSUIO8ORCrV6p6/t0d+VK3ZDG/VUN6l+B4C0wxQVdpb8pGdPmBb4DF5LqQBbaz6nyguBj6qUQIe6UP9SpBBmuGl5ZHIZXsKC5N10UPntQeT68g65hLXCO+bFzBEJ3UCLyv/QdoLzbQzVMuKhGId2vkKwR2nGIcOG5czv+t3AlepuI60+xmA+CfldCzXk474rStuHNunQj1lXtTGmB3Q3wTyc78RLXLSN1QBbzpBOxxKHQgzIZWKM1CpJo4G4xQDen6XEnp1NcARJWZyDcd3d3B29suLQzeZpdtBe3NkHzf9d7Ot4JEAmpth3mG037gEyUk4n+1zsS7nlDMYeW2eU9TMgQy7B7SOsereqYsoPOqnKvIOcDVEnXMO2V5PKFvkIdiQpyHkiL1bROnRNJygLL8E="
+    - secure: "OquKSFP2bwnTw//2pWibe/CJt7Rz5rRw039B/4HpCtOA0Bqc8KctznR+PPrnOjKvzgkCLJO5B7SdrpgDjFL5oJO3t159ps6psS5rhVkKy3toU5BL0KyAyBVsLl3HeXwTQnD29vU8U1Liy7U9UTrP0p5nvo3ph/30OsidLulMqcVjlNT/wW+P86s66uqOj1JVHMWkOo7jV8inJnBC6wDMrazpMLHoctJjwPkuKdTvQmoo6DVsEDBI8CFNXko8lFmw/Rem1P6wmpR+8o9ZrTPQKeNVP8RwFDO+A5DUa2fVfALKjByr9fosj1dsqNFq8tPKjBrVd7z/8UYevjx+P1kLlylrDsK7Dw/0HR43xBJssKuBpyRnIX2zy0InQtpCbvHwJ1yK3Ydb29QtdDWR7o7SzLXd2xcbxB9029Z3hhKM6emcH4N988oWDJ/eEiz9BPsdOmPsX46G4wXOnctMfwHV8g8Q4kQEVirGU7aSzbNUSxSk3xAdD+1Hn9d7QvII+JN53PPnZ1sJ7B2cyv7UpISaLXMNX2jX2r+OQGj3LuYF5kiO5yVk1Bp/vhvar+6li0dyyD7UX8mGBS6uVgLM9+2PVO4INTPik0ccvsyRhaHmOyuM3zWG33SjU9Oj1vqCyA4VG1UsGu8aVOltu0LPGjQahM4m/uOiGZK3PE/yiELHO6Y="
     - secure: "sM13zuOLwof0FoyoY6kOaPhAGkSONAk6VuAQkxq9PXV/LMF7y0sSmfr0Cvf9Yb8dht93lSkbqXK3XkIz6EaLMRuxtBaAYAh5wY71ZHk6K8nORdEfxHFnYXUXkCK3DRLhFx2/X7+yxVDm6PqARyxtDWmmuVrAFqoe396aKquQTwBmgF5R8oCJVAHU4nFl9fBzBsdSq/5GPtuUIA0d1AiHZIakRwCTiUx6CnwfGNvNJ9TQqELlsCCXZ/zXNlJt76eliZQcumaflnEUrtvETy3i4JJjnXIl6Ta2miIZGpWAycuIUPAHlBUVCWVXnKr8BNMuEta8STpN2VQ+WPBGIwi8X59hzzoZ3Gt+CKoDO+ItMDIO8VuTR9Y/6unMwZO0o0MBjDkeOI+ki8UOOWPVQ1ww7m8hb1hLVz9UpqCa4RQpTlChCFxVBEnBsk6gfzzx9dnsGQfcxjVp7cy0cm2qVM8UDu5ZZsk3OFhM4I4e8pSnp9UN6nwPXXFU/jdaLzKn/yoAYC7Ye72NqUWbFLcdDo9qh8yRB6TAYxzLWdDUxMbJsEdKgSpbNpGHnG8RtxvU5qoZZsvK4Yi9k9wyShU1j5kBQn+0B8siuzxftdydvHXtHSO4FqTha2zhdavgR7NSOfvkXZ3tzTpITq5ZyyR+P38fBST/RRLpDoA5E41af03ZImI="
 
 
@@ -35,13 +36,14 @@ script:
   - which python
   - python --version
   - which coverage
-  - if [ $python = 3.6 ]; then coverage run setup.py nosetests --with-doctest; fi
-  - if [ $python = 3.7 ]; then nosetests --verbose -exe microtc --with-doctest; fi  
-  - if [ $python = 3.5 ]; then nosetests --verbose -exe microtc --with-doctest; fi
+  - if [ $python = 3.8 ]; then coverage run setup.py nosetests --with-doctest; fi
+  - if [ $python = 3.9 ]; then nosetests --verbose -exe microtc --with-doctest; fi
+  - if [ $python = 3.7 ]; then nosetests --verbose -exe microtc --with-doctest; fi    
+  - if [ $python = 3.6 ]; then nosetests --verbose -exe microtc --with-doctest; fi
 
 after_success:
-  - if [ $python = 3.6 ]; then coveralls || echo "Coveralls upload failed"; fi
-  - if [ $TRAVIS_BRANCH = "master" -a $python = 3.6 ]; then python setup.py sdist; pip install twine; twine upload -u mgraffg -p $TWINE dist/*.tar.gz; fi
+  - if [ $python = 3.8 ]; then coveralls || echo "Coveralls upload failed"; fi
+  - if [ $TRAVIS_BRANCH = "master" -a $python = 3.8 ]; then python setup.py sdist; pip install twine; twine upload -u mgraffg -p $TWINE dist/*.tar.gz; fi
   - if [ $TRAVIS_BRANCH = "master" ]; then source deactivate; conda install --yes pip conda-build jinja2 anaconda-client; conda build conda-recipe --quiet; fi
   - python continuous-integration/move-conda-package.py conda-recipe  
   - which binstar
