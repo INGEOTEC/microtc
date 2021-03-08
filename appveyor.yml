@@ -1,7 +1,7 @@
 environment:
   # See README for information on the token
   BINSTAR_TOKEN:
-    secure: rZkidrXyfugJVOvrTMe/S364IGc+K+H8a1Lt/UGBXh5AqqdaFfN2U+JnPJangzx3
+    secure: 7hAwQ+Gh3m17injDSBcex4n3X4ehiApV9/exDl5Nw3GjnSMZfue5vxSj4fqmJTj9
 
   global:
     # SDK v7.0 MSVC Express 2008's SetEnv.cmd script will fail if the
@@ -24,6 +24,11 @@ environment:
       PYTHON_VERSION: "3.8"
       PYTHON_ARCH: "64"
       CONDA_PY: "38"
+
+    - PYTHON: "C:\\Python39_64"
+      PYTHON_VERSION: "3.9"
+      PYTHON_ARCH: "64"
+      CONDA_PY: "39"      
 
 
 install:
