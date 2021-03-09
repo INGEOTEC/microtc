@@ -63,6 +63,17 @@ to the representation of the given texts in the vector space.
 Eric S. Tellez, Daniela Moctezuma, Sabino Miranda-Jímenez, Mario Graff. Knowledge-Based Systems
 Volume 149, 1 June 2018, Pages 110-123
 
+Quickstart Guide
+===================
+
+We have decided to make a live quickstart guide, it covers the
+installation, and the use of :math:`\mu\text{TC}` with different parameters. 
+Finally, the notebook can be found at the docs directory on GitHub.
+
+.. raw:: html
+
+	<iframe width="560" height="315" src="https://www.youtube.com/embed/4Am1IiGEgW4" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+
 
 Citing
 ======
