@@ -310,11 +310,6 @@ class TextModel(SparseMatrix):
         self.weighting = weighting
         self.weighting = WEIGHTING.get(weighting, weighting)
 
-        if emo_option == OPTION_NONE:
-            self.emo_map = None
-        else:
-            self.emo_map = EmoticonClassifier()
-
         if docs is not None and len(docs):
             self.fit(docs)
 
@@ -480,6 +475,11 @@ class TextModel(SparseMatrix):
             text = re.sub(r"@\S+", "", text)
         elif self.usr_option == OPTION_GROUP:
             text = re.sub(r"@\S+", "_usr", text)
+            
+        if emo_option == OPTION_NONE:
+            self.emo_map = None
+        else:
+            self.emo_map = EmoticonClassifier()
 
         return norm_chars(text, del_diac=self.del_diac, del_dup=self.del_dup,
                           del_punc=self.del_punc)
