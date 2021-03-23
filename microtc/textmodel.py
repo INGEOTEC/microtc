@@ -27,7 +27,7 @@ SKIP_SYMBOLS = set(";:,.@\\-\"/" + SYMBOLS)
 SKIP_SYMBOLS_AND_SPACES = set(";:,.@\\-\"/" + SYMBOLS + '\t\n\r ')
 # SKIP_WORDS = set(["…", "..", "...", "...."])
 WEIGHTING = dict(tfidf="microtc.weighting.TFIDF",
-                 tf="microtc.weighting.TFIDF",
+                 tf="microtc.weighting.TF",
                  entropy="microtc.weighting.Entropy")
 
 
