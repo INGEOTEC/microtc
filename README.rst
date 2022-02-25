@@ -4,8 +4,8 @@ microTC
 .. image:: https://github.com/INGEOTEC/microtc/actions/workflows/test.yaml/badge.svg
 	   :target: https://github.com/INGEOTEC/microtc/actions/workflows/test.yaml
 
-.. image:: https://coveralls.io/repos/github/INGEOTEC/microtc/badge.svg?branch=master
-   :target: https://coveralls.io/github/INGEOTEC/microtc?branch=master
+.. image:: https://coveralls.io/repos/github/INGEOTEC/microtc/badge.svg?branch=develop
+   :target: https://coveralls.io/github/INGEOTEC/microtc?branch=develop
 
 .. image:: https://anaconda.org/ingeotec/microtc/badges/version.svg
    :target: https://anaconda.org/ingeotec/microtc
