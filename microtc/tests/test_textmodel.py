@@ -213,3 +213,13 @@ def test_textmodel_num_terms():
     text.transform(["buenos"])
     print(text.num_terms)
     assert text.num_terms == text.model.num_terms
+
+
+def test_textmodel_num_option():
+    from microtc.textmodel import TextModel
+    from microtc.params import OPTION_GROUP
+    tm = TextModel(num_option=OPTION_GROUP)
+
+    for x in ["1", ".1", "1.", "1.1", "10", "10.0"]:
+        output = tm.text_transformations("tok {} tok".format(x))
+        assert output == "~tok~_num~tok~"
