@@ -467,9 +467,9 @@ class TextModel(SparseMatrix):
             text = text.lower()
 
         if self.num_option == OPTION_DELETE:
-            text = re.sub(r"\d+\.?\d+", "", text)
+            text = re.sub(r"\d\d*\.?\d*|\d*\.\d\d*", "", text)
         elif self.num_option == OPTION_GROUP:
-            text = re.sub(r"\d+\.?\d+", "_num", text)
+            text = re.sub(r"\d\d*\.?\d*|\d*\.\d\d*", "_num", text)
 
         if self.url_option == OPTION_DELETE:
             text = re.sub(r"https?://\S+", "", text)
