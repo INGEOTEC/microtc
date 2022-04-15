@@ -583,7 +583,7 @@ class TextModel(SparseMatrix):
         >>> corpus = ['buenos dias', 'catedras conacyt', 'categorizacion de texto ingeotec']
         >>> textmodel = TextModel().fit(corpus)
         >>> _ = textmodel.transform(corpus)
-        >>> textmodel.token_weight
+        >>> textmodel.token_weight[5]
         1.584962500721156
         """
         return self.model.wordWeight
