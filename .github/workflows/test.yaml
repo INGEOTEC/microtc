@@ -23,7 +23,7 @@ jobs:
         activate-environment: test
         auto-update-conda: true
         python-version: ${{ matrix.python-version }}
-        channels: conda-forge, ingeotec
+        channels: ingeotec
         allow-softlinks: true
         channel-priority: flexible
         show-channel-urls: true	
@@ -40,7 +40,7 @@ jobs:
         which python
         python --version
         which coverage
-        coverage run setup.py nosetests --with-doctest
+        nosetests --verbose --with-coverage --cover-package=microtc microtc/tests
     - name: Tests on macOS and Windows
       if: ${{ runner.os != 'Linux' }}
       run: |
