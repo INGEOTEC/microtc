@@ -484,6 +484,9 @@ class TextModel(SparseMatrix):
         return norm_chars(text, del_diac=self.del_diac, del_dup=self.del_dup,
                           del_punc=self.del_punc)
 
+    def get_word_list(self, *args, **kwargs):
+        return get_word_list(*args, **kwargs)
+
     def compute_tokens(self, text):
         """
         Compute tokens from a text using q-grams of characters and words, and skip-grams.
@@ -503,7 +506,7 @@ class TextModel(SparseMatrix):
         """
         L = []
         textlist = None
-
+        get_word_list = self.get_word_list
         _text = text
         for q in self.token_list:
             if isinstance(q, int):
@@ -570,3 +573,51 @@ class TextModel(SparseMatrix):
         """
 
         return self.model.num_terms
+
+    @property
+    def token_weight(self):
+        """
+        Weight associated to each token id
+
+        >>> from microtc.textmodel import TextModel
+        >>> corpus = ['buenos dias', 'catedras conacyt', 'categorizacion de texto ingeotec']
+        >>> textmodel = TextModel().fit(corpus)
+        >>> _ = textmodel.transform(corpus)
+        >>> textmodel.token_weight
+        1.584962500721156
+        """
+        return self.model.wordWeight
+
+    @property
+    def id2token(self):
+        """
+        Token identifier to token
+
+        >>> from microtc.textmodel import TextModel
+        >>> corpus = ['buenos dias', 'catedras conacyt', 'categorizacion de texto ingeotec']
+        >>> textmodel = TextModel().fit(corpus)
+        >>> _ = textmodel.transform(corpus)
+        >>> textmodel.id2token[5]
+        'de'
+        """
+        try:
+            return self._id2token
+        except AttributeError:
+            self._id2token = {v:k for k, v in self.token2id.items()}
+            return self._id2token
+
+    @property
+    def token2id(self):
+        """
+        Token to token identifier
+
+        >>> from microtc.textmodel import TextModel
+        >>> corpus = ['buenos dias', 'catedras conacyt', 'categorizacion de texto ingeotec']
+        >>> textmodel = TextModel().fit(corpus)
+        >>> _ = textmodel.transform(corpus)
+        >>> textmodel.token2id['de']
+        5
+        """
+        return self.model.word2id
+
+

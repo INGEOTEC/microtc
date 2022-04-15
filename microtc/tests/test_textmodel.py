@@ -223,3 +223,9 @@ def test_textmodel_num_option():
     for x in ["1", ".1", "1.", "1.1", "10", "10.0"]:
         output = tm.text_transformations("tok {} tok".format(x))
         assert output == "~tok~_num~tok~"
+
+
+def test_textmodel_get_word_list():
+    from microtc.textmodel import TextModel
+    tm = TextModel()
+    assert hasattr(tm, 'get_word_list')
