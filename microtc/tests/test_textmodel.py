@@ -92,10 +92,11 @@ def test_lang():
     })
     text = "El alma de la fiesta :) conociendo la maquinaria @user bebiendo nunca manches que onda"
     a = model.tokenize(text)
-    b = ['el~de', 'alma~la', 'de~fiesta', 'la~_pos', 'fiesta~conociendo', '_pos~la', 'conociendo~maquinaria', 'la~_usr', 'maquinaria~bebiendo', '_usr~nunca',
+    b = ['el', 'alma', 'de', 'la', 'fiesta', '_pos',
+         'conociendo', 'la', 'maquinaria', '_usr', 'bebiendo', 'nunca', 'manches', 'que', 'onda',
+         'el~de', 'alma~la', 'de~fiesta', 'la~_pos', 'fiesta~conociendo', '_pos~la', 'conociendo~maquinaria', 'la~_usr', 'maquinaria~bebiendo', '_usr~nunca',
          'bebiendo~manches', 'nunca~que', 'manches~onda', 'el~la', 'alma~fiesta', 'de~_pos', 'la~conociendo', 'fiesta~la', '_pos~maquinaria', 'conociendo~_usr',
-         'la~bebiendo', 'maquinaria~nunca', '_usr~manches', 'bebiendo~que', 'nunca~onda', 'el', 'alma', 'de', 'la', 'fiesta', '_pos',
-         'conociendo', 'la', 'maquinaria', '_usr', 'bebiendo', 'nunca', 'manches', 'que', 'onda']
+         'la~bebiendo', 'maquinaria~nunca', '_usr~manches', 'bebiendo~que', 'nunca~onda']
     print(text)
     assert a == b, "got: {0}, expected: {1}".format(a, b)
 

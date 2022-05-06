@@ -553,6 +553,24 @@ class TextModel(SparseMatrix):
     def get_word_list(self, *args, **kwargs):
         return get_word_list(*args, **kwargs)
 
+    def compute_n_grams(self, textlist):
+        output = []
+        for q in self.n_grams:
+            expand_qgrams_word_list(textlist, abs(q), output)
+        return output
+
+    def compute_skip_grams(self, textlist):
+        output = []
+        for q in self.skip_grams:
+            expand_skipgrams_word_list(textlist, q, output)
+        return output
+
+    def compute_q_grams(self, text):
+        output = []
+        for q in self.q_grams:
+            expand_qgrams(text, q, output)
+        return output
+
     def compute_tokens(self, text):
         """
         Compute tokens from a text using q-grams of characters and words, and skip-grams.
@@ -572,18 +590,9 @@ class TextModel(SparseMatrix):
         """
         L = []
         textlist = self.get_word_list(text)
-        for q in self.n_grams:
-            _ = list()
-            expand_qgrams_word_list(textlist, abs(q), _)
-            L.append(_)
-        for q in self.skip_grams:
-            _ = list()
-            expand_skipgrams_word_list(textlist, q, _)
-            L.append(_)
-        for q in self.q_grams:
-            _ = list()
-            expand_qgrams(text, q, _)
-            L.append(_)
+        L.append(self.compute_n_grams(textlist))
+        L.append(self.compute_skip_grams(textlist))
+        L.append(self.compute_q_grams(text))
         return L
 
     def select_tokens(self, L):
