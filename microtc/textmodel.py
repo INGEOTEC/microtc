@@ -585,8 +585,13 @@ class TextModel(SparseMatrix):
         >>> from microtc.textmodel import TextModel
         >>> tm = TextModel(token_list=[-2, -1])
         >>> tm.compute_tokens("~Good morning~")
-        [['Good~morning'], ['Good', 'morning']]
-
+        [['Good~morning', 'Good', 'morning'], [], []]
+        >>> tm.token_list = [3]
+        >>> tm.compute_tokens('abcd')
+        [[], [], ['q:abc', 'q:bcd']]
+        >>> tm.token_list = [(2, 1)]
+        >>> tm.compute_tokens('~abc x de~')
+        [[], ['abc~de'], []]
         """
         L = []
         textlist = self.get_word_list(text)
