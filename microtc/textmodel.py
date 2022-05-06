@@ -318,6 +318,72 @@ class TextModel(SparseMatrix):
         if docs is not None and len(docs):
             self.fit(docs)
 
+    @property
+    def token_list(self):
+        """Tokenizer parameters"""
+        return self._token_list
+
+    @token_list.setter
+    def token_list(self, value):
+        """
+        >>> from microtc import TextModel
+        >>> tm = TextModel()
+        >>> tm.token_list = [-2, -1]
+        >>> tm.token_list
+        [-2, -1]
+        """
+        self._token_list = value
+        for x in ['_q_grams', '_n_grams', '_skip_grams']:
+            try:
+                delattr(self, x)
+            except AttributeError:
+                continue
+
+    @property
+    def q_grams(self):
+        """q-grams of characters
+        >>> from microtc import TextModel
+        >>> tm = TextModel(token_list=[-1, 3, (2, 1)])
+        >>> tm.q_grams
+        [3]
+        """
+        try:
+            q_grams = self._q_grams
+        except AttributeError:
+            q_grams = [x for x in self.token_list if isinstance(x, int) and x > 0]
+            self._q_grams = q_grams
+        return q_grams
+
+    @property
+    def n_grams(self):
+        """n-grams of words
+        >>> from microtc import TextModel
+        >>> tm = TextModel(token_list=[-1, 3, (2, 1)])
+        >>> tm.n_grams
+        [3]
+        """
+        try:
+            output = self._n_grams
+        except AttributeError:
+            output = [x for x in self.token_list if isinstance(x, int) and x < 0]
+            self._n_grams = output
+        return output
+
+    @property
+    def skip_grams(self):
+        """skip-grams
+        >>> from microtc import TextModel
+        >>> tm = TextModel(token_list=[-1, 3, (2, 1)])
+        >>> tm.skip_grams
+        [(2, 1)]
+        """
+        try:
+            output = self._skip_grams
+        except AttributeError:
+            output = [x for x in self.token_list if not isinstance(x, int)]
+            self._skip_grams = output
+        return output           
+
     def fit(self, X):
         """
         Train the model
