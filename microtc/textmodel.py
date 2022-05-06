@@ -241,6 +241,8 @@ class TextModel(SparseMatrix):
     :type token_min_filter: int or float
     :param token_max_filter: Keep those tokens that appear less times than the parameter (used in weighting class)
     :type token_max_filter: int or float
+    :param q_grams_words: Compute q-grams only on words
+    :type q_grams_words: bool
 
     :param select_ent:
     :type select_ent: bool
@@ -288,7 +290,7 @@ class TextModel(SparseMatrix):
                  ent_option=OPTION_NONE, lc=True, del_dup=True, del_punc=False, del_diac=True,
                  token_list=[-1], token_min_filter=0,
                  token_max_filter=1, select_ent=False, select_suff=False, select_conn=False,
-                 weighting='tfidf'):
+                 weighting='tfidf', q_grams_words=False):
         self._text = os.getenv('TEXT', default=text)
         self.del_diac = del_diac
         self.num_option = num_option
@@ -309,6 +311,7 @@ class TextModel(SparseMatrix):
         self.token_max_filter = token_max_filter
         self.weighting = weighting
         self.weighting = WEIGHTING.get(weighting, weighting)
+        self.q_grams_words = q_grams_words
 
         if emo_option == OPTION_NONE:
             self.emo_map = None
@@ -317,6 +320,72 @@ class TextModel(SparseMatrix):
 
         if docs is not None and len(docs):
             self.fit(docs)
+
+    @property
+    def token_list(self):
+        """Tokenizer parameters"""
+        return self._token_list
+
+    @token_list.setter
+    def token_list(self, value):
+        """
+        >>> from microtc import TextModel
+        >>> tm = TextModel()
+        >>> tm.token_list = [-2, -1]
+        >>> tm.token_list
+        [-2, -1]
+        """
+        self._token_list = value
+        for x in ['_q_grams', '_n_grams', '_skip_grams']:
+            try:
+                delattr(self, x)
+            except AttributeError:
+                continue
+
+    @property
+    def q_grams(self):
+        """q-grams of characters
+        >>> from microtc import TextModel
+        >>> tm = TextModel(token_list=[-1, 3, (2, 1)])
+        >>> tm.q_grams
+        [3]
+        """
+        try:
+            q_grams = self._q_grams
+        except AttributeError:
+            q_grams = [x for x in self.token_list if isinstance(x, int) and x > 0]
+            self._q_grams = q_grams
+        return q_grams
+
+    @property
+    def n_grams(self):
+        """n-grams of words
+        >>> from microtc import TextModel
+        >>> tm = TextModel(token_list=[-1, 3, (2, 1)])
+        >>> tm.n_grams
+        [-1]
+        """
+        try:
+            output = self._n_grams
+        except AttributeError:
+            output = [x for x in self.token_list if isinstance(x, int) and x < 0]
+            self._n_grams = output
+        return output
+
+    @property
+    def skip_grams(self):
+        """skip-grams
+        >>> from microtc import TextModel
+        >>> tm = TextModel(token_list=[-1, 3, (2, 1)])
+        >>> tm.skip_grams
+        [(2, 1)]
+        """
+        try:
+            output = self._skip_grams
+        except AttributeError:
+            output = [x for x in self.token_list if not isinstance(x, int)]
+            self._skip_grams = output
+        return output           
 
     def fit(self, X):
         """
@@ -350,7 +419,7 @@ class TextModel(SparseMatrix):
 
         >>> from microtc.textmodel import TextModel
         >>> TextModel.params()
-        odict_keys(['docs', 'text', 'num_option', 'usr_option', 'url_option', 'emo_option', 'hashtag_option', 'ent_option', 'lc', 'del_dup', 'del_punc', 'del_diac', 'token_list', 'token_min_filter', 'token_max_filter', 'select_ent', 'select_suff', 'select_conn', 'weighting'])
+        odict_keys(['docs', 'text', 'num_option', 'usr_option', 'url_option', 'emo_option', 'hashtag_option', 'ent_option', 'lc', 'del_dup', 'del_punc', 'del_diac', 'token_list', 'token_min_filter', 'token_max_filter', 'select_ent', 'select_suff', 'select_conn', 'weighting', 'q_grams_words'])
         """
 
         import inspect
@@ -487,6 +556,42 @@ class TextModel(SparseMatrix):
     def get_word_list(self, *args, **kwargs):
         return get_word_list(*args, **kwargs)
 
+    def compute_n_grams(self, textlist):
+        output = []
+        for q in self.n_grams:
+            expand_qgrams_word_list(textlist, abs(q), output)
+        return output
+
+    def compute_skip_grams(self, textlist):
+        output = []
+        for q in self.skip_grams:
+            expand_skipgrams_word_list(textlist, q, output)
+        return output
+
+    def compute_q_grams(self, text):
+        output = []
+        for q in self.q_grams:
+            expand_qgrams(text, q, output)
+        return output
+
+    def compute_q_grams_words(self, textlist):
+        """
+        >>> from microtc import TextModel
+        >>> tm = TextModel(token_list=[3])
+        >>> tm.compute_q_grams_words(['abc', 'def'])
+        ['q:~ab', 'q:abc', 'q:bc~', 'q:~de', 'q:def', 'q:ef~']
+        """
+        output = []
+        textlist = ['~' + x + '~' for x in textlist]
+        for qsize in self.q_grams:
+            _ = qsize - 1
+            extra = [x for x in textlist if len(x) >= _]
+            qgrams = [["".join(output) for output in zip(*[text[i:] for i in range(qsize)])] 
+                      for text in extra]
+            for _ in qgrams:
+                [output.append("q:" + x) for x in _]
+        return output       
+
     def compute_tokens(self, text):
         """
         Compute tokens from a text using q-grams of characters and words, and skip-grams.
@@ -501,33 +606,25 @@ class TextModel(SparseMatrix):
         >>> from microtc.textmodel import TextModel
         >>> tm = TextModel(token_list=[-2, -1])
         >>> tm.compute_tokens("~Good morning~")
-        [['Good~morning'], ['Good', 'morning']]
-
+        [['Good~morning', 'Good', 'morning'], [], []]
+        >>> tm.token_list = [3]
+        >>> tm.compute_tokens('abc def')
+        [[], [], ['q:abc', 'q:bc ', 'q:c d', 'q: de', 'q:def']]
+        >>> tm.token_list = [(2, 1)]
+        >>> tm.compute_tokens('~abc x de~')
+        [[], ['abc~de'], []]
+        >>> tm = TextModel(token_list=[3], q_grams_words=True)
+        >>> tm.compute_tokens('~abc def~')
+        [[], [], ['q:~ab', 'q:abc', 'q:bc~', 'q:~de', 'q:def', 'q:ef~']]
         """
         L = []
-        textlist = None
-        get_word_list = self.get_word_list
-        _text = text
-        for q in self.token_list:
-            if isinstance(q, int):
-                if q < 0:
-                    if textlist is None:
-                        textlist = get_word_list(text)
-                    _ = list()
-                    expand_qgrams_word_list(textlist, abs(q), _)
-                    L.append(_)
-                else:
-                    _ = list()
-                    expand_qgrams(_text, q, _)
-                    L.append(_)
-            else:
-                if textlist is None:
-                    textlist = get_word_list(text)
-
-                _ = list()
-                expand_skipgrams_word_list(textlist, q, _)
-                L.append(_)
-
+        textlist = self.get_word_list(text)
+        L.append(self.compute_n_grams(textlist))
+        L.append(self.compute_skip_grams(textlist))
+        if self.q_grams_words:
+            L.append(self.compute_q_grams_words(textlist))
+        else:
+            L.append(self.compute_q_grams(text))
         return L
 
     def select_tokens(self, L):

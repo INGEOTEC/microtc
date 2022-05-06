@@ -92,10 +92,11 @@ def test_lang():
     })
     text = "El alma de la fiesta :) conociendo la maquinaria @user bebiendo nunca manches que onda"
     a = model.tokenize(text)
-    b = ['el~de', 'alma~la', 'de~fiesta', 'la~_pos', 'fiesta~conociendo', '_pos~la', 'conociendo~maquinaria', 'la~_usr', 'maquinaria~bebiendo', '_usr~nunca',
+    b = ['el', 'alma', 'de', 'la', 'fiesta', '_pos',
+         'conociendo', 'la', 'maquinaria', '_usr', 'bebiendo', 'nunca', 'manches', 'que', 'onda',
+         'el~de', 'alma~la', 'de~fiesta', 'la~_pos', 'fiesta~conociendo', '_pos~la', 'conociendo~maquinaria', 'la~_usr', 'maquinaria~bebiendo', '_usr~nunca',
          'bebiendo~manches', 'nunca~que', 'manches~onda', 'el~la', 'alma~fiesta', 'de~_pos', 'la~conociendo', 'fiesta~la', '_pos~maquinaria', 'conociendo~_usr',
-         'la~bebiendo', 'maquinaria~nunca', '_usr~manches', 'bebiendo~que', 'nunca~onda', 'el', 'alma', 'de', 'la', 'fiesta', '_pos',
-         'conociendo', 'la', 'maquinaria', '_usr', 'bebiendo', 'nunca', 'manches', 'que', 'onda']
+         'la~bebiendo', 'maquinaria~nunca', '_usr~manches', 'bebiendo~que', 'nunca~onda']
     print(text)
     assert a == b, "got: {0}, expected: {1}".format(a, b)
 
@@ -173,7 +174,7 @@ def test_textmodel_compute_tokens():
     tm = TextModel(token_list=[-2, -1])
     text = tm.text_transformations(tw[0]['text'])
     L = tm.compute_tokens(text)
-    assert len(L) == 2
+    assert len(L) == 3
     r = []
     [r.__iadd__(x) for x in L]
     for a, b in zip(tm.tokenize(tw[0]), r):
@@ -229,3 +230,39 @@ def test_textmodel_get_word_list():
     from microtc.textmodel import TextModel
     tm = TextModel()
     assert hasattr(tm, 'get_word_list')
+
+
+def test_textmodel_token_list():
+    from microtc import TextModel
+    tm = TextModel()
+    assert tm._token_list == [-1]
+    tm.token_list = [-2, -1]
+    assert tm._token_list == [-2, -1] 
+
+
+def test_textmodel_q_grams():
+    from microtc import TextModel
+    tm = TextModel(token_list=[-1, 3, (2, 1)])
+    for i in range(2):
+        assert tm.q_grams == [3]
+    tm.token_list = [-1, (2, 1)]
+    assert not hasattr(tm, '_q_grams')
+    assert tm.q_grams == []
+
+
+def test_textmodel_n_grams():
+    from microtc import TextModel
+    tm = TextModel(token_list=[-1, 3, (2, 1)])
+    for i in range(2):
+        assert tm.n_grams == [-1]
+    tm.token_list = [-1, 3, (2, 1)]
+    assert not hasattr(tm, '_n_grams')
+
+
+def test_textmodel_skip_grams():
+    from microtc import TextModel
+    tm = TextModel(token_list=[-1, 3, (2, 1)])
+    for i in range(2):
+        assert tm.skip_grams == [(2, 1)]
+    tm.token_list = [-1, 3, (2, 1)]
+    assert not hasattr(tm, '_skip_grams')   
