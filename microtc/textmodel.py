@@ -360,7 +360,7 @@ class TextModel(SparseMatrix):
         >>> from microtc import TextModel
         >>> tm = TextModel(token_list=[-1, 3, (2, 1)])
         >>> tm.n_grams
-        [3]
+        [-1]
         """
         try:
             output = self._n_grams
@@ -571,29 +571,19 @@ class TextModel(SparseMatrix):
 
         """
         L = []
-        textlist = None
-        get_word_list = self.get_word_list
-        _text = text
-        for q in self.token_list:
-            if isinstance(q, int):
-                if q < 0:
-                    if textlist is None:
-                        textlist = get_word_list(text)
-                    _ = list()
-                    expand_qgrams_word_list(textlist, abs(q), _)
-                    L.append(_)
-                else:
-                    _ = list()
-                    expand_qgrams(_text, q, _)
-                    L.append(_)
-            else:
-                if textlist is None:
-                    textlist = get_word_list(text)
-
-                _ = list()
-                expand_skipgrams_word_list(textlist, q, _)
-                L.append(_)
-
+        textlist = self.get_word_list(text)
+        for q in self.n_grams:
+            _ = list()
+            expand_qgrams_word_list(textlist, abs(q), _)
+            L.append(_)
+        for q in self.skip_grams:
+            _ = list()
+            expand_skipgrams_word_list(textlist, q, _)
+            L.append(_)
+        for q in self.q_grams:
+            _ = list()
+            expand_qgrams(text, q, _)
+            L.append(_)
         return L
 
     def select_tokens(self, L):
