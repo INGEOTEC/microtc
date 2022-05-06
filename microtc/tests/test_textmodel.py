@@ -174,7 +174,7 @@ def test_textmodel_compute_tokens():
     tm = TextModel(token_list=[-2, -1])
     text = tm.text_transformations(tw[0]['text'])
     L = tm.compute_tokens(text)
-    assert len(L) == 2
+    assert len(L) == 3
     r = []
     [r.__iadd__(x) for x in L]
     for a, b in zip(tm.tokenize(tw[0]), r):
