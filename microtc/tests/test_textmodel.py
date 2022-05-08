@@ -232,12 +232,12 @@ def test_textmodel_get_word_list():
     assert hasattr(tm, 'get_word_list')
 
 
-def test_textmodel_token_list():
-    from microtc import TextModel
-    tm = TextModel()
-    assert tm._token_list == [-1]
-    tm.token_list = [-2, -1]
-    assert tm._token_list == [-2, -1] 
+# def test_textmodel_token_list():
+#     from microtc import TextModel
+#     tm = TextModel()
+#     assert tm._token_list == [-1]
+#     tm.token_list = [-2, -1]
+#     assert tm._token_list == [-2, -1] 
 
 
 def test_textmodel_q_grams():
@@ -245,9 +245,9 @@ def test_textmodel_q_grams():
     tm = TextModel(token_list=[-1, 3, (2, 1)])
     for i in range(2):
         assert tm.q_grams == [3]
-    tm.token_list = [-1, (2, 1)]
-    assert not hasattr(tm, '_q_grams')
-    assert tm.q_grams == []
+    # tm.token_list = [-1, (2, 1)]
+    # assert not hasattr(tm, '_q_grams')
+    # assert tm.q_grams == []
 
 
 def test_textmodel_n_grams():
@@ -255,8 +255,8 @@ def test_textmodel_n_grams():
     tm = TextModel(token_list=[-1, 3, (2, 1)])
     for i in range(2):
         assert tm.n_grams == [-1]
-    tm.token_list = [-1, 3, (2, 1)]
-    assert not hasattr(tm, '_n_grams')
+    # tm.token_list = [-1, 3, (2, 1)]
+    # assert not hasattr(tm, '_n_grams')
 
 
 def test_textmodel_skip_grams():
@@ -264,5 +264,5 @@ def test_textmodel_skip_grams():
     tm = TextModel(token_list=[-1, 3, (2, 1)])
     for i in range(2):
         assert tm.skip_grams == [(2, 1)]
-    tm.token_list = [-1, 3, (2, 1)]
-    assert not hasattr(tm, '_skip_grams')   
+    # tm.token_list = [-1, 3, (2, 1)]
+    # assert not hasattr(tm, '_skip_grams')   
