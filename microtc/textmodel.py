@@ -311,8 +311,7 @@ class TextModel(SparseMatrix):
         self.token_max_filter = token_max_filter
         self.weighting = weighting
         self.weighting = WEIGHTING.get(weighting, weighting)
-        self.q_grams_words = q_grams_words
-
+        self._q_grams_words = q_grams_words
         if emo_option == OPTION_NONE:
             self.emo_map = None
         else:
@@ -320,6 +319,13 @@ class TextModel(SparseMatrix):
 
         if docs is not None and len(docs):
             self.fit(docs)
+
+    @property
+    def q_grams_words(self):
+        try:
+            return self._q_grams_words
+        except AttributeError:
+            return False
 
     # @property
     # def token_list(self):
