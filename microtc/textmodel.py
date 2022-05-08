@@ -607,10 +607,10 @@ class TextModel(SparseMatrix):
         >>> tm = TextModel(token_list=[-2, -1])
         >>> tm.compute_tokens("~Good morning~")
         [['Good~morning', 'Good', 'morning'], [], []]
-        >>> tm.token_list = [3]
+        >>> tm = TextModel(token_list=[3])
         >>> tm.compute_tokens('abc def')
         [[], [], ['q:abc', 'q:bc ', 'q:c d', 'q: de', 'q:def']]
-        >>> tm.token_list = [(2, 1)]
+        >>> tm = TextModel(token_list=[(2, 1)])
         >>> tm.compute_tokens('~abc x de~')
         [[], ['abc~de'], []]
         >>> tm = TextModel(token_list=[3], q_grams_words=True)
