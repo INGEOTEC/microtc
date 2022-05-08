@@ -321,26 +321,26 @@ class TextModel(SparseMatrix):
         if docs is not None and len(docs):
             self.fit(docs)
 
-    @property
-    def token_list(self):
-        """Tokenizer parameters"""
-        return self._token_list
+    # @property
+    # def token_list(self):
+    #     """Tokenizer parameters"""
+    #     return self._token_list
 
-    @token_list.setter
-    def token_list(self, value):
-        """
-        >>> from microtc import TextModel
-        >>> tm = TextModel()
-        >>> tm.token_list = [-2, -1]
-        >>> tm.token_list
-        [-2, -1]
-        """
-        self._token_list = value
-        for x in ['_q_grams', '_n_grams', '_skip_grams']:
-            try:
-                delattr(self, x)
-            except AttributeError:
-                continue
+    # @token_list.setter
+    # def token_list(self, value):
+    #     """
+    #     >>> from microtc import TextModel
+    #     >>> tm = TextModel()
+    #     >>> tm.token_list = [-2, -1]
+    #     >>> tm.token_list
+    #     [-2, -1]
+    #     """
+    #     self._token_list = value
+    #     for x in ['_q_grams', '_n_grams', '_skip_grams']:
+    #         try:
+    #             delattr(self, x)
+    #         except AttributeError:
+    #             continue
 
     @property
     def q_grams(self):
@@ -607,10 +607,10 @@ class TextModel(SparseMatrix):
         >>> tm = TextModel(token_list=[-2, -1])
         >>> tm.compute_tokens("~Good morning~")
         [['Good~morning', 'Good', 'morning'], [], []]
-        >>> tm.token_list = [3]
+        >>> tm = TextModel(token_list=[3])
         >>> tm.compute_tokens('abc def')
         [[], [], ['q:abc', 'q:bc ', 'q:c d', 'q: de', 'q:def']]
-        >>> tm.token_list = [(2, 1)]
+        >>> tm = TextModel(token_list=[(2, 1)])
         >>> tm.compute_tokens('~abc x de~')
         [[], ['abc~de'], []]
         >>> tm = TextModel(token_list=[3], q_grams_words=True)
