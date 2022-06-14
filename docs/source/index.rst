@@ -12,14 +12,17 @@
 .. image:: https://coveralls.io/repos/github/INGEOTEC/microtc/badge.svg?branch=develop
    :target: https://coveralls.io/github/INGEOTEC/microtc?branch=develop
 
-.. image:: https://anaconda.org/ingeotec/microtc/badges/version.svg
-   :target: https://anaconda.org/ingeotec/microtc
-
 .. image:: https://badge.fury.io/py/microtc.svg
    :target: https://badge.fury.io/py/microtc
-	    
-.. image:: https://anaconda.org/ingeotec/microtc/badges/downloads.svg   
-   :target: https://anaconda.org/ingeotec/microtc
+
+.. image:: https://dev.azure.com/conda-forge/feedstock-builds/_apis/build/status/microtc-feedstock?branchName=main
+   :target: https://dev.azure.com/conda-forge/feedstock-builds/_build/latest?definitionId=16441&branchName=main
+
+.. image:: https://img.shields.io/conda/vn/conda-forge/microtc.svg
+   :target: https://anaconda.org/conda-forge/microtc
+
+.. image:: https://img.shields.io/conda/pn/conda-forge/microtc.svg
+   :target: https://anaconda.org/conda-forge/microtc
 
 .. image:: https://readthedocs.org/projects/microtc/badge/?version=latest 	    
    :target: https://microtc.readthedocs.io/en/latest/?badge=latest
@@ -102,7 +105,7 @@ Installing :math:`\mu\text{TC}`
 
 .. code:: bash
 
-	  conda install -c ingeotec microtc
+	  conda install -c conda-forge microtc
 
 or can be install using pip, it depends on numpy, scipy and
 scikit-learn.
