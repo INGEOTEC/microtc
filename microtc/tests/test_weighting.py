@@ -137,3 +137,19 @@ def test_tfidf_corpus2():
         fm = {k: v for k, v in tfidf[tokens]}
         for k, v in tfidf2[tokens]:
             assert_almost_equals(fm[tfidf.word2id[id2w2[k]]], v)
+
+
+def test_max_dimension():
+    from microtc import TextModel
+    from microtc.utils import tweet_iterator
+    import os
+    fname = join(os.path.dirname(__file__), 'text.json')
+    tw = list(tweet_iterator(fname))
+    docs = [x['text'] for x in tw]
+    tm = TextModel(token_list=[-1, 2, 3, 4],
+                   token_max_filter=2**4,
+                   max_dimension=True).fit(docs)
+    assert tm.num_terms == 2**4
+    tm2 = TextModel(token_list=[-1, 2, 3, 4]).fit(docs)
+    assert tm2.num_terms > tm.num_terms
+    assert not tm2.max_dimension  

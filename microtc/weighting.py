@@ -16,6 +16,7 @@
 import numpy as np
 from collections import Counter
 import os
+from typing import Union
 
 
 TEXT = os.environ.get("TEXT", 'text')
@@ -45,7 +46,10 @@ class TFIDF(object):
     >>> vector = tfidf['buenos', 'X', 'trafico']
     """
 
-    def __init__(self, docs, X=None, token_min_filter=0, token_max_filter=1):
+    def __init__(self, docs, X=None,
+                 token_min_filter: Union[int, float]=0,
+                 token_max_filter: Union[int, float]=1,
+                 max_dimension: bool=False):
         w2id = {}
         weight = {}
         self._ndocs = len(docs)
@@ -58,7 +62,7 @@ class TFIDF(object):
                     ident = len(w2id)
                     w2id[x] = ident
                     weight[ident] = 1
-        if token_min_filter > 0 or token_max_filter != 1:
+        if not max_dimension and (token_min_filter > 0 or token_max_filter != 1):
             if token_min_filter < 1:
                 token_min_filter = int(self._ndocs * token_min_filter)
                 if token_min_filter < 1:
@@ -73,6 +77,14 @@ class TFIDF(object):
             mm = {k: v[1] for k, v in enumerate(w2id)}
             w2id = {v[0]: k for k, v in enumerate(w2id)}
             weight = {ident: weight[mm[ident]] for ident in w2id.values()}
+        elif max_dimension:
+            assert isinstance(token_max_filter, int) and token_max_filter > 1
+            id2word = {v: k for k, v in w2id.items()}
+            word_weight = [[v , id2word[k]] for k, v in weight.items()]
+            word_weight.sort(key=lambda x: x[0], reverse=True)
+            word_weight = word_weight[:token_max_filter]
+            w2id = {token: k for k, (w, token) in enumerate(word_weight)}
+            weight = {k: w for k, (w, token) in enumerate(word_weight)}
         self.word2id = w2id
         self.wordWeight = weight
 
