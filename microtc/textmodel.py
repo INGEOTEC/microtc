@@ -444,7 +444,7 @@ class TextModel(SparseMatrix):
 
         >>> from microtc.textmodel import TextModel
         >>> TextModel.params()
-        odict_keys(['docs', 'text', 'num_option', 'usr_option', 'url_option', 'emo_option', 'hashtag_option', 'ent_option', 'lc', 'del_dup', 'del_punc', 'del_diac', 'token_list', 'token_min_filter', 'token_max_filter', 'select_ent', 'select_suff', 'select_conn', 'weighting', 'q_grams_words'])
+        odict_keys(['docs', 'text', 'num_option', 'usr_option', 'url_option', 'emo_option', 'hashtag_option', 'ent_option', 'lc', 'del_dup', 'del_punc', 'del_diac', 'token_list', 'token_min_filter', 'token_max_filter', 'select_ent', 'select_suff', 'select_conn', 'weighting', 'q_grams_words', 'max_dimension'])
         """
 
         import inspect
