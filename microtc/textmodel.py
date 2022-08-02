@@ -19,6 +19,7 @@ from .emoticons import EmoticonClassifier
 import os
 from scipy.sparse import csr_matrix
 from .utils import get_class, SparseMatrix
+from typing import Union
 
 
 PUNCTUACTION = ";:,.@\\-\"'/"
@@ -284,13 +285,23 @@ class TextModel(SparseMatrix):
     array([1, 0, 0])
     """
 
-    def __init__(self, docs=None, text='text', num_option=OPTION_GROUP,
-                 usr_option=OPTION_GROUP, url_option=OPTION_GROUP,
-                 emo_option=OPTION_GROUP, hashtag_option=OPTION_NONE,
-                 ent_option=OPTION_NONE, lc=True, del_dup=True, del_punc=False, del_diac=True,
-                 token_list=[-1], token_min_filter=0,
-                 token_max_filter=1, select_ent=False, select_suff=False, select_conn=False,
-                 weighting='tfidf', q_grams_words=False):
+    def __init__(self, docs=None, text: str='text',
+                 num_option: str=OPTION_GROUP,
+                 usr_option: str=OPTION_GROUP,
+                 url_option: str=OPTION_GROUP,
+                 emo_option: str=OPTION_GROUP,
+                 hashtag_option: str=OPTION_NONE,
+                 ent_option: str=OPTION_NONE,
+                 lc: bool=True, del_dup: bool=True,
+                 del_punc: bool=False, del_diac: bool=True,
+                 token_list: list=[-1], 
+                 token_min_filter: Union[int, float]=0,
+                 token_max_filter: Union[int, float]=1,
+                 select_ent: bool=False,
+                 select_suff: bool=False, select_conn: bool=False,
+                 weighting: str='tfidf',
+                 q_grams_words: bool=False,
+                 max_dimension: bool=False):
         self._text = os.getenv('TEXT', default=text)
         self.del_diac = del_diac
         self.num_option = num_option
@@ -301,7 +312,6 @@ class TextModel(SparseMatrix):
         self.select_ent = select_ent
         self.select_suff = select_suff
         self.select_conn = select_conn
-
         self.hashtag_option = hashtag_option
         self.lc = lc
         self.del_dup = del_dup
@@ -312,6 +322,7 @@ class TextModel(SparseMatrix):
         self.weighting = weighting
         self.weighting = WEIGHTING.get(weighting, weighting)
         self._q_grams_words = q_grams_words
+        self._max_dimension = max_dimension
         if emo_option == OPTION_NONE:
             self.emo_map = None
         else:
@@ -324,6 +335,13 @@ class TextModel(SparseMatrix):
     def q_grams_words(self):
         try:
             return self._q_grams_words
+        except AttributeError:
+            return False
+
+    @property
+    def max_dimension(self):
+        try:
+            return self._max_dimension
         except AttributeError:
             return False
 
@@ -405,7 +423,8 @@ class TextModel(SparseMatrix):
         tokens = [self.tokenize(d) for d in X]
         self.model = get_class(self.weighting)(tokens, X=X,
                                                token_min_filter=self.token_min_filter,
-                                               token_max_filter=self.token_max_filter)
+                                               token_max_filter=self.token_max_filter,
+                                               max_dimension=self.max_dimension)
         return self
 
     def __getitem__(self, text):
@@ -425,7 +444,7 @@ class TextModel(SparseMatrix):
 
         >>> from microtc.textmodel import TextModel
         >>> TextModel.params()
-        odict_keys(['docs', 'text', 'num_option', 'usr_option', 'url_option', 'emo_option', 'hashtag_option', 'ent_option', 'lc', 'del_dup', 'del_punc', 'del_diac', 'token_list', 'token_min_filter', 'token_max_filter', 'select_ent', 'select_suff', 'select_conn', 'weighting', 'q_grams_words'])
+        odict_keys(['docs', 'text', 'num_option', 'usr_option', 'url_option', 'emo_option', 'hashtag_option', 'ent_option', 'lc', 'del_dup', 'del_punc', 'del_diac', 'token_list', 'token_min_filter', 'token_max_filter', 'select_ent', 'select_suff', 'select_conn', 'weighting', 'q_grams_words', 'max_dimension'])
         """
 
         import inspect
