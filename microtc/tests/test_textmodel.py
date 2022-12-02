@@ -11,6 +11,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+import numpy as np
 
 
 def test_tweet_iterator():
@@ -265,4 +266,22 @@ def test_textmodel_skip_grams():
     for i in range(2):
         assert tm.skip_grams == [(2, 1)]
     # tm.token_list = [-1, 3, (2, 1)]
-    # assert not hasattr(tm, '_skip_grams')   
+    # assert not hasattr(tm, '_skip_grams') 
+
+
+def test_disable_text_transformations():
+    from microtc.textmodel import TextModel
+    from microtc.utils import tweet_iterator
+    import os
+    fname = os.path.dirname(__file__) + '/text.json'
+    tw = list(tweet_iterator(fname))
+    text = TextModel(token_list=[-2, -1, 3, 4]).fit(tw)
+    cadena = 'buenos dias @mgraffg http://google.com'
+    repr = text[cadena]
+    repr.sort(key=lambda x: x[0])
+    cadena2 = text.text_transformations(cadena)
+    text.disable_text_transformations = True
+    repr2 = text[cadena2]
+    repr2.sort(key=lambda x: x[0])
+    for a, b in zip(repr, repr2):
+        assert np.all(a == b)

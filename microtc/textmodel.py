@@ -516,6 +516,17 @@ class TextModel(SparseMatrix):
 
         return text[self._text]
 
+    @property
+    def disable_text_transformations(self):
+        try:
+            return self._disable_text_transformations
+        except AttributeError:
+            return False
+
+    @disable_text_transformations.setter
+    def disable_text_transformations(self, v):
+        self._disable_text_transformations = v
+
     def text_transformations(self, text):
         """
         Text transformations. It starts by analyzing emojis, hashtags, entities,
@@ -540,6 +551,9 @@ class TextModel(SparseMatrix):
 
         if isinstance(text, dict):
             text = self.get_text(text)
+
+        if self.disable_text_transformations:
+            return text
 
         if self.emo_map:
             text = self.emo_map.replace(text, option=self.emo_option)
