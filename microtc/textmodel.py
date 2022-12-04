@@ -63,7 +63,7 @@ def norm_chars(text, del_diac=True, del_dup=True, del_punc=False):
             if 0x300 <= o and o <= 0x036F:
                 continue
             
-        if u in ('\n', '\r', ' ', '\t'):
+        if u in ('\n', '\r', ' ', '\t', '\xa0'):
             u = '~'
         elif del_dup and prev == u:
             continue
