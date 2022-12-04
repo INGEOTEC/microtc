@@ -14,18 +14,18 @@
 import re
 import unicodedata
 import numpy as np
-from .params import OPTION_DELETE, OPTION_GROUP, OPTION_NONE
-from .emoticons import EmoticonClassifier
+from microtc.params import OPTION_DELETE, OPTION_GROUP, OPTION_NONE
+from microtc.emoticons import EmoticonClassifier
 import os
 from scipy.sparse import csr_matrix
-from .utils import get_class, SparseMatrix
+from microtc.utils import get_class, SparseMatrix
 from typing import Union
 
 
 PUNCTUACTION = ";:,.@\\-\"'/"
 SYMBOLS = "()[]¿?¡!{}~<>|"
-SKIP_SYMBOLS = set(";:,.@\\-\"/" + SYMBOLS)
-SKIP_SYMBOLS_AND_SPACES = set(";:,.@\\-\"/" + SYMBOLS + '\t\n\r ')
+SKIP_SYMBOLS = set(PUNCTUACTION + SYMBOLS)
+SKIP_SYMBOLS_AND_SPACES = set(PUNCTUACTION + SYMBOLS + '\t\n\r ')
 # SKIP_WORDS = set(["…", "..", "...", "...."])
 WEIGHTING = dict(tfidf="microtc.weighting.TFIDF",
                  tf="microtc.weighting.TF",
