@@ -19,8 +19,8 @@ microTC
 .. image:: https://img.shields.io/conda/pn/conda-forge/microtc.svg
    :target: https://anaconda.org/conda-forge/microtc
 
-.. image:: https://readthedocs.org/projects/microtc/badge/?version=latest 	    
-   :target: https://microtc.readthedocs.io/en/latest/?badge=latest
+.. image:: https://readthedocs.org/projects/microtc/badge/?version=docs 	    
+   :target: https://microtc.readthedocs.io/en/docs/?badge=docs
 
 .. image:: https://colab.research.google.com/assets/colab-badge.svg
    :target: https://colab.research.google.com/github/INGEOTEC/microtc/blob/master/docs/microTC_Quickstart.ipynb	    

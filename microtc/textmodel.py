@@ -88,7 +88,7 @@ def get_word_list(text):
 
     >>> from microtc.textmodel import get_word_list
     >>> get_word_list("~Someone's house.~")
-    ["Someone's", 'house']
+    ['Someone', 's', 'house']
 
     :param text: text
     :type text: str
