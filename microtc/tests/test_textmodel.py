@@ -285,3 +285,15 @@ def test_disable_text_transformations():
     repr2.sort(key=lambda x: x[0])
     for a, b in zip(repr, repr2):
         assert np.all(a == b)
+
+
+def test_bug_xa0():
+    from microtc.textmodel import norm_chars
+    _ = norm_chars('hola\xa0h adios')
+    assert _ == '~hola~h~adios~'
+
+
+def test_bug_single_quotation():
+    from microtc.textmodel import norm_chars, SKIP_SYMBOLS
+    _ = norm_chars("hola 'adios'", del_punc=True)
+    assert _ == '~hola~adios~'

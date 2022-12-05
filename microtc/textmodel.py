@@ -14,18 +14,18 @@
 import re
 import unicodedata
 import numpy as np
-from .params import OPTION_DELETE, OPTION_GROUP, OPTION_NONE
-from .emoticons import EmoticonClassifier
+from microtc.params import OPTION_DELETE, OPTION_GROUP, OPTION_NONE
+from microtc.emoticons import EmoticonClassifier
 import os
 from scipy.sparse import csr_matrix
-from .utils import get_class, SparseMatrix
+from microtc.utils import get_class, SparseMatrix
 from typing import Union
 
 
 PUNCTUACTION = ";:,.@\\-\"'/"
 SYMBOLS = "()[]¿?¡!{}~<>|"
-SKIP_SYMBOLS = set(";:,.@\\-\"/" + SYMBOLS)
-SKIP_SYMBOLS_AND_SPACES = set(";:,.@\\-\"/" + SYMBOLS + '\t\n\r ')
+SKIP_SYMBOLS = set(PUNCTUACTION + SYMBOLS)
+SKIP_SYMBOLS_AND_SPACES = set(PUNCTUACTION + SYMBOLS + '\t\n\r ')
 # SKIP_WORDS = set(["…", "..", "...", "...."])
 WEIGHTING = dict(tfidf="microtc.weighting.TFIDF",
                  tf="microtc.weighting.TF",
@@ -63,7 +63,7 @@ def norm_chars(text, del_diac=True, del_dup=True, del_punc=False):
             if 0x300 <= o and o <= 0x036F:
                 continue
             
-        if u in ('\n', '\r', ' ', '\t'):
+        if u in ('\n', '\r', ' ', '\t', '\xa0'):
             u = '~'
         elif del_dup and prev == u:
             continue
@@ -88,7 +88,7 @@ def get_word_list(text):
 
     >>> from microtc.textmodel import get_word_list
     >>> get_word_list("~Someone's house.~")
-    ["Someone's", 'house']
+    ['Someone', 's', 'house']
 
     :param text: text
     :type text: str
