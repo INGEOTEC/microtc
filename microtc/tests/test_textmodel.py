@@ -322,3 +322,7 @@ def test_unit_vector():
         assert v1 != v2
     _ = sum([x**2 for _, x in text2['buenos dias']])
     np.testing.assert_almost_equal(_, 1)
+    text.unit_vector = True
+    _ = sum([x**2 for _, x in text['buenos dias']])
+    np.testing.assert_almost_equal(_, 1)
+
