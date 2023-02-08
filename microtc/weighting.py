@@ -49,7 +49,9 @@ class TFIDF(object):
     def __init__(self, docs, X=None,
                  token_min_filter: Union[int, float]=0,
                  token_max_filter: Union[int, float]=1,
-                 max_dimension: bool=False):
+                 max_dimension: bool=False,
+                 unit_vector: bool=True):
+        self.unit_vector = unit_vector
         w2id = {}
         weight = {}
         self._ndocs = len(docs)
@@ -62,6 +64,13 @@ class TFIDF(object):
                     ident = len(w2id)
                     w2id[x] = ident
                     weight[ident] = 1
+        # remove tokens with freq = N
+        w2id = [(k, v) for k, v in w2id.items() if weight[v] < self._ndocs]
+        w2id.sort(key=lambda x: x[1])
+        mm = {k: v[1] for k, v in enumerate(w2id)}
+        w2id = {v[0]: k for k, v in enumerate(w2id)}
+        weight = {ident: weight[mm[ident]] for ident in w2id.values()}
+
         if not max_dimension and (token_min_filter > 0 or token_max_filter != 1):
             if token_min_filter < 1:
                 token_min_filter = int(self._ndocs * token_min_filter)
@@ -87,6 +96,18 @@ class TFIDF(object):
             weight = {k: w for k, (w, token) in enumerate(word_weight)}
         self.word2id = w2id
         self.wordWeight = weight
+
+    @property
+    def unit_vector(self):
+        try:
+            return self._unit_vector
+        except AttributeError:
+            self._unit_vector = True
+        return self._unit_vector
+
+    @unit_vector.setter
+    def unit_vector(self, value):
+        self._unit_vector = value
 
     @property
     def num_terms(self):
@@ -158,6 +179,8 @@ class TFIDF(object):
 
         __ = self.doc2weight(tokens)
         r = [(i, _tf * _df) for i, _tf, _df in zip(*__)]
+        if not self.unit_vector:
+            return r
         n = np.sqrt(sum([x * x for _, x in r]))
         return [(i, x/n) for i, x in r]
 
