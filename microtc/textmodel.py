@@ -301,7 +301,8 @@ class TextModel(SparseMatrix):
                  select_suff: bool=False, select_conn: bool=False,
                  weighting: str='tfidf',
                  q_grams_words: bool=False,
-                 max_dimension: bool=False):
+                 max_dimension: bool=False,
+                 unit_vector: bool=True):
         self._text = os.getenv('TEXT', default=text)
         self.del_diac = del_diac
         self.num_option = num_option
@@ -323,6 +324,7 @@ class TextModel(SparseMatrix):
         self.weighting = WEIGHTING.get(weighting, weighting)
         self._q_grams_words = q_grams_words
         self._max_dimension = max_dimension
+        self.unit_vector = unit_vector
         if emo_option == OPTION_NONE:
             self.emo_map = None
         else:
@@ -330,6 +332,18 @@ class TextModel(SparseMatrix):
 
         if docs is not None and len(docs):
             self.fit(docs)
+
+    @property
+    def unit_vector(self):
+        try:
+            return self._unit_vector
+        except AttributeError:
+            self._unit_vector = True
+        return self._unit_vector
+
+    @unit_vector.setter
+    def unit_vector(self, value):
+        self._unit_vector = value
 
     @property
     def q_grams_words(self):
@@ -424,7 +438,8 @@ class TextModel(SparseMatrix):
         self.model = get_class(self.weighting)(tokens, X=X,
                                                token_min_filter=self.token_min_filter,
                                                token_max_filter=self.token_max_filter,
-                                               max_dimension=self.max_dimension)
+                                               max_dimension=self.max_dimension,
+                                               unit_vector=self.unit_vector)
         return self
 
     def __getitem__(self, text):
@@ -444,7 +459,7 @@ class TextModel(SparseMatrix):
 
         >>> from microtc.textmodel import TextModel
         >>> TextModel.params()
-        odict_keys(['docs', 'text', 'num_option', 'usr_option', 'url_option', 'emo_option', 'hashtag_option', 'ent_option', 'lc', 'del_dup', 'del_punc', 'del_diac', 'token_list', 'token_min_filter', 'token_max_filter', 'select_ent', 'select_suff', 'select_conn', 'weighting', 'q_grams_words', 'max_dimension'])
+        odict_keys(['docs', 'text', 'num_option', 'usr_option', 'url_option', 'emo_option', 'hashtag_option', 'ent_option', 'lc', 'del_dup', 'del_punc', 'del_diac', 'token_list', 'token_min_filter', 'token_max_filter', 'select_ent', 'select_suff', 'select_conn', 'weighting', 'q_grams_words', 'max_dimension', 'unit_vector'])
         """
 
         import inspect

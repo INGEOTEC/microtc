@@ -28,13 +28,13 @@ def test_wrapper_score():
     from sklearn.metrics import f1_score
     import numpy as np
     np.random.seed(0)
-    y = np.random.randint(3, size=100).astype(np.str)
+    y = np.random.randint(3, size=100).astype(str)
     hy = np.random.randint(3, size=100)
     w = ScoreKFoldWrapper([], y, score='avgf1:0:2', nfolds=10)
     conf = {}
     w.compute_score(conf, hy)
-    f1 = f1_score(y.astype(np.int), hy, average=None)
-    assert conf['_accuracy'] == (y.astype(np.int) == hy).mean()
+    f1 = f1_score(y.astype(int), hy, average=None)
+    assert conf['_accuracy'] == (y.astype(int) == hy).mean()
     print(y)
     print(conf['_avgf1:0:2'], (f1[0] + f1[2]) / 2.)
     assert conf['_avgf1:0:2'] == (f1[0] + f1[2]) / 2.
