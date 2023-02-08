@@ -297,3 +297,28 @@ def test_bug_single_quotation():
     from microtc.textmodel import norm_chars, SKIP_SYMBOLS
     _ = norm_chars("hola 'adios'", del_punc=True)
     assert _ == '~hola~adios~'
+
+
+def test_bug_constant_token():
+    from microtc.textmodel import TextModel
+    from microtc.utils import tweet_iterator
+    import os
+    fname = os.path.dirname(__file__) + '/text.json'
+    tw = [x['text'] + ' XYZ' for x in tweet_iterator(fname)]
+    text = TextModel(token_list=[-1, 2, 3]).fit(tw)
+    for x in ['xyz', 'q:~x', 'q:xy', 'q:yz', 'q:z~', 'q:~xy', 'q:xyz', 'q:yz~']:
+        assert x not in text.token2id
+
+
+def test_unit_vector():
+    from microtc.textmodel import TextModel
+    from microtc.utils import tweet_iterator
+    import os
+    fname = os.path.dirname(__file__) + '/text.json'
+    tw = list(tweet_iterator(fname))
+    text = TextModel(token_list=[-1, 2, 3], unit_vector=False).fit(tw)
+    text2 = TextModel(token_list=[-1, 2, 3]).fit(tw)
+    for (_, v1), (_, v2) in zip(text['buenos dias'], text2['buenos dias']):
+        assert v1 != v2
+    _ = sum([x**2 for _, x in text2['buenos dias']])
+    np.testing.assert_almost_equal(_, 1)
