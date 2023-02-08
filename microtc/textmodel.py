@@ -344,6 +344,8 @@ class TextModel(SparseMatrix):
     @unit_vector.setter
     def unit_vector(self, value):
         self._unit_vector = value
+        if hasattr(self, 'model'):
+            self.model.unit_vector = value
 
     @property
     def q_grams_words(self):
