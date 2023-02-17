@@ -751,7 +751,7 @@ class TextModel(SparseMatrix):
         >>> textmodel = TextModel().fit(corpus)
         >>> _ = textmodel.transform(corpus)
         >>> textmodel.id2token[5]
-        'de'
+        'ingeotec'
         """
         try:
             return self._id2token
