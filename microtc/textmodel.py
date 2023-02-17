@@ -747,11 +747,11 @@ class TextModel(SparseMatrix):
         Token identifier to token
 
         >>> from microtc.textmodel import TextModel
-        >>> corpus = ['buenos dias', 'catedras conacyt', 'categorizacion de texto ingeotec']
+        >>> corpus = ['buenos dias', 'catedras de conacyt', 'categorizacion de texto ingeotec']
         >>> textmodel = TextModel().fit(corpus)
         >>> _ = textmodel.transform(corpus)
-        >>> textmodel.id2token[5]
-        'ingeotec'
+        >>> textmodel.id2token[0]
+        'de'
         """
         try:
             return self._id2token
@@ -765,11 +765,11 @@ class TextModel(SparseMatrix):
         Token to token identifier
 
         >>> from microtc.textmodel import TextModel
-        >>> corpus = ['buenos dias', 'catedras conacyt', 'categorizacion de texto ingeotec']
+        >>> corpus = ['buenos dias', 'catedras de conacyt', 'categorizacion de texto ingeotec']
         >>> textmodel = TextModel().fit(corpus)
         >>> _ = textmodel.transform(corpus)
         >>> textmodel.token2id['de']
-        5
+        0
         """
         return self.model.word2id
 
