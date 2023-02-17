@@ -12,6 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 from os.path import join
+import numpy as np
 
 
 def test_space():
@@ -152,4 +153,22 @@ def test_max_dimension():
     assert tm.num_terms == 2**4
     tm2 = TextModel(token_list=[-1, 2, 3, 4]).fit(docs)
     assert tm2.num_terms > tm.num_terms
-    assert not tm2.max_dimension  
+    assert not tm2.max_dimension
+
+
+def test_fit():
+    from microtc.weighting import TFIDF
+    from microtc.utils import Counter
+
+    docs = [['a', 'b', 'c', 'd'], ['a', 'd'], ['c', 'd'], ['d']]
+    counter = Counter()
+    [counter.update(x) for x in docs]
+    tfidf = TFIDF().fit(docs)
+    for word in ['a', 'b', 'c']:
+        id = tfidf.word2id[word]
+        value = tfidf.wordWeight[id]
+        _ = np.log2(counter.update_calls / counter[word])
+        np.testing.assert_almost_equal(value, _)
+    assert 'd' not in tfidf.word2id
+    assert tfidf.num_terms == 3
+    assert tfidf.N == 4
