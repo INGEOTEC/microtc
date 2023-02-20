@@ -28,6 +28,6 @@ tasks independently of domain and language.
 The starting point is :py:class:`microtc.textmodel.TextModel`
 
 """
-__version__ = "2.4.8"
+__version__ = "2.4.9"
 
 from microtc.textmodel import TextModel

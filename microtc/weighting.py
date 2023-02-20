@@ -77,7 +77,9 @@ class TFIDF(object):
     def counter2weight(self, counter):
         weight = dict()
         w2id = dict()
-        for i, (k, v) in enumerate(counter.most_common()):
+        keys = sorted(counter.keys())
+        for i, k in enumerate(keys):
+            v = counter[k]
             weight[i] = v
             w2id[k] = i
         return w2id, weight
