@@ -751,7 +751,7 @@ class TextModel(SparseMatrix):
         >>> textmodel = TextModel().fit(corpus)
         >>> _ = textmodel.transform(corpus)
         >>> textmodel.id2token[0]
-        'de'
+        'buenos'
         """
         try:
             return self._id2token
@@ -769,7 +769,7 @@ class TextModel(SparseMatrix):
         >>> textmodel = TextModel().fit(corpus)
         >>> _ = textmodel.transform(corpus)
         >>> textmodel.token2id['de']
-        0
+        4
         """
         return self.model.word2id
 
