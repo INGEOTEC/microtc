@@ -54,29 +54,26 @@ def norm_chars(text, del_diac=True, del_dup=True, del_punc=False):
     '~Life~is~god~at~Mexico.~'
 
     """
-    L = ['~']
 
+    cadena = '~'
     prev = '~'
+    fin_linea = set(['\n', '\r', ' ', '\t', '\xa0'])
     for u in unicodedata.normalize('NFD', text):
         if del_diac:
             o = ord(u)
             if 0x300 <= o and o <= 0x036F:
                 continue
-            
-        if u in ('\n', '\r', ' ', '\t', '\xa0'):
+        if u in fin_linea:
             u = '~'
         elif del_dup and prev == u:
             continue
         elif del_punc and u in SKIP_SYMBOLS:
             prev = u
             continue
-
         prev = u
-        L.append(u)
-
-    L.append('~')
-
-    return "".join(L)
+        cadena = cadena + u
+    cadena = cadena + '~'
+    return cadena
 
 
 def get_word_list(text):
@@ -96,22 +93,18 @@ def get_word_list(text):
     :rtype: list
     """
 
-    L = []
+    cadena = ''
     prev = ' '
     for u in text[1:len(text)-1]:
         if u in SKIP_SYMBOLS:
             u = ' '
-
         if prev == ' ' and u == ' ':
             continue
-
         if prev == ' ' and u == "'":
             continue
-
-        L.append(u)
+        cadena = cadena + u
         prev = u
-
-    return ("".join(L)).split()
+    return cadena.split()
 
 
 def expand_qgrams(text, qsize, output):
@@ -134,9 +127,11 @@ def expand_qgrams(text, qsize, output):
     >>> expand_qgrams("Good morning.", 3, output)
     ['q:Goo', 'q:ood', 'q:od ', 'q:d m', 'q: mo', 'q:mor', 'q:orn', 'q:rni', 'q:nin', 'q:ing', 'q:ng.']
     """
-
-    _ = ["".join(a) for a in zip(*[text[i:] for i in range(qsize)])]
-    [output.append("q:" + x) for x in _]
+    unir = "".join
+    output.extend(["q:" + unir(a)
+                   for a in zip(*[text[i:] for i in range(qsize)])])
+    # for x in _:
+    #     output.append("q:" + x)
     return output
 
 

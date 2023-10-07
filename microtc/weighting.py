@@ -13,10 +13,10 @@
 # limitations under the License.
 
 
-import numpy as np
-from microtc.utils import Counter
 import os
+import numpy as np
 from typing import Union
+from microtc.utils import Counter
 
 
 TEXT = os.environ.get("TEXT", 'text')
@@ -170,6 +170,7 @@ class TFIDF(object):
                 continue
         ids_tf = [(a, b) for a, b in Counter(lst).items()]
         # ids, tf = np.unique(lst, return_counts=True)
+        # ids_tf = list(Counter(lst).items())
         ids = [x[0] for x in ids_tf]
         tf = np.array([x[1] for x in ids_tf])
         tf = tf / tf.sum()
@@ -186,12 +187,14 @@ class TFIDF(object):
         :rtype: lst
         """
 
-        __ = self.doc2weight(tokens)
-        r = [(i, _tf * _df) for i, _tf, _df in zip(*__)]
+        ids, tfs, dfs = self.doc2weight(tokens)
+        tf_df = tfs * dfs
+        # r = [(i, _tf * _df) for i, _tf, _df in zip(*__)]
         if not self.unit_vector:
-            return r
-        n = np.sqrt(sum([x * x for _, x in r]))
-        return [(i, x/n) for i, x in r]
+            return [(i, v) for i, v in zip(ids, tf_df)]
+        n = np.sqrt((tf_df**2).sum())
+        # n = np.sqrt(sum([x * x for _, x in r]))
+        return [(i, v) for i, v in zip(ids, tf_df / n)]
 
     @staticmethod
     def filter(counter, token_min_filter=0.001, token_max_filter=0.999):

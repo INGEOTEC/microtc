@@ -230,16 +230,13 @@ class SparseMatrix(ABC):
         if not isinstance(X, list):
             return X
         assert self.num_terms is not None
-        num_terms = self.num_terms
-        isfinite = np.isfinite
         data = []
         row = []
         col = []
         for r, x in enumerate(X):
-            dd = [(i, v) for i, v in x if i < num_terms and isfinite(v)]
-            col.extend([i for i, _ in dd])
-            data.extend([v for _, v in dd])
-            _ = [r] * len(dd)
+            col.extend([i for i, _ in x])
+            data.extend([v for _, v in x])
+            _ = [r] * len(x)
             row.extend(_)
         return csr_matrix((data, (row, col)), shape=(len(X), self.num_terms))
     
