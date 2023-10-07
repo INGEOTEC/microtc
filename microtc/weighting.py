@@ -192,7 +192,7 @@ class TFIDF(object):
         # r = [(i, _tf * _df) for i, _tf, _df in zip(*__)]
         if not self.unit_vector:
             return [(i, v) for i, v in zip(ids, tf_df)]
-        n = (tf_df**2).sum()
+        n = np.sqrt((tf_df**2).sum())
         # n = np.sqrt(sum([x * x for _, x in r]))
         return [(i, v) for i, v in zip(ids, tf_df / n)]
 
