@@ -1,3 +1,4 @@
 include microtc/tests/text.json
 include microtc/resources/emoticons.json
 include microtc/resources/*.stopwords
+include microtc/resources/emojis.json.gz

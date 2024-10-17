@@ -326,3 +326,12 @@ def test_unit_vector():
     _ = sum([x**2 for _, x in text['buenos dias']])
     np.testing.assert_almost_equal(_, 1)
 
+
+def test_text_transformations_replace_tokens():
+    from microtc.textmodel import TextModel
+    from microtc.params import OPTION_NONE
+    model = TextModel(norm_emojis=True, del_punc=True,
+                      del_dup=False,
+                      emo_option=OPTION_NONE)
+    txt = model.text_transformations('que buen chiste, 🤣🤣')
+    assert txt == '~que~buen~chiste~🤣~🤣~'

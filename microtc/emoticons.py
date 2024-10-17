@@ -159,57 +159,115 @@ def read_emoji_standard(fname, emos=None):
     return emos
 
 
-def create_data_structure(emojis):
-    """Create data structure to store the emojis
-    :param emojis: Dictionary of emoji
-    :type emojis: dict
+def read_emojis():
+    """Emojis dictionary"""
+    from os.path import join, dirname
+    from microtc.utils import tweet_iterator
+    tokens = {}
+    _ = join(dirname(__file__), 'resources', 'emojis.json.gz')
+    emojis = next(tweet_iterator(_))
+    for k, v in emojis.items():
+        key = f'~{k}~'
+        value = f'~{v}~'
+        tokens[key] = value
+        for x in [k, f'~{k}', f'{k}~']:
+            tokens[x] = value
+    return tokens
+
+
+def create_data_structure(tokens):
+    """Create data structure to store tokens
+    :param tokens: Dictionary of tokens
+    :type tokens: dict
     :rtype: dict
     """
 
-    head = dict()
-    for word in emojis.keys():
+    head = {}
+    for word, value in tokens.items():
         current = head
         for char in word:
             try:
                 current = current[char]
             except KeyError:
-                _ = dict()
+                _ = {}
                 current[char] = _
                 current = _
-        current["__end__"] = True
+        current["__end__"] = value
     return head
 
 
-def find_emoji(data, text):
-    """Test whether text has an emoji
+def find_token(head, text):
+    """Obtain the position of each label in the text
 
-    :param data: Output of :py:func:`create_data_structure`
-    :type data: dict
+    :param text: text
+    :type text: str
     :return: list of pairs, init and end of the word
     :rtype: list
     """
 
-    blocks = list()
+    blocks = []
     init = i = end = 0
-    head = data
     current = head
-    while i < len(text):
+    text_length = len(text)
+    while i < text_length:
         char = text[i]
         try:
             current = current[char]
             i += 1
-            if "__end__" in current:
+            if '__end__' in current:
                 end = i
+                if current['__end__'] is True:
+                    raise KeyError
         except KeyError:
             current = head
             if end > init:
                 blocks.append([init, end])
-                init = i = end
+                if (end - init) >= 2 and text[end - 1] == '~':
+                    init = i = end = end - 1
+                else:
+                    init = i = end
             elif i > init:
-                init = end = i
+                if (i - init) >= 2 and text[i - 1] == '~':
+                    init = end = i = i - 1
+                else:
+                    init = end = i
             else:
                 init += 1
                 i = end = init
     if end > init:
-        blocks.append([init, end])                
+        blocks.append([init, end])
     return blocks
+
+
+def replace_token(tokens, head, text)->str:
+    """Replace token in processed utterance
+    
+    :param tokens: dict
+    :param head: dict
+    :param text: text
+    :type text: str
+    :return: text with tokens replace
+    :rtype: str
+
+    >>> from microtc import emoticons
+    >>> tokens = emoticons.read_emojis()
+    >>> head = emoticons.create_data_structure({x: True for x in tokens})
+    >>> emoticons.replace_token(tokens, head, '~🤣🤣~bla~x~🤣~')
+    ~🤣~🤣~bla~x~🤣~
+    """
+
+    r = find_token(head, text)
+    if len(r) == 0:
+        return text
+    output = []
+    prev = 0
+    rpr = lambda x: tokens.get(x, x)
+    for init, end in r:
+        if prev < init:
+            output.append(text[prev:init])
+        output.append(rpr(text[init:end]))
+        prev = end
+    if end < len(text):
+        output.append(text[end:])
+    _ = ''.join(output)
+    return re.sub('~+', '~', _)

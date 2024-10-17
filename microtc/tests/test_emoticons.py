@@ -68,7 +68,7 @@ def test_create_data_structure():
 def test_has_emoji():
     data = emoticons.create_data_structure(dict(mario=1, ma=1, g=1, marx=1))
     text = "maxmarxgmlr"
-    blocks = emoticons.find_emoji(data, text)
+    blocks = emoticons.find_token(data, text)
     lst = [text[init:end] for init, end in blocks]
     for a, b in zip(lst, ["ma", "marx", "g"]):
         assert a == b
@@ -78,9 +78,42 @@ def test_has_emoji():
     emojis = emoticons.read_emoji_standard(download(data))
     emoticons.read_emoji_standard(download(zwj), emojis)
     data = emoticons.create_data_structure(emojis)
-    _ = emoticons.find_emoji(data, chr(0x1F468) + chr(0x200D) + chr(0x1F468))
+    _ = emoticons.find_token(data, chr(0x1F468) + chr(0x200D) + chr(0x1F468))
     print(_)
     init, end = _[0]
     assert (end - init) == 1
     assert chr(0x1F468) in emojis
     assert len(_) == 1
+
+
+def test_read_emojis():
+    """Test Read Emojis"""
+    tokens = emoticons.read_emojis()
+    assert len(tokens) == 20100
+
+
+def test_find_token_emojis():
+    """test find token"""
+    tokens = emoticons.read_emojis()
+    head = emoticons.create_data_structure({x: True for x in tokens})
+    r = emoticons.find_token(head, '~bla~x~')
+    assert len(r) == 0
+    r = emoticons.find_token(head, '🤣🤣~bla~x~🤣')
+    assert len(r) == 3
+
+
+def test_replace_token():
+    tokens = emoticons.read_emojis()
+    head = emoticons.create_data_structure({x: True for x in tokens})
+    txt = emoticons.replace_token(tokens, head, '~🤣🤣~bla~x~🤣~')
+    assert txt == '~🤣~🤣~bla~x~🤣~'
+    txt = emoticons.replace_token(tokens, head, '~🤣~bla~x~')
+    assert txt == '~🤣~bla~x~'
+    txt = emoticons.replace_token(tokens, head, '~bla~🤣🤣~x~')
+    assert txt == '~bla~🤣~🤣~x~'
+    txt = emoticons.replace_token(tokens, head, '~bla~x~🤣~')
+    assert txt == '~bla~x~🤣~'
+
+
+    # r = emoticons.find_token(head, '🤣🤣~bla~x~🤣')
+    # assert r is None
