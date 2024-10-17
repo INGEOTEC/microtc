@@ -216,8 +216,6 @@ def find_token(head, text):
             i += 1
             if '__end__' in current:
                 end = i
-                if current['__end__'] is True:
-                    raise KeyError
         except KeyError:
             current = head
             if end > init:

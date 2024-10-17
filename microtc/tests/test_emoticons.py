@@ -113,7 +113,8 @@ def test_replace_token():
     assert txt == '~bla~🤣~🤣~x~'
     txt = emoticons.replace_token(tokens, head, '~bla~x~🤣~')
     assert txt == '~bla~x~🤣~'
-
+    txt = emoticons.replace_token(tokens, head, '~👏🏻🤣~')
+    assert txt == '~👏~🤣~'
 
     # r = emoticons.find_token(head, '🤣🤣~bla~x~🤣')
     # assert r is None

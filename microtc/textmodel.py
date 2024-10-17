@@ -21,7 +21,7 @@ from microtc.utils import get_class, SparseMatrix
 from typing import Union
 
 
-PUNCTUACTION = ";:,.@\\-\"'/"
+PUNCTUACTION = ";:,.@\\-\"'/…“・"
 SYMBOLS = "()[]¿?¡!{}~<>|"
 SKIP_SYMBOLS = set(PUNCTUACTION + SYMBOLS)
 SKIP_SYMBOLS_AND_SPACES = set(PUNCTUACTION + SYMBOLS + '\t\n\r ')
@@ -286,7 +286,7 @@ class TextModel(SparseMatrix):
                  num_option: str=OPTION_GROUP,
                  usr_option: str=OPTION_GROUP,
                  url_option: str=OPTION_GROUP,
-                 emo_option: str=OPTION_GROUP,
+                 emo_option: str=OPTION_NONE,
                  hashtag_option: str=OPTION_NONE,
                  ent_option: str=OPTION_NONE,
                  lc: bool=True, del_dup: bool=False,
