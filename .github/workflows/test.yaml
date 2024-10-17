@@ -32,7 +32,7 @@ jobs:
         conda install --yes pip
         pip install coverage
         pip install coveralls
-        conda install --yes numpy scipy scikit-learn nose
+        conda install --yes numpy scipy scikit-learn pytest
         python setup.py build_ext --inplace
     - name: Tests on Linux
       if: ${{ runner.os == 'Linux' }}
@@ -40,11 +40,11 @@ jobs:
         which python
         python --version
         which coverage
-        nosetests --verbose --with-coverage --cover-package=microtc microtc/tests 
+        coverage run -m pytest microtc/tests
     - name: Tests on macOS and Windows
       if: ${{ runner.os != 'Linux' }}
       run: |
-        nosetests --verbose microtc/tests
+        python -m pytest microtc/tests
     - name: coveralls
       if: ${{ runner.os == 'Linux' }}
       env:
