@@ -300,7 +300,7 @@ class TextModel(SparseMatrix):
                  q_grams_words: bool=False,
                  max_dimension: bool=False,
                  unit_vector: bool=True,
-                 norm_emojis: bool=True):
+                 norm_emojis: bool=False):
         self._text = os.getenv('TEXT', default=text)
         self.del_diac = del_diac
         self.num_option = num_option
