@@ -21,7 +21,7 @@ from microtc.utils import get_class, SparseMatrix
 from typing import Union
 
 
-PUNCTUACTION = ";:,.@\\-\"'/…“・"
+PUNCTUACTION = ";:,.@\\-\"'/…“・”’"
 SYMBOLS = "()[]¿?¡!{}~<>|"
 SKIP_SYMBOLS = set(PUNCTUACTION + SYMBOLS)
 SKIP_SYMBOLS_AND_SPACES = set(PUNCTUACTION + SYMBOLS + '\t\n\r ')
