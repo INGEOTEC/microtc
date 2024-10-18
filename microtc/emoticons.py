@@ -163,15 +163,12 @@ def read_emojis():
     """Emojis dictionary"""
     from os.path import join, dirname
     from microtc.utils import tweet_iterator
-    tokens = {}
     _ = join(dirname(__file__), 'resources', 'emojis.json.gz')
     emojis = next(tweet_iterator(_))
-    for k, v in emojis.items():
-        key = f'~{k}~'
-        value = f'~{v}~'
-        tokens[key] = value
-        for x in [k, f'~{k}', f'{k}~']:
-            tokens[x] = value
+    tokens = {k: f'~{v}~' for k, v in emojis.items()}
+    a = convert_emoji('1F9D1 200D')
+    b = convert_emoji('1F9D1')
+    tokens[a] = f'~{b}~'
     return tokens
 
 
