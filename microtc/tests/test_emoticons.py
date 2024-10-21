@@ -89,7 +89,7 @@ def test_has_emoji():
 def test_read_emojis():
     """Test Read Emojis"""
     tokens = emoticons.read_emojis()
-    assert len(tokens) == 5026
+    assert len(tokens) == 5028
 
 
 def test_find_token_emojis():
