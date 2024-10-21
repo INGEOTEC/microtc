@@ -166,9 +166,13 @@ def read_emojis():
     _ = join(dirname(__file__), 'resources', 'emojis.json.gz')
     emojis = next(tweet_iterator(_))
     tokens = {k: f'~{v}~' for k, v in emojis.items()}
+    # tokens = emojis
     a = convert_emoji('1F9D1 200D')
     b = convert_emoji('1F9D1')
     tokens[a] = f'~{b}~'
+    # tokens[a] = b
+    tokens[convert_emoji('FE0F')] = ''
+    tokens[convert_emoji('20E3')] = ''
     return tokens
 
 
