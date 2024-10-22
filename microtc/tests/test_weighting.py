@@ -13,6 +13,7 @@
 # limitations under the License.
 from os.path import join
 import numpy as np
+from numpy.testing import assert_almost_equal
 
 
 def test_space():
@@ -87,7 +88,6 @@ def test_entropy():
 
 
 def test_tfidf_corpus():
-    from nose.tools import assert_almost_equals
     from microtc.textmodel import TextModel
     from microtc.weighting import TFIDF
     from microtc.utils import Counter
@@ -112,11 +112,10 @@ def test_tfidf_corpus():
         v = tfidf.wordWeight[v]
         v2 = tfidf2.wordWeight[id2]
         print(v, v2, k)
-        assert_almost_equals(v, v2)
+        assert_almost_equal(v, v2)
 
 
 def test_tfidf_corpus2():
-    from nose.tools import assert_almost_equals
     from microtc.textmodel import TextModel
     from microtc.weighting import TFIDF
     from microtc.utils import Counter
@@ -137,7 +136,7 @@ def test_tfidf_corpus2():
         tokens = tm.tokenize(text)
         fm = {k: v for k, v in tfidf[tokens]}
         for k, v in tfidf2[tokens]:
-            assert_almost_equals(fm[tfidf.word2id[id2w2[k]]], v)
+            assert_almost_equal(fm[tfidf.word2id[id2w2[k]]], v)
 
 
 def test_max_dimension():

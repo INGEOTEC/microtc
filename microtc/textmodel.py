@@ -13,16 +13,15 @@
 # limitations under the License.
 import re
 import unicodedata
+import os
 import numpy as np
 from microtc.params import OPTION_DELETE, OPTION_GROUP, OPTION_NONE
-from microtc.emoticons import EmoticonClassifier
-import os
-from scipy.sparse import csr_matrix
+from microtc.emoticons import EmoticonClassifier, read_emojis, create_data_structure, replace_token
 from microtc.utils import get_class, SparseMatrix
 from typing import Union
 
 
-PUNCTUACTION = ";:,.@\\-\"'/"
+PUNCTUACTION = ";:,.@\\-\"'/…“・”’"
 SYMBOLS = "()[]¿?¡!{}~<>|"
 SKIP_SYMBOLS = set(PUNCTUACTION + SYMBOLS)
 SKIP_SYMBOLS_AND_SPACES = set(PUNCTUACTION + SYMBOLS + '\t\n\r ')
@@ -250,6 +249,9 @@ class TextModel(SparseMatrix):
     :param weighting: Weighting scheme (tfidf | tf | entropy)
     :type weighting: class or str
 
+    :param norm_emojis: Normalize emojis
+    :type norm_emojis: bool
+
     Usage:
 
     >>> from microtc.textmodel import TextModel
@@ -284,11 +286,11 @@ class TextModel(SparseMatrix):
                  num_option: str=OPTION_GROUP,
                  usr_option: str=OPTION_GROUP,
                  url_option: str=OPTION_GROUP,
-                 emo_option: str=OPTION_GROUP,
+                 emo_option: str=OPTION_NONE,
                  hashtag_option: str=OPTION_NONE,
                  ent_option: str=OPTION_NONE,
-                 lc: bool=True, del_dup: bool=True,
-                 del_punc: bool=False, del_diac: bool=True,
+                 lc: bool=True, del_dup: bool=False,
+                 del_punc: bool=True, del_diac: bool=True,
                  token_list: list=[-1], 
                  token_min_filter: Union[int, float]=0,
                  token_max_filter: Union[int, float]=1,
@@ -297,7 +299,8 @@ class TextModel(SparseMatrix):
                  weighting: str='tfidf',
                  q_grams_words: bool=False,
                  max_dimension: bool=False,
-                 unit_vector: bool=True):
+                 unit_vector: bool=True,
+                 norm_emojis: bool=False):
         self._text = os.getenv('TEXT', default=text)
         self.del_diac = del_diac
         self.num_option = num_option
@@ -320,11 +323,15 @@ class TextModel(SparseMatrix):
         self._q_grams_words = q_grams_words
         self._max_dimension = max_dimension
         self.unit_vector = unit_vector
+        self.norm_emojis = norm_emojis
         if emo_option == OPTION_NONE:
             self.emo_map = None
         else:
             self.emo_map = EmoticonClassifier()
-
+        if self.norm_emojis:
+            self.norm_tokens = read_emojis()
+            _ = {x: True for x in self.norm_tokens}
+            self.norm_head = create_data_structure(_)
         if docs is not None and len(docs):
             self.fit(docs)
 
@@ -601,8 +608,13 @@ class TextModel(SparseMatrix):
         elif self.usr_option == OPTION_GROUP:
             text = re.sub(r"@\S+", "_usr", text)
 
-        return norm_chars(text, del_diac=self.del_diac, del_dup=self.del_dup,
-                          del_punc=self.del_punc)
+        _ = norm_chars(text, del_diac=self.del_diac,
+                       del_dup=self.del_dup,
+                       del_punc=self.del_punc)
+        if self.norm_emojis:
+            return replace_token(self.norm_tokens,
+                                 self.norm_head, _)
+        return _
 
     def get_word_list(self, *args, **kwargs):
         return get_word_list(*args, **kwargs)
