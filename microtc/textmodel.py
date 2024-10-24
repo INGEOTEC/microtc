@@ -336,7 +336,21 @@ class TextModel(SparseMatrix):
             self.fit(docs)
 
     @property
+    def norm_emojis(self):
+        """Normalize emojis"""
+        try:
+            return self._norm_emojis
+        except AttributeError:
+            self.norm_emojis = False
+        return self._norm_emojis
+    
+    @norm_emojis.setter
+    def norm_emojis(self, value):
+        self._norm_emojis = value
+
+    @property
     def unit_vector(self):
+        """Unit vector"""
         try:
             return self._unit_vector
         except AttributeError:
@@ -351,6 +365,7 @@ class TextModel(SparseMatrix):
 
     @property
     def q_grams_words(self):
+        """q-grams only on words"""
         try:
             return self._q_grams_words
         except AttributeError:
@@ -358,6 +373,7 @@ class TextModel(SparseMatrix):
 
     @property
     def max_dimension(self):
+        """Maximum dimension"""
         try:
             return self._max_dimension
         except AttributeError:
